@@ -213,7 +213,7 @@ export class KeyboardView {
       <div class="hands-display">
         <!-- Left Hand -->
         <div class="hand-wrapper hand-left" id="hand-left">
-          <div class="hand-label">LEFT HAND</div>
+          <div class="hand-label">Left hand</div>
           <svg class="hand-svg" viewBox="0 0 160 140">
             <!-- Palm -->
             <path class="palm-shape" d="M 30,85 C 30,120 70,135 110,135 C 135,135 145,115 140,85 C 135,65 110,65 105,75 C 95,80 50,75 30,85 Z" />
@@ -240,7 +240,7 @@ export class KeyboardView {
 
         <!-- Right Hand -->
         <div class="hand-wrapper hand-right" id="hand-right">
-          <div class="hand-label">RIGHT HAND</div>
+          <div class="hand-label">Right hand</div>
           <svg class="hand-svg" viewBox="0 0 160 140">
             <!-- Palm -->
             <path class="palm-shape" d="M 130,85 C 130,120 90,135 50,135 C 25,135 15,115 20,85 C 25,65 50,65 55,75 C 65,80 110,75 130,85 Z" />
@@ -320,7 +320,7 @@ export class KeyboardView {
       if (hintText) {
         const charDisplay = char === ' ' ? 'Space' : `"${char}"`;
         const shiftNote = fingerInfo.shift ? ` (+ ${fingerInfo.hand === 'left' ? 'Right' : 'Left'} Shift)` : '';
-        hintText.textContent = `${fingerInfo.label} to press ${charDisplay}${shiftNote}`;
+        hintText.textContent = `${fingerInfo.label} · ${charDisplay}${shiftNote}`;
       }
     }
   }

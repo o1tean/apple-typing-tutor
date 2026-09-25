@@ -1,77 +1,40 @@
-#  TypeFlow — Apple-Grade Touch Typing Tutor
+# TypeFlow
 
-> An ultra-refined touch typing tutor inspired by [TypingMe](https://www.typingme.com/), completely redesigned and engineered with Apple Human Interface Guidelines, macOS Sequoia aesthetics, and modern interaction design.
+A focused touch typing tutor with an Apple-inspired interface. Floating controls and dialogs use a CSS interpretation of Liquid Glass: translucent materials, soft reflections, rounded edges, and gentle press feedback. The exercise itself stays clear and readable.
 
----
+## Run locally
 
-## ✨ Why It’s 10x Better Than TypingMe
+TypeFlow uses browser JavaScript modules, so it needs a web server rather than opening `index.html` directly.
 
-| Feature | Legacy TypingMe (2012) |  TypeFlow (Modern Apple UX) |
-|---|---|---|
-| **Visual Design** | Cluttered with banner ads (728x90, 300x600), dated serif/sans font, harsh yellow/cyan boxes. | **Pristine Apple Silicon / macOS Sequoia frosted glass**, San Francisco typography, dark/light mode. |
-| **Interactive Keyboard** | Static low-res raster image of a generic keyboard. | **Hardware-accurate Apple Magic Keyboard** with physical key depression, 3D keycaps, tactile F & J bumps, and Caps Lock LED. |
-| **Finger Guidance** | Static diagram with no live cues. | **Live SVG Hands Visualizer** with color-coded fingers and dynamic indicator (e.g. *Left Index → F*, *Right Pinky → P (+ Left Shift)*). |
-| **Sound Experience** | Silent typing. | **Synthesized Web Audio Acoustic Engine** reproducing realistic Apple Magic Keyboard scissor switches, mechanical thocks, and Apple glass chimes. |
-| **Caret & Flow** | Jumpy HTML cursor, full screen turn orange on error. | **Smooth floating spring caret**, non-jarring soft error shake, real-time WPM ticker, and fluid flow mode. |
-| **Lesson Progression** | Static PHP pages requiring full page reloads. | **Seamless Single Page App (SPA)** with auto-advance, drawer navigation, and instant replay (`Tab + Enter`). |
-| **Analytics & Rewards** | Basic completion time in seconds. | **Apple Fitness-style Activity Rings** (Speed, Accuracy, Consistency), 3-Star mastery ratings, and error heatmap. |
-| **Course Breadth** | Amateur & Pro PHP lessons. | **Full Amateur & Pro tracks**, 15s/30s/60s timed speed tests, and Custom Text / Quote practice. |
-
----
-
-## 🚀 Quick Start
-
-TypeFlow needs a local web server because its JavaScript uses browser modules. Opening `index.html` directly from the filesystem will not load the app.
-
-With Python 3 installed, run:
+With Python 3 installed:
 
 ```bash
-cd /Users/o1tean/apple-typing-tutor
 python3 -m http.server 3000
 ```
 
-Or run `npm start` (also uses Python 3; no package installation is required).
-Then open **[TypeFlow](http://localhost:3000)**.
+Or run `npm start`. No package installation is required. Open [TypeFlow](http://localhost:3000).
 
-Run the regression checks with Node.js installed:
+With Node.js installed, run the regression checks:
 
 ```bash
 npm test
 ```
 
----
+## Practice
 
-## 🎯 Key Features
+- **Learn and Advanced:** 22 exercises covering the home row, letters, capitals, numbers, punctuation, and code.
+- **Speed test:** a 30-second sprint that starts with your first keystroke.
+- **Custom:** practice your own passage or try a quote.
+- **Guided mode:** waits for the correct key. **Free flow:** allows mistakes and Backspace corrections.
+- Live speed, accuracy, elapsed time, finger guidance, and an onscreen keyboard with opposite-hand Shift hints.
+- Completion rings, focus keys, and locally saved stars and best scores.
 
-### 1. Hardware-Accurate Apple Magic Keyboard
-- True-to-life Apple key proportions, command `⌘`, option `⌥`, control `⌃`, shift `⇧`, and return `⏎` keys.
-- **Physical Key Depression**: Keys physically depress on physical keypress.
-- **Opposite-Hand Shift Mechanics**: Prompts the correct shift key based on touch typing standards (Right Shift for Left hand keys, Left Shift for Right hand keys).
-- **Tactile Homing Bumps**: Visual tactile bumps on `F` and `J` keys.
+Settings include light and dark appearances, four synthesized keyboard sounds, volume, and optional hand and keyboard guides. All assets are local; no external font or audio downloads are needed.
 
-### 2. Apple Activity Rings & Diagnostics
-- **Speed Ring (Red)**: Tracks your WPM against target lesson benchmarks.
-- **Accuracy Ring (Green)**: Real-time accuracy percentage.
-- **Consistency Ring (Cyan)**: Analyzes cadence and timing variance between keystrokes.
-- **Focus Keys Breakdown**: Highlights problem keys that caused errors.
+Glass materials fall back to opaque surfaces when unsupported or when reduced transparency or higher contrast is requested. Reduced motion disables animations and transitions. Dialogs use native focus management and keyboard navigation.
 
-### 3. Pure Web Audio Acoustic Synthesis
-- **Magic Scissor**: Authentic low-travel crisp click of Apple Magic Keyboard.
-- **Mechanical Thock**: Deep, creamy custom mechanical switches.
-- **Soft Bubble**: Waterdrop pop for calming focus sessions.
-- **Apple Glass Chime**: Harmonic chord played on lesson completion.
-- Zero audio file downloads required — runs 100% offline.
+## Shortcuts
 
-### 4. Comprehensive Touch Typing Curriculum
-- **Amateur Course (Lessons 1 – 11)**: Home row (`asdf`, `jkl;`), upper row, lower row, simple punctuation, and final graduation.
-- **Pro Course (Lessons 1 – 10)**: All letters, shift capitals, top number row (`1-0`), professional punctuation (`"`, `'`, `-`, `()`), developer brackets (`{ } [ ] < > / \ = +`), and Steve Jobs keynote prose.
-- **Speed Test**: 15s, 30s, and 60s sprints with top 100 English words.
-- **Custom Text**: Paste your own paragraphs, code files, or literary quotes.
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-- <kbd>Tab</kbd> + <kbd>Enter</kbd> — Instant restart current lesson
-- <kbd>Esc</kbd> — Open/close Curriculum drawer & modals
-- <kbd>Shift</kbd> + <kbd>Enter</kbd> — Quick restart
+- **Tab, then Enter:** restart the exercise.
+- **Shift + Enter:** restart directly.
+- **Escape:** open lessons or close the current dialog.
