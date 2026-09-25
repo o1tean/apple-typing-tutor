@@ -1,0 +1,897 @@
+/* =========================================================
+   Apple Design System - Core Variables & Foundations
+   macOS Sequoia / iOS 18 Typography & Materials
+   ========================================================= */
+
+:root {
+  /* Apple Color Palette (Dark Theme Default) */
+  --bg-primary: #0a0a0c;
+  --bg-secondary: #141417;
+  --surface: rgba(28, 28, 32, 0.75);
+  --surface-elevated: rgba(38, 38, 44, 0.85);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --surface-active: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-prominent: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #98989f;
+  --text-tertiary: #636369;
+  --text-disabled: #44444a;
+
+  /* Apple Semantic Accents */
+  --accent-blue: #0071e3;
+  --accent-blue-hover: #0077ed;
+  --accent-blue-light: rgba(0, 113, 227, 0.18);
+  --accent-green: #30d158;
+  --accent-green-light: rgba(48, 209, 88, 0.18);
+  --accent-orange: #ff9f0a;
+  --accent-red: #ff453a;
+  --accent-red-light: rgba(255, 69, 58, 0.18);
+  --accent-purple: #bf5af2;
+  --accent-pink: #ff375f;
+  --accent-cyan: #32ade6;
+
+  /* Finger Color Identifiers */
+  --finger-pinky: #bf5af2;
+  --finger-ring: #0071e3;
+  --finger-middle: #30d158;
+  --finger-index: #ff9f0a;
+  --finger-thumb: #ff375f;
+
+  /* Keyboard Materials (Dark) */
+  --kb-chassis: #1c1c1f;
+  --kb-chassis-border: rgba(255, 255, 255, 0.1);
+  --key-bg: linear-gradient(180deg, #2a2a2e 0%, #1f1f23 100%);
+  --key-border: rgba(255, 255, 255, 0.09);
+  --key-shadow: 0 2px 0 #101013, 0 3px 6px rgba(0, 0, 0, 0.45);
+  --key-text: #eaeaea;
+  --key-subtext: #8e8e93;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+
+  /* Transitions & Radii */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-blur: blur(28px) saturate(180%);
+}
+
+[data-theme="light"] {
+  /* Apple Color Palette (Light Theme) */
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #e8e8ed;
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-elevated: rgba(255, 255, 255, 0.95);
+  --surface-hover: rgba(0, 0, 0, 0.04);
+  --surface-active: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-prominent: rgba(0, 0, 0, 0.14);
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #86868b;
+  --text-disabled: #c7c7cc;
+
+  --accent-blue-light: rgba(0, 113, 227, 0.1);
+  --accent-green-light: rgba(48, 209, 88, 0.12);
+  --accent-red-light: rgba(255, 69, 58, 0.1);
+
+  /* Keyboard Materials (Light) */
+  --kb-chassis: #e1e1e6;
+  --kb-chassis-border: rgba(0, 0, 0, 0.12);
+  --key-bg: linear-gradient(180deg, #ffffff 0%, #f4f4f7 100%);
+  --key-border: rgba(0, 0, 0, 0.12);
+  --key-shadow: 0 2px 0 #bcbcc0, 0 3px 5px rgba(0, 0, 0, 0.08);
+  --key-text: #1d1d1f;
+  --key-subtext: #86868b;
+}
+
+/* =========================================================
+   Base Layout & Reset
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  user-select: none;
+  transition: background-color 0.3s var(--ease-apple), color 0.3s var(--ease-apple);
+}
+
+/* =========================================================
+   Apple Glass Navigation Bar
+   ========================================================= */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-subtle);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0071e3 0%, #47a0ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.35);
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.brand-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
+  letter-spacing: 0.04em;
+}
+
+/* Apple Segmented Controls */
+.segmented-control {
+  display: inline-flex;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.segment-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 5px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-apple);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.segment-btn:hover {
+  color: var(--text-primary);
+}
+
+.segment-btn.active {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s var(--ease-apple);
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+
+/* =========================================================
+   Main App Container
+   ========================================================= */
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Lesson Context & Instructions Card */
+.lesson-card {
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lesson-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lesson-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
+  letter-spacing: 0.02em;
+}
+
+.lesson-title {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.lesson-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.lesson-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-secondary {
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s var(--ease-apple);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-active);
+  border-color: var(--border-prominent);
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  border: none;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s var(--ease-apple);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.35);
+}
+
+.btn-primary:hover {
+  background: var(--accent-blue-hover);
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   Live Performance HUD (Real-time WPM, Accuracy, Time)
+   ========================================================= */
+
+.hud-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+}
+
+.hud-metrics {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.metric-pill {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.metric-value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.metric-value.accent {
+  color: var(--accent-blue);
+}
+
+.hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tutor-mode-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* =========================================================
+   Typing Stage / Arena
+   ========================================================= */
+
+.typing-arena {
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  cursor: text;
+  outline: none;
+  transition: border-color 0.25s var(--ease-apple), box-shadow 0.25s var(--ease-apple);
+}
+
+.typing-arena:focus-within {
+  border-color: rgba(0, 113, 227, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.typing-lines-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.typing-line {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-disabled);
+  position: relative;
+  transition: all 0.2s var(--ease-apple);
+}
+
+.typing-line.active {
+  color: var(--text-secondary);
+}
+
+.typing-line.completed {
+  color: var(--accent-green);
+  opacity: 0.6;
+}
+
+/* Character styling inside active line */
+.char {
+  position: relative;
+  display: inline-block;
+  transition: color 0.1s ease;
+}
+
+.char.char-correct {
+  color: var(--text-primary);
+}
+
+.char.char-incorrect {
+  color: var(--accent-red);
+  background: var(--accent-red-light);
+  border-radius: 3px;
+  animation: appleShake 0.22s var(--ease-apple);
+}
+
+.char.char-space {
+  display: inline-block;
+}
+
+.char.char-space.char-incorrect {
+  background: var(--accent-red-light);
+  text-decoration: underline wavy var(--accent-red);
+}
+
+/* Apple Smooth Floating Caret */
+.smooth-caret {
+  position: absolute;
+  width: 2.5px;
+  height: 28px;
+  background: var(--accent-blue);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 10;
+  transition: left 0.08s cubic-bezier(0.1, 0.9, 0.2, 1), top 0.12s var(--ease-apple);
+  box-shadow: 0 0 8px rgba(0, 113, 227, 0.7);
+  animation: caretPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes caretPulse {
+  0% { opacity: 1; }
+  100% { opacity: 0.45; }
+}
+
+@keyframes appleShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* Line counter indicator */
+.line-counter {
+  position: absolute;
+  bottom: 12px;
+  right: 18px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   Interactive Guidance Section (Hands & Keyboard)
+   ========================================================= */
+
+.guidance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Hands Visualization Container */
+.hands-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* Keyboard Container */
+.keyboard-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* =========================================================
+   Apple Activity Rings & Completion Modal
+   ========================================================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s var(--ease-apple);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-prominent);
+  border-radius: var(--radius-xl);
+  padding: 36px 40px;
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.3s var(--ease-apple);
+}
+
+.modal-backdrop.open .modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.modal-stars {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.star-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent-orange);
+  filter: drop-shadow(0 2px 8px rgba(255, 159, 10, 0.4));
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+/* Apple Fitness concentric Activity Rings SVG */
+.activity-rings-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 24px;
+}
+
+.rings-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ring-bg {
+  fill: none;
+  stroke-width: 12;
+  opacity: 0.15;
+}
+
+.ring-stroke {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s var(--ease-apple);
+}
+
+.ring-speed {
+  stroke: var(--accent-red);
+}
+
+.ring-accuracy {
+  stroke: var(--accent-green);
+}
+
+.ring-consistency {
+  stroke: var(--accent-cyan);
+}
+
+.rings-center-stat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-wpm {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.center-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+/* Modal Metrics Breakdown Grid */
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.modal-stat-box {
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-stat-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.modal-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+}
+
+/* =========================================================
+   Drawer / Modal for Curriculum Menu
+   ========================================================= */
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s var(--ease-apple);
+}
+
+.drawer-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.curriculum-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 85vw;
+  background: var(--surface-elevated);
+  border-right: 1px solid var(--border-prominent);
+  backdrop-filter: var(--glass-blur);
+  z-index: 501;
+  transform: translateX(-100%);
+  transition: transform 0.3s var(--ease-apple);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
+}
+
+.drawer-backdrop.open .curriculum-drawer {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s var(--ease-apple);
+  text-align: left;
+  width: 100%;
+}
+
+.lesson-list-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-subtle);
+}
+
+.lesson-list-item.active {
+  background: var(--accent-blue-light);
+  border-color: rgba(0, 113, 227, 0.3);
+}
+
+.item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.item-sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.item-stars {
+  color: var(--accent-orange);
+  font-size: 11px;
+}
+
+/* =========================================================
+   Footer & Key Shortcuts Tip
+   ========================================================= */
+
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.kbd-badge {
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}

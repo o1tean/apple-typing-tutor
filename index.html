@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeFlow — Apple-grade Touch Typing Tutor</title>
+  <meta name="description" content="An elegant, Apple-inspired touch typing tutor with interactive Magic Keyboard visualization, scissor switch acoustics, and real-time guidance.">
+  
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/keyboard.css">
+  <link rel="stylesheet" href="css/hands.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230071e3'/><text y='68' x='50' font-size='60' text-anchor='middle' fill='white' font-family='-apple-system, sans-serif' font-weight='bold'></text></svg>">
+</head>
+<body>
+
+  <!-- ================= Apple Glass Navigation Bar ================= -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand" id="brand-home" title="TypeFlow Home">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="4" />
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8" />
+          </svg>
+        </div>
+        <div class="brand-title">
+          TypeFlow
+          <span class="brand-badge">Pro</span>
+        </div>
+      </div>
+
+      <!-- Segmented Track Selector -->
+      <nav class="segmented-control" id="track-selector">
+        <button class="segment-btn active" data-track="amateur">Amateur</button>
+        <button class="segment-btn" data-track="pro">Pro Course</button>
+        <button class="segment-btn" data-track="speed">Speed Test</button>
+        <button class="segment-btn" data-track="custom">Custom</button>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="header-actions">
+        <!-- Lessons Drawer Toggle -->
+        <button class="icon-btn" id="btn-lessons-drawer" title="Curriculum & Lessons">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button class="icon-btn" id="btn-sound-toggle" title="Sound Effects">
+          <svg id="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="icon-sound-off" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="btn-theme-toggle" title="Toggle Light/Dark Theme">
+          <svg id="icon-theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg id="icon-theme-light" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
+        <!-- Settings Modal Toggle -->
+        <button class="icon-btn" id="btn-settings" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Main Application ================= -->
+  <main class="app-main">
+    
+    <!-- Lesson Header & Instructions Card -->
+    <section class="lesson-card" id="lesson-card">
+      <div class="lesson-meta">
+        <div class="lesson-top-row">
+          <span class="lesson-badge" id="lesson-badge">Lesson 1</span>
+          <h1 class="lesson-title" id="lesson-title">Left Hand Home</h1>
+          <span id="lesson-stars" title="Stars earned"></span>
+        </div>
+        <p class="lesson-subtitle" id="lesson-subtitle">Focus on your left hand resting position: Pinky (A), Ring (S), Middle (D), Index (F).</p>
+      </div>
+
+      <div class="lesson-nav-actions">
+        <button class="btn-secondary" id="btn-prev-lesson" title="Previous Lesson">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Previous
+        </button>
+        <button class="btn-secondary" id="btn-next-lesson" title="Next Lesson">
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="btn-primary" id="btn-restart" title="Restart Exercise (Tab + Enter)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+          Restart
+        </button>
+      </div>
+    </section>
+
+    <!-- Real-time Performance HUD -->
+    <div class="hud-container">
+      <div class="hud-metrics">
+        <div class="metric-pill">
+          <span class="metric-label">Speed</span>
+          <span class="metric-value accent" id="metric-wpm">0 <span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">WPM</span></span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label">Accuracy</span>
+          <span class="metric-value" id="metric-accuracy">100<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">%</span></span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label" id="metric-time-label">Time</span>
+          <span class="metric-value" id="metric-time">0<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">s</span></span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label">Errors</span>
+          <span class="metric-value" id="metric-errors" style="color:var(--text-secondary)">0</span>
+        </div>
+      </div>
+
+      <div class="hud-controls">
+        <div class="tutor-mode-pill" id="mode-toggle-pill" role="button" title="Click to toggle Tutor Strict vs Fluid Flow Mode">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent-green)"></span>
+          <span id="mode-text">Strict Tutor Mode</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing Arena -->
+    <div class="typing-arena" id="typing-arena" tabindex="0">
+      <div class="smooth-caret" id="smooth-caret"></div>
+      <div class="typing-lines-wrapper" id="typing-lines-wrapper">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="line-counter" id="line-counter">Line 1 / 4</div>
+    </div>
+
+    <!-- Guidance Section (Hands & Magic Keyboard) -->
+    <section class="guidance-section" id="guidance-section">
+      <!-- Hands SVG Guidance -->
+      <div class="hands-container" id="hands-container"></div>
+
+      <!-- Authentic Apple Magic Keyboard -->
+      <div class="keyboard-container" id="keyboard-container"></div>
+    </section>
+
+  </main>
+
+  <!-- ================= Apple Activity Rings Completion Modal ================= -->
+  <div class="modal-backdrop" id="modal-completion">
+    <div class="modal-card">
+      <div class="modal-stars" id="completion-stars">
+        <!-- Rendered dynamically (1 to 3 stars) -->
+      </div>
+
+      <h2 class="modal-title" id="completion-title">Lesson Completed</h2>
+      <p class="modal-subtitle" id="completion-subtitle">Great touch typing technique!</p>
+
+      <!-- Concentric Apple Rings -->
+      <div class="activity-rings-wrapper">
+        <svg class="rings-svg" viewBox="0 0 160 160">
+          <!-- Speed Ring (Red) -->
+          <circle class="ring-bg ring-speed" cx="80" cy="80" r="66" />
+          <circle class="ring-stroke ring-speed" id="ring-speed-stroke" cx="80" cy="80" r="66" stroke-dasharray="414.7" stroke-dashoffset="414.7" />
+          
+          <!-- Accuracy Ring (Green) -->
+          <circle class="ring-bg ring-accuracy" cx="80" cy="80" r="50" />
+          <circle class="ring-stroke ring-accuracy" id="ring-acc-stroke" cx="80" cy="80" r="50" stroke-dasharray="314.1" stroke-dashoffset="314.1" />
+
+          <!-- Consistency Ring (Cyan) -->
+          <circle class="ring-bg ring-consistency" cx="80" cy="80" r="34" />
+          <circle class="ring-stroke ring-consistency" id="ring-const-stroke" cx="80" cy="80" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6" />
+        </svg>
+
+        <div class="rings-center-stat">
+          <span class="center-wpm" id="modal-center-wpm">42</span>
+          <span class="center-label">WPM</span>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="modal-grid">
+        <div class="modal-stat-box">
+          <span class="modal-stat-label">Accuracy</span>
+          <span class="modal-stat-value" id="modal-stat-accuracy">98%</span>
+        </div>
+        <div class="modal-stat-box">
+          <span class="modal-stat-label">Time</span>
+          <span class="modal-stat-value" id="modal-stat-time">34s</span>
+        </div>
+        <div class="modal-stat-box">
+          <span class="modal-stat-label">Consistency</span>
+          <span class="modal-stat-value" id="modal-stat-consistency">92%</span>
+        </div>
+      </div>
+
+      <!-- Problem Keys / Focus Areas -->
+      <div id="modal-problem-keys" style="margin-bottom:20px;font-size:12px;color:var(--text-secondary);"></div>
+
+      <!-- Actions -->
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-btn-retry">Repeat Lesson</button>
+        <button class="btn-primary" id="modal-btn-next">Next Lesson ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Curriculum Drawer ================= -->
+  <div class="drawer-backdrop" id="curriculum-drawer-backdrop">
+    <div class="curriculum-drawer">
+      <div class="drawer-header">
+        <h2 class="drawer-title" id="drawer-course-title">Touch Typing Lessons</h2>
+        <button class="icon-btn" id="btn-close-drawer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="drawer-content" id="drawer-lesson-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Settings & Custom Text Modal ================= -->
+  <div class="modal-backdrop" id="modal-settings">
+    <div class="modal-card" style="max-width: 500px; text-align: left; align-items: stretch;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 class="modal-title" style="margin: 0;">Settings & Preferences</h2>
+        <button class="icon-btn" id="btn-close-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Acoustic Switch Profile -->
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">Sound Profile</label>
+        <div class="segmented-control" id="sound-profile-selector" style="width: 100%;">
+          <button class="segment-btn active" data-profile="magic" style="flex: 1; justify-content: center;">Magic Scissor</button>
+          <button class="segment-btn" data-profile="thock" style="flex: 1; justify-content: center;">Thock</button>
+          <button class="segment-btn" data-profile="bubble" style="flex: 1; justify-content: center;">Bubble</button>
+          <button class="segment-btn" data-profile="clicky" style="flex: 1; justify-content: center;">Clicky</button>
+        </div>
+      </div>
+
+      <!-- Sound Volume Slider -->
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-size: 13px; font-weight: 600;">Feedback Volume</span>
+          <span id="volume-val-label" style="font-size: 13px; color: var(--text-tertiary);">60%</span>
+        </div>
+        <input type="range" id="settings-volume" min="0" max="100" value="60" style="width: 100%; accent-color: var(--accent-blue);">
+      </div>
+
+      <!-- Tutor Typing Mode -->
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">Correction Mode</label>
+        <div class="segmented-control" id="settings-mode-selector" style="width: 100%;">
+          <button class="segment-btn active" data-mode="strict" style="flex: 1; justify-content: center;">Strict Tutor (TypingMe)</button>
+          <button class="segment-btn" data-mode="flow" style="flex: 1; justify-content: center;">Fluid Flow</button>
+        </div>
+        <p style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px;">
+          Strict mode requires typing the exact right key to advance (ideal for building muscle memory). Flow mode allows fluid typing with backspace corrections.
+        </p>
+      </div>
+
+      <!-- Visibility toggles -->
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <label style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; cursor: pointer;">
+          <span>Show Finger Guidance Hands</span>
+          <input type="checkbox" id="toggle-show-hands" checked style="accent-color: var(--accent-blue);">
+        </label>
+        <label style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; cursor: pointer;">
+          <span>Show Apple Magic Keyboard</span>
+          <input type="checkbox" id="toggle-show-keyboard" checked style="accent-color: var(--accent-blue);">
+        </label>
+      </div>
+
+      <button class="btn-primary" id="btn-save-settings" style="width: 100%; justify-content: center; padding: 10px;">Done</button>
+    </div>
+  </div>
+
+  <!-- ================= Custom Text Modal ================= -->
+  <div class="modal-backdrop" id="modal-custom-text">
+    <div class="modal-card" style="max-width: 520px; text-align: left; align-items: stretch;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 class="modal-title" style="margin: 0;">Custom Practice Text</h2>
+        <button class="icon-btn" id="btn-close-custom">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+        Paste any paragraph, quote, or code snippet you want to practice touch typing:
+      </p>
+      <textarea id="custom-text-input" rows="6" placeholder="Paste your practice text here..." style="width: 100%; padding: 12px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--border-subtle); color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; resize: vertical; margin-bottom: 16px; outline: none;"></textarea>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-secondary" id="btn-load-steve-jobs" style="flex: 1; justify-content: center;">Load Steve Jobs Quote</button>
+        <button class="btn-primary" id="btn-apply-custom-text" style="flex: 1; justify-content: center;">Start Practice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Footer Shortcuts ================= -->
+  <footer class="app-footer">
+    <span><span class="kbd-badge">Tab</span> + <span class="kbd-badge">Enter</span> to restart</span>
+    <span>•</span>
+    <span><span class="kbd-badge">Esc</span> for menu</span>
+    <span>•</span>
+    <span>Crafted with Apple Design Standards</span>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

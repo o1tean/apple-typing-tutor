@@ -1,0 +1,19 @@
+{
+  "name": "typeflow-apple-typing-tutor",
+  "version": "1.0.0",
+  "description": "Apple-grade touch typing tutor inspired by TypingMe, optimized for modern UX with Magic Keyboard visualization, scissor-switch acoustics, and real-time guidance.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "python3 -m http.server 3000"
+  },
+  "keywords": [
+    "touch-typing",
+    "apple",
+    "typing-tutor",
+    "magic-keyboard",
+    "web-audio"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
