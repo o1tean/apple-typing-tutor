@@ -1,177 +1,34 @@
-/* =========================================================
-   Apple Magic Keyboard - High Fidelity Component
-   ========================================================= */
-
+/* Sculpted keycaps, a brushed chassis, and a single clear target. */
 .magic-keyboard {
-  width: 100%;
-  max-width: 900px;
-  background: var(--kb-chassis);
-  border: 1px solid var(--kb-chassis-border);
-  border-radius: 18px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s var(--ease-apple);
+  width: 100%; max-width: 860px; min-width: 620px;
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--kb-chassis); border: 1px solid var(--kb-chassis-border);
+  border-radius: 19px; padding: 11px 11px 13px;
+  box-shadow: inset 0 1px #ffffff30, 0 3px 0 #10182820, 0 16px 30px #0b193018;
 }
-
-.keyboard-row {
-  display: flex;
-  gap: 6px;
-  height: 48px;
-  width: 100%;
-}
-
+.keyboard-row { display: flex; gap: 6px; height: 41px; }
 .magic-key {
-  position: relative;
-  height: 100%;
-  background: var(--key-bg);
-  border: 1px solid var(--key-border);
-  border-radius: 8px;
-  box-shadow: var(--key-shadow);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--key-text);
-  font-family: var(--font-sans);
-  cursor: default;
-  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.15s ease, border-color 0.15s ease;
-  user-select: none;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-width: 0; height: 100%; border-radius: 7px;
+  background: var(--key-bg); border: 1px solid var(--key-border);
+  box-shadow: var(--key-shadow); color: var(--key-text); user-select: none;
+  transition: transform .08s, background .15s, box-shadow .15s;
 }
-
-/* Key label layout */
-.key-labels {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.1;
-  pointer-events: none;
-}
-
-.key-main-label {
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.key-shift-label {
-  font-size: 10px;
-  color: var(--key-subtext);
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.key-sub-label {
-  font-size: 11px;
-  color: var(--key-subtext);
-  margin-top: 1px;
-}
-
-/* Modifier Keys text sizing */
-.key-delete .key-main-label,
-.key-tab .key-main-label,
-.key-caps .key-main-label,
-.key-return .key-main-label,
-.key-shift .key-main-label,
-.key-control .key-main-label,
-.key-option .key-main-label,
-.key-command .key-main-label {
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: lowercase;
-  color: var(--key-subtext);
-}
-
-.key-space {
-  background: var(--key-bg);
-}
-
-/* Tactile bumps on F and J (Apple Magic Keyboard feature) */
-.tactile-bump {
-  position: absolute;
-  bottom: 8px;
-  width: 12px;
-  height: 2px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.4);
-}
-
-[data-theme="light"] .tactile-bump {
-  background: rgba(0, 0, 0, 0.35);
-}
-
-/* CapsLock Green LED */
-.caps-led {
-  position: absolute;
-  top: 7px;
-  left: 8px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.2s ease;
-}
-
-.caps-active .caps-led {
-  background: var(--accent-green);
-  box-shadow: 0 0 6px var(--accent-green);
-}
-
-/* Physical Keypress Effect */
-.magic-key.key-pressed {
-  transform: translateY(2px) scale(0.98);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0), inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  filter: brightness(0.92);
-}
-
-/* Target Key Highlight & Pulse (Guiding the Student) */
-.magic-key.key-target {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 16px rgba(0, 113, 227, 0.55), var(--key-shadow);
-  transform: translateY(-1px);
-}
-
-.magic-key.key-target .key-main-label {
-  color: var(--key-text);
-  font-weight: 700;
-}
-
-/* Specific Finger Accents */
-.magic-key.key-target.finger-pinky {
-  border-color: var(--finger-pinky);
-  box-shadow: 0 0 16px rgba(191, 90, 242, 0.6), var(--key-shadow);
-}
-
-.magic-key.key-target.finger-ring {
-  border-color: var(--finger-ring);
-  box-shadow: 0 0 16px rgba(0, 113, 227, 0.6), var(--key-shadow);
-}
-
-.magic-key.key-target.finger-middle {
-  border-color: var(--finger-middle);
-  box-shadow: 0 0 16px rgba(48, 209, 88, 0.6), var(--key-shadow);
-}
-
-.magic-key.key-target.finger-index {
-  border-color: var(--finger-index);
-  box-shadow: 0 0 16px rgba(255, 159, 10, 0.6), var(--key-shadow);
-}
-
-.magic-key.key-target.finger-thumb {
-  border-color: var(--finger-thumb);
-  box-shadow: 0 0 16px rgba(255, 55, 95, 0.6), var(--key-shadow);
-}
-
-/* Shift key guide highlight */
-.magic-key.key-shift-target {
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 14px rgba(255, 159, 10, 0.55), var(--key-shadow);
-  animation: shiftGlow 0.8s ease-in-out infinite alternate;
-}
-
-@keyframes shiftGlow {
-  0% { transform: translateY(0); filter: brightness(1); }
-  100% { transform: translateY(-1px); filter: brightness(1.25); }
-}
+.key-labels { display: flex; flex-direction: column; align-items: center; line-height: 1.1; pointer-events: none; }
+.key-main-label { font-size: 12px; font-weight: 500; }
+.key-shift-label, .key-sub-label { font-size: 9px; color: var(--key-subtext); }
+.key-shift-label { margin-bottom: 1px; }
+.key-sub-label { margin-top: 1px; }
+:is(.key-delete, .key-tab, .key-caps, .key-return, .key-shift, .key-control, .key-option, .key-command) .key-main-label { font-size: 9px; color: var(--key-subtext); }
+.tactile-bump { position: absolute; bottom: 5px; width: 10px; height: 2px; background: var(--key-subtext); border-radius: 2px; opacity: .55; }
+.caps-led { position: absolute; top: 6px; left: 6px; width: 4px; height: 4px; border-radius: 50%; background: var(--key-border); }
+.caps-active .caps-led { background: var(--accent-green); }
+.magic-key.key-target { background: var(--target-color, var(--finger-ring)); border-color: #ffffff80; color: #172435; box-shadow: 0 2px 1px #0b182440, 0 0 0 3px color-mix(in srgb, var(--target-color, var(--finger-ring)) 18%, transparent); }
+.key-target .key-main-label, .key-target .key-shift-label { color: #172435; font-weight: 650; }
+.finger-pinky { --target-color: var(--finger-pinky); }
+.finger-ring { --target-color: var(--finger-ring); }
+.finger-middle { --target-color: var(--finger-middle); }
+.finger-index { --target-color: var(--finger-index); }
+.finger-thumb { --target-color: var(--finger-thumb); }
+.magic-key.key-shift-target { border-color: var(--accent-orange); box-shadow: inset 0 0 0 1px var(--accent-orange); }
+.magic-key.key-pressed { transform: translateY(2px); box-shadow: inset 0 1px 3px #0003; }

@@ -140,6 +140,7 @@ class AppController {
     sound.setProfile(savedProfile);
     document.querySelectorAll('#sound-profile-selector .segment-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.profile === savedProfile);
+      b.setAttribute('aria-pressed', b.dataset.profile === savedProfile);
     });
 
     // Visibility toggles
@@ -153,6 +154,7 @@ class AppController {
 
   applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    this.btnThemeToggle.setAttribute('aria-label', `Use ${theme === 'dark' ? 'light' : 'dark'} appearance`);
     storage.setSetting('theme', theme);
     if (theme === 'light') {
       this.iconThemeDark.style.display = 'none';
@@ -164,6 +166,7 @@ class AppController {
   }
 
   updateSoundIcon(isMuted) {
+    this.btnSoundToggle.setAttribute('aria-label', isMuted ? 'Turn sound on' : 'Mute sound');
     if (isMuted) {
       this.iconSoundOn.style.display = 'none';
       this.iconSoundOff.style.display = 'block';
@@ -175,14 +178,15 @@ class AppController {
 
   updateModeUI(mode) {
     if (mode === 'strict') {
-      this.modeText.textContent = 'Strict Tutor (TypingMe)';
+      this.modeText.textContent = 'Guided mode';
       this.modeTogglePill.querySelector('span:first-child').style.background = 'var(--accent-green)';
     } else {
-      this.modeText.textContent = 'Fluid Flow Mode';
+      this.modeText.textContent = 'Free flow';
       this.modeTogglePill.querySelector('span:first-child').style.background = 'var(--accent-blue)';
     }
     document.querySelectorAll('#settings-mode-selector .segment-btn').forEach(button => {
       button.classList.toggle('active', button.dataset.mode === mode);
+      button.setAttribute('aria-pressed', button.dataset.mode === mode);
     });
   }
 
@@ -202,7 +206,7 @@ class AppController {
 
     // Update Header Card
     this.lessonBadge.textContent = this.currentLesson.badge || `Lesson ${index + 1}`;
-    this.lessonTitle.textContent = this.currentLesson.title;
+    this.lessonTitle.textContent = this.currentLesson.title.replace(/^Lesson \d+: /, '');
     this.lessonSubtitle.textContent = this.currentLesson.subtitle || this.currentLesson.description;
 
     // Render stars from saved storage
@@ -220,6 +224,7 @@ class AppController {
     this.lineCounter.textContent = `Line 1 / ${this.currentLines.length}`;
     this.trackSelector.querySelectorAll('.segment-btn').forEach(button => {
       button.classList.toggle('active', button.dataset.track === this.currentTrack);
+      button.setAttribute('aria-pressed', button.dataset.track === this.currentTrack);
     });
     const lessons = CURRICULUM[this.currentTrack];
     this.btnPrevLesson.disabled = !lessons || this.currentLessonIndex === 0;
@@ -245,7 +250,7 @@ class AppController {
     this.currentLines = lines;
 
     this.lessonBadge.textContent = 'Speed Test';
-    this.lessonTitle.textContent = `${seconds}s Sprint Challenge`;
+    this.lessonTitle.textContent = `${seconds}-second sprint`;
     this.lessonSubtitle.textContent = 'Type smoothly and accurately. The timer starts on your first keystroke.';
     this.lessonStars.innerHTML = '';
 
@@ -266,7 +271,7 @@ class AppController {
     this.currentLines = lines;
 
     this.lessonBadge.textContent = 'Custom';
-    this.lessonTitle.textContent = 'Custom Practice';
+    this.lessonTitle.textContent = 'Your practice';
     this.lessonSubtitle.textContent = `Practicing ${lines.length} lines of custom text.`;
     this.lessonStars.innerHTML = '';
 
@@ -369,14 +374,14 @@ class AppController {
   }
 
   updateHUD(stats) {
-    this.metricWpm.innerHTML = `${stats.wpm} <span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">WPM</span>`;
-    this.metricAccuracy.innerHTML = `${stats.accuracy}<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">%</span>`;
+    this.metricWpm.innerHTML = `${stats.wpm} <span class="metric-unit">WPM</span>`;
+    this.metricAccuracy.innerHTML = `${stats.accuracy}<span class="metric-unit">%</span>`;
     this.metricErrors.textContent = stats.errorKeystrokes;
 
     if (this.isTimedSpeedTest) {
-      this.metricTime.innerHTML = `${stats.timeRemaining}<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">s</span>`;
+      this.metricTime.innerHTML = `${stats.timeRemaining}<span class="metric-unit">s</span>`;
     } else {
-      this.metricTime.innerHTML = `${stats.elapsedSeconds}<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">s</span>`;
+      this.metricTime.innerHTML = `${stats.elapsedSeconds}<span class="metric-unit">s</span>`;
     }
   }
 
@@ -466,7 +471,7 @@ class AppController {
 
     const courseTrack = this.currentTrack === 'pro' ? 'pro' : 'amateur';
     const courseLessons = CURRICULUM[courseTrack];
-    this.drawerCourseTitle.textContent = this.currentTrack === 'pro' ? 'Pro Course Curriculum' : 'Amateur Touch Typing';
+    this.drawerCourseTitle.textContent = this.currentTrack === 'pro' ? 'Advanced lessons' : 'Learn to type';
 
     courseLessons.forEach((lesson, idx) => {
       const itemEl = document.createElement('button');
@@ -518,7 +523,7 @@ class AppController {
       overlay.close();
     });
     if (!document.hidden) this.engine.resume();
-    this.arena.focus();
+    this.arena.focus({ preventScroll: true });
   }
 
   initEvents() {
@@ -693,8 +698,10 @@ class AppController {
     // Sound Profile Buttons
     document.querySelectorAll('#sound-profile-selector .segment-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('#sound-profile-selector .segment-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('#sound-profile-selector .segment-btn').forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', b === btn);
+        });
         const profile = btn.dataset.profile;
         sound.setProfile(profile);
         storage.setSetting('soundProfile', profile);
