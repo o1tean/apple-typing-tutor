@@ -68,11 +68,11 @@ export const KEYBOARD_LAYOUT = {
   ],
   row5: [
     { code: 'ControlLeft', label: 'control', sublabel: '⌃', width: 1.25, special: 'control' },
-    { code: 'OptionLeft', label: 'option', sublabel: '⌥', width: 1.25, special: 'option' },
+    { code: 'AltLeft', label: 'option', sublabel: '⌥', width: 1.25, special: 'option' },
     { code: 'MetaLeft', label: 'command', sublabel: '⌘', width: 1.5, special: 'command' },
     { code: 'Space', label: '', char: ' ', width: 5.5, special: 'space' },
     { code: 'MetaRight', label: 'command', sublabel: '⌘', width: 1.5, special: 'command' },
-    { code: 'OptionRight', label: 'option', sublabel: '⌥', width: 1.25, special: 'option' }
+    { code: 'AltRight', label: 'option', sublabel: '⌥', width: 1.25, special: 'option' }
   ]
 };
 
@@ -139,6 +139,7 @@ export class KeyboardView {
 
     this.renderKeyboard();
     this.renderHands();
+    this.fingerHint = this.handsContainer?.querySelector('#finger-hint-text') || fingerHintEl;
   }
 
   renderKeyboard() {
@@ -275,8 +276,8 @@ export class KeyboardView {
       });
     }
 
+    if (this.fingerHint) this.fingerHint.textContent = char ? `Type “${char}”` : 'Ready';
     if (!char) {
-      if (this.fingerHint) this.fingerHint.textContent = 'Ready';
       return;
     }
 
@@ -319,7 +320,7 @@ export class KeyboardView {
       if (hintText) {
         const charDisplay = char === ' ' ? 'Space' : `"${char}"`;
         const shiftNote = fingerInfo.shift ? ` (+ ${fingerInfo.hand === 'left' ? 'Right' : 'Left'} Shift)` : '';
-        hintText.innerHTML = `<strong>${fingerInfo.label}</strong> to press <strong>${charDisplay}</strong>${shiftNote}`;
+        hintText.textContent = `${fingerInfo.label} to press ${charDisplay}${shiftNote}`;
       }
     }
   }

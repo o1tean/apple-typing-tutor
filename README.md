@@ -21,20 +21,23 @@
 
 ## 🚀 Quick Start
 
-You can run TypeFlow directly in any modern browser without any build step:
+TypeFlow needs a local web server because its JavaScript uses browser modules. Opening `index.html` directly from the filesystem will not load the app.
 
-### Option 1: Open Directly in Browser
-Double-click `index.html` or open it with Safari, Chrome, or Arc:
-```bash
-open /Users/o1tean/apple-typing-tutor/index.html
-```
+With Python 3 installed, run:
 
-### Option 2: Run Local Web Server
 ```bash
 cd /Users/o1tean/apple-typing-tutor
 python3 -m http.server 3000
 ```
-Then navigate to: **`http://localhost:3000`**
+
+Or run `npm start` (also uses Python 3; no package installation is required).
+Then open **[TypeFlow](http://localhost:3000)**.
+
+Run the regression checks with Node.js installed:
+
+```bash
+npm test
+```
 
 ---
 

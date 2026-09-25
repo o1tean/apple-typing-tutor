@@ -2,7 +2,7 @@
  * Apple-grade Typing Tutor - Application Controller
  */
 
-import { CURRICULUM, FINGER_MAP } from './lessons.js';
+import { CURRICULUM } from './lessons.js';
 import { sound } from './audio.js';
 import { KeyboardView } from './keyboard.js';
 import { TypingEngine } from './engine.js';
@@ -181,6 +181,9 @@ class AppController {
       this.modeText.textContent = 'Fluid Flow Mode';
       this.modeTogglePill.querySelector('span:first-child').style.background = 'var(--accent-blue)';
     }
+    document.querySelectorAll('#settings-mode-selector .segment-btn').forEach(button => {
+      button.classList.toggle('active', button.dataset.mode === mode);
+    });
   }
 
   loadLesson(track, index) {
@@ -206,35 +209,37 @@ class AppController {
     const progress = storage.getLessonProgress(this.currentLesson.id);
     this.renderLessonStars(progress ? progress.stars : 0);
 
-    // Setup Engine & Arena
-    this.engine.loadExercise(this.currentLines);
+    this.startExercise();
+  }
+
+  startExercise(duration = 0) {
+    this.engine.loadExercise(this.currentLines, duration);
     this.renderAllLines();
-
-    // Focus arena & highlight initial key
-    this.metricTimeLabel.textContent = 'Time';
-    this.metricTime.innerHTML = `0<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">s</span>`;
-    this.metricWpm.innerHTML = `0 <span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">WPM</span>`;
-    this.metricAccuracy.innerHTML = `100<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">%</span>`;
-    this.metricErrors.textContent = '0';
+    this.metricTimeLabel.textContent = duration ? 'Remaining' : 'Time';
+    this.updateHUD(this.engine.getStats());
     this.lineCounter.textContent = `Line 1 / ${this.currentLines.length}`;
-
-    setTimeout(() => {
-      this.updateCaretPosition();
-      this.keyboardView.highlightTarget(this.engine.getCurrentChar());
-      this.arena.focus();
-    }, 50);
+    this.trackSelector.querySelectorAll('.segment-btn').forEach(button => {
+      button.classList.toggle('active', button.dataset.track === this.currentTrack);
+    });
+    const lessons = CURRICULUM[this.currentTrack];
+    this.btnPrevLesson.disabled = !lessons || this.currentLessonIndex === 0;
+    this.btnNextLesson.disabled = !lessons || this.currentLessonIndex >= lessons.length - 1;
+    this.closeDrawersAndModals();
+    this.updateCaretPosition();
+    this.keyboardView.highlightTarget(this.engine.getCurrentChar());
   }
 
   loadSpeedTest(seconds = 30) {
     this.currentTrack = 'speed';
+    this.currentLesson = null;
+    this.currentLessonIndex = 0;
     this.isTimedSpeedTest = true;
     this.speedDuration = seconds;
 
     // Generate random lines from speed words pool
-    const words = [...CURRICULUM.speedWords].sort(() => 0.5 - Math.random());
     const lines = [];
     for (let l = 0; l < 4; l++) {
-      const lineWords = words.slice(l * 8, (l + 1) * 8);
+      const lineWords = Array.from({ length: 8 }, () => CURRICULUM.speedWords[Math.floor(Math.random() * CURRICULUM.speedWords.length)]);
       lines.push(lineWords.join(' '));
     }
     this.currentLines = lines;
@@ -244,49 +249,19 @@ class AppController {
     this.lessonSubtitle.textContent = 'Type smoothly and accurately. The timer starts on your first keystroke.';
     this.lessonStars.innerHTML = '';
 
-    this.metricTimeLabel.textContent = 'Remaining';
-    this.metricTime.innerHTML = `${seconds}<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">s</span>`;
-    this.metricWpm.innerHTML = `0 <span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">WPM</span>`;
-    this.metricAccuracy.innerHTML = `100<span style="font-size:14px;font-weight:500;color:var(--text-tertiary)">%</span>`;
-    this.metricErrors.textContent = '0';
-
-    this.engine.loadExercise(lines, seconds);
-    this.renderAllLines();
-
-    setTimeout(() => {
-      this.updateCaretPosition();
-      this.keyboardView.highlightTarget(this.engine.getCurrentChar());
-      this.arena.focus();
-    }, 50);
+    this.startExercise(seconds);
   }
 
   loadCustomText(rawText) {
-    const clean = rawText.trim().replace(/\r\n/g, '\n').replace(/\t/g, '  ');
+    const clean = rawText.trim().normalize('NFC').replace(/\r\n?/g, '\n').replace(/\t/g, '  ');
     if (!clean) return;
 
-    const rawLines = clean.split('\n').filter(l => l.trim().length > 0);
-    const lines = [];
-
-    // Break lines into comfortable lengths (max ~60 chars)
-    rawLines.forEach(line => {
-      if (line.length <= 65) {
-        lines.push(line);
-      } else {
-        const words = line.split(' ');
-        let currentChunk = '';
-        words.forEach(w => {
-          if ((currentChunk + ' ' + w).trim().length <= 65) {
-            currentChunk = (currentChunk + ' ' + w).trim();
-          } else {
-            lines.push(currentChunk);
-            currentChunk = w;
-          }
-        });
-        if (currentChunk) lines.push(currentChunk);
-      }
-    });
+    // CSS wraps long lines without dropping indentation or creating empty exercises.
+    const lines = clean.split('\n').filter(line => line.trim().length > 0);
 
     this.currentTrack = 'custom';
+    this.currentLesson = null;
+    this.currentLessonIndex = 0;
     this.isTimedSpeedTest = false;
     this.currentLines = lines;
 
@@ -295,14 +270,7 @@ class AppController {
     this.lessonSubtitle.textContent = `Practicing ${lines.length} lines of custom text.`;
     this.lessonStars.innerHTML = '';
 
-    this.engine.loadExercise(lines);
-    this.renderAllLines();
-
-    setTimeout(() => {
-      this.updateCaretPosition();
-      this.keyboardView.highlightTarget(this.engine.getCurrentChar());
-      this.arena.focus();
-    }, 50);
+    this.startExercise();
   }
 
   renderLessonStars(count) {
@@ -368,10 +336,11 @@ class AppController {
   updateCaretPosition() {
     const activeLineEl = this.linesWrapper.querySelector('.typing-line.active');
     if (!activeLineEl) {
-      this.smoothCaret.style.opacity = '0';
+      this.smoothCaret.hidden = true;
       return;
     }
 
+    this.smoothCaret.hidden = this.engine.isComplete;
     const charIndex = this.engine.currentCharIndex;
     const charSpans = activeLineEl.querySelectorAll('.char');
     const targetSpan = charSpans[charIndex];
@@ -421,18 +390,20 @@ class AppController {
   handleLessonComplete(finalStats) {
     sound.playSuccess();
 
-    // Persist score
-    let starsEarned = 1;
-    if (this.currentLesson) {
-      const res = storage.recordLesson(
-        this.currentLesson.id,
-        finalStats,
-        this.currentLesson.targetWpm || 30,
-        this.currentLesson.targetAccuracy || 95
-      );
-      starsEarned = res.stars;
-      this.renderLessonStars(starsEarned);
-    }
+    this.updateHUD(finalStats);
+    this.smoothCaret.hidden = true;
+    this.keyboardView.highlightTarget(null);
+
+    const lessonId = this.currentLesson?.id || (this.isTimedSpeedTest ? `speed-${this.speedDuration}` : 'custom');
+    const result = storage.recordLesson(
+      lessonId, finalStats, this.currentLesson?.targetWpm || 45, this.currentLesson?.targetAccuracy || 95
+    );
+    const starsEarned = result.stars;
+    if (this.currentLesson) this.renderLessonStars(storage.getLessonProgress(lessonId).stars);
+    const lessons = CURRICULUM[this.currentTrack];
+    document.getElementById('modal-btn-next').textContent = lessons && this.currentLessonIndex < lessons.length - 1
+      ? 'Next Lesson ➔' : 'Practice Again';
+    document.getElementById('completion-title').textContent = this.isTimedSpeedTest ? 'Sprint Completed' : 'Lesson Completed';
 
     // Populate Modal Rings
     document.getElementById('modal-center-wpm').textContent = finalStats.wpm;
@@ -480,20 +451,21 @@ class AppController {
     const errorKeys = Object.entries(finalStats.errorsByChar).sort((a, b) => b[1] - a[1]);
     if (errorKeys.length > 0) {
       const topErrors = errorKeys.slice(0, 3).map(([k, count]) => `"${k === ' ' ? 'Space' : k}" (${count}x)`).join(', ');
-      problemKeysEl.innerHTML = `<strong>Focus Keys:</strong> Practice accuracy on ${topErrors}.`;
+      problemKeysEl.textContent = `Focus Keys: Practice accuracy on ${topErrors}.`;
     } else {
       problemKeysEl.innerHTML = `<span style="color:var(--accent-green);font-weight:600;">Flawless Execution — Zero Errors!</span>`;
     }
 
     // Show modal
-    this.modalCompletion.classList.add('open');
+    this.openOverlay(this.modalCompletion);
   }
 
   openCurriculumDrawer() {
     const listEl = this.drawerLessonList;
     listEl.innerHTML = '';
 
-    const courseLessons = CURRICULUM[this.currentTrack] || CURRICULUM.amateur;
+    const courseTrack = this.currentTrack === 'pro' ? 'pro' : 'amateur';
+    const courseLessons = CURRICULUM[courseTrack];
     this.drawerCourseTitle.textContent = this.currentTrack === 'pro' ? 'Pro Course Curriculum' : 'Amateur Touch Typing';
 
     courseLessons.forEach((lesson, idx) => {
@@ -521,64 +493,78 @@ class AppController {
       `;
 
       itemEl.addEventListener('click', () => {
-        this.loadLesson(this.currentTrack, idx);
+        this.loadLesson(courseTrack, idx);
         this.closeDrawersAndModals();
       });
 
       listEl.appendChild(itemEl);
     });
 
-    this.drawerBackdrop.classList.add('open');
+    this.openOverlay(this.drawerBackdrop);
+  }
+
+  openOverlay(overlay) {
+    this.engine.pause();
+    // Pausing at the deadline may open the completion dialog instead.
+    if (this.modalCompletion.open && overlay !== this.modalCompletion) return;
+    overlay.showModal();
+    overlay.classList.add('open');
+    (overlay.querySelector('textarea') || overlay.querySelector('button'))?.focus();
   }
 
   closeDrawersAndModals() {
-    this.drawerBackdrop.classList.remove('open');
-    this.modalCompletion.classList.remove('open');
-    this.modalSettings.classList.remove('open');
-    this.modalCustomText.classList.remove('open');
+    [this.drawerBackdrop, this.modalCompletion, this.modalSettings, this.modalCustomText].forEach(overlay => {
+      overlay.classList.remove('open');
+      overlay.close();
+    });
+    if (!document.hidden) this.engine.resume();
     this.arena.focus();
   }
 
   initEvents() {
     // Physical Keyboard Listeners
     window.addEventListener('keydown', (e) => {
-      // Audio trigger
-      if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Space') {
-        sound.playKey();
+      const restartWasFocusedByTab = this.restartWasFocusedByTab;
+      this.restartWasFocusedByTab = false;
+      if (restartWasFocusedByTab && e.key === 'Tab' && !e.shiftKey && document.activeElement === this.btnRestart) {
+        e.preventDefault();
+        this.brandHome.focus();
+        return;
       }
-
-      // Visual keypress animation
-      this.keyboardView.pressKey(e.code);
-      if (e.getModifierState && e.getModifierState('CapsLock') !== this.keyboardView.capsLockActive) {
-        this.keyboardView.setCapsLock(e.getModifierState('CapsLock'));
-      }
-
-      // Global Shortcuts
       if (e.key === 'Escape') {
-        if (this.modalCompletion.classList.contains('open') ||
-            this.modalSettings.classList.contains('open') ||
-            this.modalCustomText.classList.contains('open') ||
-            this.drawerBackdrop.classList.contains('open')) {
-          this.closeDrawersAndModals();
-        } else {
-          this.openCurriculumDrawer();
-        }
+        e.preventDefault();
+        if (document.querySelector('dialog[open]')) this.closeDrawersAndModals();
+        else this.openCurriculumDrawer();
         return;
       }
 
-      // Tab + Enter to restart
-      if (e.key === 'Enter' && e.shiftKey) {
+      if (!document.querySelector('dialog[open]') &&
+          (document.activeElement === this.arena || document.activeElement === document.body)) {
+        this.keyboardView.pressKey(e.code);
+        this.keyboardView.setCapsLock(e.getModifierState?.('CapsLock') || false);
+      }
+      if (e.metaKey || ((e.ctrlKey || e.altKey) && !e.getModifierState?.('AltGraph')) || e.isComposing) return;
+      if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (e.key === 'Enter' && e.shiftKey && !document.querySelector('dialog[open]')) {
         e.preventDefault();
         this.restartCurrent();
         return;
       }
+      if (document.querySelector('dialog[open]')) return;
+      if (document.activeElement !== this.arena && document.activeElement !== document.body) return;
 
-      // Delegate to typing engine if typing arena is active or document body
-      if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-        if (e.key === ' ' || e.key.length === 1 || e.key === 'Backspace') {
-          e.preventDefault();
-          this.engine.handleKey(e);
-        }
+      // Tab then Enter uses the restart button's native keyboard behavior.
+      if (e.key === 'Tab' && !e.shiftKey) {
+        e.preventDefault();
+        this.restartWasFocusedByTab = true;
+        this.btnRestart.focus();
+        return;
+      }
+
+      if (Array.from(e.key).length === 1 || e.key === 'Backspace') {
+        e.preventDefault();
+        if (!this.engine.isComplete && !this.engine.isPaused) sound.playKey();
+        this.engine.handleKey(e);
       }
     });
 
@@ -589,6 +575,18 @@ class AppController {
       }
     });
 
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.engine.pause();
+      else if (!document.querySelector('dialog[open]')) this.engine.resume();
+      this.keyboardContainer.querySelectorAll('.key-pressed').forEach(key => key.classList.remove('key-pressed'));
+    });
+    [this.drawerBackdrop, this.modalCompletion, this.modalSettings, this.modalCustomText].forEach(overlay => {
+      overlay.addEventListener('cancel', e => {
+        e.preventDefault();
+        this.closeDrawersAndModals();
+      });
+    });
+
     // Window resize -> reposition caret smoothly
     window.addEventListener('resize', () => {
       this.updateCaretPosition();
@@ -597,16 +595,13 @@ class AppController {
     // Track Navigation (Amateur, Pro, Speed Test, Custom)
     this.trackSelector.querySelectorAll('.segment-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.trackSelector.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
         const track = btn.dataset.track;
         if (track === 'amateur' || track === 'pro') {
           this.loadLesson(track, 0);
         } else if (track === 'speed') {
           this.loadSpeedTest(30);
         } else if (track === 'custom') {
-          this.modalCustomText.classList.add('open');
+          this.openOverlay(this.modalCustomText);
         }
       });
     });
@@ -676,7 +671,7 @@ class AppController {
 
     // Settings Modal
     this.btnSettings.addEventListener('click', () => {
-      this.modalSettings.classList.add('open');
+      this.openOverlay(this.modalSettings);
     });
 
     document.getElementById('btn-close-settings').addEventListener('click', () => {
@@ -710,8 +705,6 @@ class AppController {
     // Mode Selector in Settings
     document.querySelectorAll('#settings-mode-selector .segment-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('#settings-mode-selector .segment-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         const mode = btn.dataset.mode;
         this.engine.mode = mode;
         storage.setSetting('typingMode', mode);

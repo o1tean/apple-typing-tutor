@@ -16,7 +16,7 @@
   <!-- ================= Apple Glass Navigation Bar ================= -->
   <header class="app-header">
     <div class="header-inner">
-      <div class="brand" id="brand-home" title="TypeFlow Home">
+      <button type="button" class="brand" id="brand-home" title="TypeFlow Home">
         <div class="brand-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="4" width="20" height="16" rx="4" />
@@ -27,7 +27,7 @@
           TypeFlow
           <span class="brand-badge">Pro</span>
         </div>
-      </div>
+      </button>
 
       <!-- Segmented Track Selector -->
       <nav class="segmented-control" id="track-selector">
@@ -143,10 +143,10 @@
       </div>
 
       <div class="hud-controls">
-        <div class="tutor-mode-pill" id="mode-toggle-pill" role="button" title="Click to toggle Tutor Strict vs Fluid Flow Mode">
+        <button type="button" class="tutor-mode-pill" id="mode-toggle-pill" title="Click to toggle Tutor Strict vs Fluid Flow Mode">
           <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent-green)"></span>
           <span id="mode-text">Strict Tutor Mode</span>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -171,7 +171,7 @@
   </main>
 
   <!-- ================= Apple Activity Rings Completion Modal ================= -->
-  <div class="modal-backdrop" id="modal-completion">
+  <dialog class="modal-backdrop" id="modal-completion" aria-labelledby="completion-title">
     <div class="modal-card">
       <div class="modal-stars" id="completion-stars">
         <!-- Rendered dynamically (1 to 3 stars) -->
@@ -227,14 +227,14 @@
         <button class="btn-primary" id="modal-btn-next">Next Lesson ➔</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- ================= Curriculum Drawer ================= -->
-  <div class="drawer-backdrop" id="curriculum-drawer-backdrop">
+  <dialog class="drawer-backdrop" id="curriculum-drawer-backdrop" aria-labelledby="drawer-course-title">
     <div class="curriculum-drawer">
       <div class="drawer-header">
         <h2 class="drawer-title" id="drawer-course-title">Touch Typing Lessons</h2>
-        <button class="icon-btn" id="btn-close-drawer">
+        <button class="icon-btn" id="btn-close-drawer" aria-label="Close curriculum">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
@@ -242,14 +242,14 @@
         <!-- Rendered dynamically -->
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- ================= Settings & Custom Text Modal ================= -->
-  <div class="modal-backdrop" id="modal-settings">
+  <dialog class="modal-backdrop" id="modal-settings" aria-labelledby="settings-title">
     <div class="modal-card" style="max-width: 500px; text-align: left; align-items: stretch;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 class="modal-title" style="margin: 0;">Settings & Preferences</h2>
-        <button class="icon-btn" id="btn-close-settings">
+        <h2 class="modal-title" id="settings-title" style="margin: 0;">Settings & Preferences</h2>
+        <button class="icon-btn" id="btn-close-settings" aria-label="Close settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
@@ -268,7 +268,7 @@
       <!-- Sound Volume Slider -->
       <div style="margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-          <span style="font-size: 13px; font-weight: 600;">Feedback Volume</span>
+          <label for="settings-volume" style="font-size: 13px; font-weight: 600;">Feedback Volume</label>
           <span id="volume-val-label" style="font-size: 13px; color: var(--text-tertiary);">60%</span>
         </div>
         <input type="range" id="settings-volume" min="0" max="100" value="60" style="width: 100%; accent-color: var(--accent-blue);">
@@ -300,27 +300,27 @@
 
       <button class="btn-primary" id="btn-save-settings" style="width: 100%; justify-content: center; padding: 10px;">Done</button>
     </div>
-  </div>
+  </dialog>
 
   <!-- ================= Custom Text Modal ================= -->
-  <div class="modal-backdrop" id="modal-custom-text">
+  <dialog class="modal-backdrop" id="modal-custom-text" aria-labelledby="custom-title">
     <div class="modal-card" style="max-width: 520px; text-align: left; align-items: stretch;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 class="modal-title" style="margin: 0;">Custom Practice Text</h2>
-        <button class="icon-btn" id="btn-close-custom">
+        <h2 class="modal-title" id="custom-title" style="margin: 0;">Custom Practice Text</h2>
+        <button class="icon-btn" id="btn-close-custom" aria-label="Close custom text">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
         Paste any paragraph, quote, or code snippet you want to practice touch typing:
       </p>
-      <textarea id="custom-text-input" rows="6" placeholder="Paste your practice text here..." style="width: 100%; padding: 12px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--border-subtle); color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; resize: vertical; margin-bottom: 16px; outline: none;"></textarea>
+      <textarea id="custom-text-input" aria-labelledby="custom-title" rows="6" placeholder="Paste your practice text here..." style="width: 100%; padding: 12px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--border-subtle); color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; resize: vertical; margin-bottom: 16px; outline: none;"></textarea>
       <div style="display: flex; gap: 10px;">
         <button class="btn-secondary" id="btn-load-steve-jobs" style="flex: 1; justify-content: center;">Load Steve Jobs Quote</button>
         <button class="btn-primary" id="btn-apply-custom-text" style="flex: 1; justify-content: center;">Start Practice</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- ================= Footer Shortcuts ================= -->
   <footer class="app-footer">

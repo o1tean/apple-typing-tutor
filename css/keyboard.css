@@ -134,7 +134,7 @@
 }
 
 .magic-key.key-target .key-main-label {
-  color: #fff;
+  color: var(--key-text);
   font-weight: 700;
 }
 
