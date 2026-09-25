@@ -28,7 +28,7 @@ class AudioEngine {
       this.init();
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(error => console.warn('Could not resume audio:', error));
     }
   }
 
@@ -45,7 +45,7 @@ class AudioEngine {
   }
 
   playKey() {
-    if (this.isMuted) return;
+    if (this.isMuted || this.volume === 0) return;
     this.ensureContext();
     if (!this.ctx) return;
 
@@ -197,7 +197,7 @@ class AudioEngine {
    * Polite error bump (tactile soft thud)
    */
   playError() {
-    if (this.isMuted) return;
+    if (this.isMuted || this.volume === 0) return;
     this.ensureContext();
     if (!this.ctx) return;
 
@@ -224,7 +224,7 @@ class AudioEngine {
    * Harmonic triad with subtle shimmer
    */
   playSuccess() {
-    if (this.isMuted) return;
+    if (this.isMuted || this.volume === 0) return;
     this.ensureContext();
     if (!this.ctx) return;
 

@@ -151,6 +151,9 @@ body {
   cursor: pointer;
   text-decoration: none;
   color: inherit;
+  font: inherit;
+  background: transparent;
+  border: 0;
 }
 
 .brand-icon {
@@ -894,4 +897,46 @@ body {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+/* Keep native dialog backdrops full-screen and their content reachable. */
+dialog.modal-backdrop,
+dialog.drawer-backdrop {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  color: var(--text-primary);
+}
+
+dialog::backdrop { background: transparent; }
+dialog:not([open]) { display: none; }
+.modal-card { max-height: 100%; overflow-y: auto; }
+.tutor-mode-pill { font-family: inherit; cursor: pointer; }
+button:disabled { opacity: 0.4; cursor: default; }
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent-blue) !important;
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .app-header { height: auto; padding: 12px 16px; }
+  .header-inner { flex-wrap: wrap; }
+  #track-selector { order: 3; width: 100%; }
+  #track-selector .segment-btn { flex: 1; justify-content: center; padding-inline: 6px; }
+  .lesson-card, .hud-container { flex-wrap: wrap; gap: 16px; }
+  .lesson-top-row, .lesson-nav-actions, .app-footer { flex-wrap: wrap; }
+  .hud-metrics { gap: 20px; }
+  .typing-arena { padding: 24px 16px 36px; }
+  .typing-line { font-size: 20px; }
+  .keyboard-container { justify-content: flex-start !important; overflow-x: auto; }
+  .magic-keyboard { min-width: 640px; }
+  .modal-card { padding: 24px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

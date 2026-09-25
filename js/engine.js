@@ -19,6 +19,7 @@ export class TypingEngine {
     // Time tracking
     this.startTime = null;
     this.endTime = null;
+    this.pauseTime = null;
     this.timerId = null;
     this.timedDuration = 0; // if > 0, countdown mode (e.g. 30s)
     this.timeRemaining = 0;
@@ -26,6 +27,7 @@ export class TypingEngine {
     // Keystroke statistics
     this.totalKeystrokes = 0;
     this.correctKeystrokes = 0;
+    this.netCorrectChars = 0;
     this.errorKeystrokes = 0;
     this.errorsByChar = {}; // { 's': 3, 'a': 1 }
     this.keystrokeIntervals = [];
@@ -41,7 +43,7 @@ export class TypingEngine {
 
   loadExercise(lines, timedDuration = 0) {
     this.reset();
-    this.lines = Array.isArray(lines) ? lines : [lines];
+    this.lines = (Array.isArray(lines) ? lines : [lines]).filter(line => typeof line === 'string' && line.length > 0);
     this.timedDuration = timedDuration;
     this.timeRemaining = timedDuration;
     this.setupCurrentLine();
@@ -55,7 +57,7 @@ export class TypingEngine {
 
     const lineText = this.lines[this.currentLineIndex];
     this.currentCharIndex = 0;
-    this.typedChars = lineText.split('').map(char => ({
+    this.typedChars = Array.from(lineText).map(char => ({
       char,
       status: 'pending',
       typed: ''
@@ -63,11 +65,10 @@ export class TypingEngine {
   }
 
   start() {
-    if (this.isRunning) return;
+    if (this.isRunning || this.isPaused || this.isComplete) return;
     this.isRunning = true;
     this.isPaused = false;
     this.startTime = performance.now();
-    this.lastKeystrokeTime = this.startTime;
 
     this.timerId = setInterval(() => {
       this.updateTick();
@@ -75,10 +76,18 @@ export class TypingEngine {
   }
 
   pause() {
+    if (!this.isRunning || this.isPaused) return;
+    this.updateTick();
+    if (this.isComplete) return;
+    this.pauseTime = performance.now();
     this.isPaused = true;
   }
 
   resume() {
+    if (!this.isPaused) return;
+    this.startTime += performance.now() - this.pauseTime;
+    this.pauseTime = null;
+    this.lastKeystrokeTime = null;
     this.isPaused = false;
   }
 
@@ -93,8 +102,12 @@ export class TypingEngine {
     this.typedChars = [];
     this.startTime = null;
     this.endTime = null;
+    this.pauseTime = null;
+    this.timedDuration = 0;
+    this.timeRemaining = 0;
     this.totalKeystrokes = 0;
     this.correctKeystrokes = 0;
+    this.netCorrectChars = 0;
     this.errorKeystrokes = 0;
     this.errorsByChar = {};
     this.keystrokeIntervals = [];
@@ -109,43 +122,40 @@ export class TypingEngine {
   }
 
   handleKey(keyEvent) {
+    if (this.isComplete || this.isPaused || keyEvent.isComposing ||
+        keyEvent.metaKey || ((keyEvent.ctrlKey || keyEvent.altKey) && !keyEvent.getModifierState?.('AltGraph'))) return;
+
+    // Check the deadline before accepting another keystroke.
+    if (this.isRunning) this.updateTick();
     if (this.isComplete) return;
-
-    // Ignore special navigation/control keys
-    const ignoreKeys = ['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-    if (ignoreKeys.includes(keyEvent.key)) {
-      return;
-    }
-
-    // Start on first actual keypress
-    if (!this.isRunning) {
-      this.start();
-    }
-
-    const now = performance.now();
-    if (this.lastKeystrokeTime) {
-      this.keystrokeIntervals.push(now - this.lastKeystrokeTime);
-    }
-    this.lastKeystrokeTime = now;
 
     // Backspace handling in flow mode
     if (keyEvent.key === 'Backspace') {
       if (this.mode === 'flow' && this.currentCharIndex > 0) {
         this.currentCharIndex--;
+        if (this.typedChars[this.currentCharIndex].status === 'correct') this.netCorrectChars--;
         this.typedChars[this.currentCharIndex].status = 'pending';
         this.typedChars[this.currentCharIndex].typed = '';
         this.onCharTyped(null, true, this.getCurrentChar());
+        this.updateTick();
       }
       return;
     }
 
     // Single character input
-    if (keyEvent.key.length !== 1) return;
+    if (Array.from(keyEvent.key).length !== 1) return;
 
     const typedChar = keyEvent.key;
     const targetChar = this.getCurrentChar();
 
     if (!targetChar) return;
+
+    if (!this.isRunning) this.start();
+    const now = performance.now();
+    if (this.lastKeystrokeTime !== null) {
+      this.keystrokeIntervals.push(now - this.lastKeystrokeTime);
+    }
+    this.lastKeystrokeTime = now;
 
     this.totalKeystrokes++;
 
@@ -153,6 +163,7 @@ export class TypingEngine {
       // Touch-typing tutor strict mode: must type correct char before advancing
       if (typedChar === targetChar) {
         this.correctKeystrokes++;
+        this.netCorrectChars++;
         this.typedChars[this.currentCharIndex].status = 'correct';
         this.typedChars[this.currentCharIndex].typed = typedChar;
         this.currentCharIndex++;
@@ -177,6 +188,7 @@ export class TypingEngine {
       const isCorrect = typedChar === targetChar;
       if (isCorrect) {
         this.correctKeystrokes++;
+        this.netCorrectChars++;
         this.typedChars[this.currentCharIndex].status = 'correct';
       } else {
         this.errorKeystrokes++;
@@ -199,12 +211,17 @@ export class TypingEngine {
 
   advanceLine() {
     this.currentLineIndex++;
-    this.onLineComplete(this.currentLineIndex, this.lines.length);
+    // Timed tests continue through the word pool until their deadline.
+    if (this.timedDuration > 0 && this.currentLineIndex >= this.lines.length) {
+      this.currentLineIndex = 0;
+    }
 
     if (this.currentLineIndex < this.lines.length) {
       this.setupCurrentLine();
+      this.onLineComplete(this.currentLineIndex, this.lines.length);
       this.onCharTyped('', true, this.getCurrentChar());
     } else {
+      this.onLineComplete(this.currentLineIndex, this.lines.length);
       this.finish();
     }
   }
@@ -215,8 +232,6 @@ export class TypingEngine {
     const stats = this.getStats();
 
     if (this.timedDuration > 0) {
-      const elapsedSec = (performance.now() - this.startTime) / 1000;
-      this.timeRemaining = Math.max(0, this.timedDuration - elapsedSec);
       if (this.timeRemaining <= 0) {
         this.finish();
         return;
@@ -227,13 +242,16 @@ export class TypingEngine {
   }
 
   getStats() {
-    const elapsedMinutes = this.startTime ? Math.max(0.005, (performance.now() - this.startTime) / 60000) : 0.005;
-    const elapsedSeconds = elapsedMinutes * 60;
+    let elapsedSeconds = this.startTime === null ? 0 :
+      Math.max(0, ((this.endTime ?? this.pauseTime ?? performance.now()) - this.startTime) / 1000);
+    if (this.timedDuration > 0) elapsedSeconds = Math.min(this.timedDuration, elapsedSeconds);
+    this.timeRemaining = Math.max(0, this.timedDuration - elapsedSeconds);
+    const elapsedMinutes = Math.max(0.005, elapsedSeconds / 60);
 
     // Standard typing WPM: 5 characters = 1 word
-    const wpm = Math.round((this.correctKeystrokes / 5) / elapsedMinutes);
+    const wpm = Math.round((this.netCorrectChars / 5) / elapsedMinutes);
     const rawWpm = Math.round((this.totalKeystrokes / 5) / elapsedMinutes);
-    const cpm = Math.round(this.correctKeystrokes / elapsedMinutes);
+    const cpm = Math.round(this.netCorrectChars / elapsedMinutes);
 
     const accuracy = this.totalKeystrokes > 0
       ? Math.round((this.correctKeystrokes / this.totalKeystrokes) * 1000) / 10
@@ -271,8 +289,10 @@ export class TypingEngine {
     if (this.isComplete) return;
     this.isComplete = true;
     this.isRunning = false;
-    this.endTime = performance.now();
+    this.endTime = this.pauseTime ?? performance.now();
+    this.isPaused = false;
     clearInterval(this.timerId);
+    this.timerId = null;
 
     const finalStats = this.getStats();
     this.onComplete(finalStats);
