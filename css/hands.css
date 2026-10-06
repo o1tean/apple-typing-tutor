@@ -28,6 +28,18 @@
     stroke-linejoin: round;
 }
 
+.finger-pill {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: rotate(0deg) scaleY(1);
+    transition: transform .24s ease;
+}
+
+.finger-pill.active,
+.finger-pill.shift-active {
+    transform: rotate(var(--reach-angle)) scaleY(var(--reach-scale));
+}
+
 .finger-shape {
     fill: transparent;
     stroke: transparent;
@@ -88,9 +100,18 @@
 }
 
 .finger-pill.shift-active .finger-shape {
+    fill: color-mix(in srgb, var(--accent) 12%, var(--surface));
     stroke: var(--accent);
     stroke-width: 2;
     stroke-dasharray: 4 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .finger-pill,
+    .finger-shape {
+        transition: none;
+    }
 }
 
 .finger-pill.shift-active .finger-nail {

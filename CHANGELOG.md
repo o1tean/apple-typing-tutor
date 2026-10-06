@@ -2,10 +2,9 @@
 
 ## Unreleased
 
+- Finger guidance now reaches for each row, inner keys, Space and opposite-hand Shift; reduced motion keeps a static teaching pose.
 - First visits now start lesson 1 with finger/keyboard guidance, skip-to-test and an honest touch-keyboard notice; existing settings stay unchanged.
-
-- Restored the built live demo through verified Actions Pages deployment with relative Vite assets.
-- Added isolated Playwright smoke, CI/format gates, MIT license and visitor-facing project docs.
+- Restored the built live demo through verified Actions Pages deployment, relative assets, Playwright smoke, CI/format gates, MIT license and visitor docs.
 - Established durable launch criteria and archived the retired plans and private course research locally.
 - Rounds 1–13: established React/Vite tests, 22 lessons, quotes, custom text and guided/free-flow input.
 - Added same-text retries, missed-word practice and lesson instructions, introduced keys and targets.

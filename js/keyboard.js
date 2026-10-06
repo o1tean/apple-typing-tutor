@@ -1,5 +1,5 @@
 /**
- * Apple Magic Keyboard & Finger Guidance Engine
+ * Mac-style keyboard and finger guidance.
  */
 
 import { FINGER_MAP } from './lessons.js';
@@ -199,6 +199,7 @@ export class KeyboardView {
         this.handsContainer = handsContainerEl;
         this.fingerHint = fingerHintEl;
         this.keyElements = new Map();
+        this.keyPositions = new Map();
 
         this.renderKeyboard();
         this.renderHands();
@@ -211,12 +212,19 @@ export class KeyboardView {
         const boardEl = document.createElement('div');
         boardEl.className = 'magic-keyboard';
 
-        Object.keys(KEYBOARD_LAYOUT).forEach(rowKey => {
+        Object.keys(KEYBOARD_LAYOUT).forEach((rowKey, rowIndex) => {
             const row = KEYBOARD_LAYOUT[rowKey];
+            const width = row.reduce((total, key) => total + key.width, 0);
+            let offset = 0;
             const rowEl = document.createElement('div');
             rowEl.className = 'keyboard-row';
 
             row.forEach(key => {
+                this.keyPositions.set(key.code, {
+                    row: rowIndex,
+                    x: (offset + key.width / 2) / width
+                });
+                offset += key.width;
                 const keyEl = document.createElement('div');
                 keyEl.className = 'magic-key';
                 keyEl.dataset.code = key.code;
@@ -316,12 +324,13 @@ export class KeyboardView {
           const left = hand === 'left';
           const letters = left ? ['A', 'S', 'D', 'F', '␣'] : [';', 'L', 'K', 'J', '␣'];
           return `<div class="hand-wrapper hand-${hand}">
-            <svg class="hand-svg" viewBox="0 0 220 226" role="img"
+            <svg class="hand-svg" viewBox="0 -18 220 244" role="img"
               aria-label="${left ? 'Left' : 'Right'} hand: ${left ? 'pinky A, ring S, middle D, index F' : 'index J, middle K, ring L, pinky semicolon'}; thumb Space.">
               <g transform="${left ? '' : 'translate(220 0) scale(-1 1)'}">
                 <path class="hand-outline" d="M57 220C58 199 39 188 30 166C24 153 22 137 19 119L10 80C6 63 27 58 32 75L47 119Q52 124 50 117L36 51C32 33 55 28 60 47L77 109Q82 115 81 107L69 36C66 17 90 14 94 33L108 106Q113 114 116 110L114 53C112 34 135 30 139 49L154 126C158 138 163 140 168 131L181 109C190 94 209 104 201 121L183 158Q172 186 149 200L149 220" />
                 ${fingers.map((finger, index) => `
-                  <g id="finger-${hand}-${finger.name}" class="finger-pill">
+                  <g id="finger-${hand}-${finger.name}" class="finger-pill"
+                    data-home-key="${letters[index]}">
                     <path class="finger-shape" d="${finger.path}" />
                     <path class="finger-joint" d="${finger.joint}" />
                     <rect class="finger-nail" x="${finger.x - 9}" y="${finger.y - 12}" width="18" height="23" rx="7" />
@@ -337,10 +346,32 @@ export class KeyboardView {
         }).join('')}
         <div class="finger-instructions">
           <p class="finger-instruction-text" id="finger-hint-text">Rest your fingers on A S D F and J K L ;</p>
-          <p class="hand-rest-note">Feel the bumps on F and J · Either thumb for Space</p>
+          <p class="hand-rest-note">Reach for the next key, then return home · Feel the bumps on F and J</p>
         </div>
       </div>
     `;
+    }
+
+    reachFinger(hand, name, code, char, shift = false) {
+        const finger = this.handsContainer?.querySelector(`#finger-${hand}-${name}`);
+        if (!finger) return;
+        const target = this.keyPositions.get(code);
+        const home = this.keyPositions.get(CHAR_TO_CODE[finger.dataset.homeKey.toLowerCase()]);
+        const row = shift ? 'shift' : name === 'thumb' ? 'space' : ['number', 'upper', 'home',
+            'lower'][target.row];
+        // ponytail: illustrative US-QWERTY reach; measure layout geometry when other layouts ship.
+        const angle = shift ? -28 : name === 'thumb' ? 12 :
+            Math.max(-30, Math.min(30, (target.x - home.x) * 160 * (hand === 'left' ? 1 : -1)));
+        const scale = shift ? 0.76 : name === 'thumb' ? 0.9 : [1.38, 1.24, 0.94, 0.8][target
+            .row];
+        finger.style.setProperty('--reach-angle', `${angle}deg`);
+        finger.style.setProperty('--reach-scale', scale);
+        finger.dataset.reachRow = row;
+        finger.dataset.targetKey = shift ? 'Shift' : char;
+        finger.querySelector('.finger-tag').textContent = shift ? '⇧' : char === ' ' ? '␣' :
+            char;
+        finger.classList.add(shift ? 'shift-active' : 'active', `accent-${name}`);
+        return row;
     }
 
     highlightTarget(char) {
@@ -356,6 +387,11 @@ export class KeyboardView {
                 '.finger-pill.active, .finger-pill.shift-active').forEach(el => {
                 el.classList.remove('active', 'shift-active', 'accent-pinky',
                     'accent-ring', 'accent-middle', 'accent-index', 'accent-thumb');
+                el.style.removeProperty('--reach-angle');
+                el.style.removeProperty('--reach-scale');
+                delete el.dataset.reachRow;
+                delete el.dataset.targetKey;
+                el.querySelector('.finger-tag').textContent = el.dataset.homeKey;
             });
         }
 
@@ -385,27 +421,26 @@ export class KeyboardView {
             if (shiftEl) {
                 shiftEl.classList.add('key-shift-target');
             }
-            this.handsContainer?.querySelector(
-                    `#finger-${fingerInfo.hand === 'left' ? 'right' : 'left'}-pinky`)
-                ?.classList.add('shift-active');
+            this.reachFinger(fingerInfo.hand === 'left' ? 'right' : 'left', 'pinky',
+                shiftKey, char, true);
         }
 
         // Highlight finger in hand diagram
         if (fingerInfo && this.handsContainer) {
             const hands = fingerInfo.finger === 'thumb' ? ['left', 'right'] : [fingerInfo.hand];
-            hands.forEach(hand => {
-                this.handsContainer.querySelector(
-                        `#finger-${hand}-${fingerInfo.finger}`)
-                    ?.classList.add('active', `accent-${fingerInfo.finger}`);
-            });
+            const rows = hands.map(hand => this.reachFinger(hand, fingerInfo.finger, code,
+                char));
 
             const hintText = this.fingerHint;
             if (hintText) {
                 const charDisplay = char === ' ' ? 'Space' : `"${char}"`;
                 const shiftNote = fingerInfo.shift ?
                     ` (+ ${fingerInfo.hand === 'left' ? 'Right' : 'Left'} Shift)` : '';
+                const reach = rows[0] === 'space' ? 'press Space' : rows[0] === 'home' ? ['g',
+                        'h'].includes(char.toLowerCase()) ? 'reach inward' : 'home row' :
+                    `reach ${rows[0]} row`;
                 hintText.textContent =
-                    `${fingerInfo.finger === 'thumb' ? 'Either thumb' : fingerInfo.label} · ${charDisplay}${shiftNote}`;
+                    `${fingerInfo.finger === 'thumb' ? 'Either thumb' : fingerInfo.label} · ${charDisplay} · ${reach}${shiftNote}`;
             }
         }
     }

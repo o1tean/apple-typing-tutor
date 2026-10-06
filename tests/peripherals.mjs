@@ -112,22 +112,32 @@ assert.deepEqual(sound.ctx.gains.filter(gain => gain.connections.includes(sound.
 delete globalThis.window;
 
 // Guidance must stay inside its own container, including shifted keys and Space.
-const element = () => {
+const element = (homeKey = '') => {
     const classes = new Set();
+    const styles = new Map();
+    const tag = { textContent: homeKey };
     return {
+        dataset: { homeKey },
+        style: {
+            setProperty: (name, value) => styles.set(name, String(value)),
+            removeProperty: name => styles.delete(name)
+        },
+        querySelector: selector => selector === '.finger-tag' ? tag : null,
         classList: {
             add: (...names) => names.forEach(name => classes.add(name)),
             remove: (...names) => names.forEach(name => classes.delete(name))
         },
-        classes
+        classes,
+        styles,
+        tag
     };
 };
-const finger = element();
+const finger = element('A');
 const key = element();
 const shift = element();
-const thumb = element();
-const leftThumb = element();
-const shiftFinger = element();
+const thumb = element('␣');
+const leftThumb = element('␣');
+const shiftFinger = element(';');
 const hint = { textContent: '' };
 const view = Object.create(KeyboardView.prototype);
 view.container = { querySelectorAll: () => [key, shift] };
@@ -142,19 +152,37 @@ view.handsContainer = {
 };
 view.fingerHint = hint;
 view.keyElements = new Map([['KeyA', key], ['ShiftRight', shift], ['Space', element()]]);
+view.keyPositions = new Map([
+    ['KeyA', { row: 2, x: 0.2 }],
+    ['Semicolon', { row: 2, x: 0.8 }],
+    ['ShiftRight', { row: 3, x: 0.92 }],
+    ['Space', { row: 4, x: 0.5 }]
+]);
 view.highlightTarget('A');
 assert.ok(finger.classes.has('active'));
 assert.ok(shift.classes.has('key-shift-target'));
 assert.ok(shiftFinger.classes.has('shift-active'), 'the opposite pinky holds Shift');
-assert.equal(hint.textContent, 'Left Pinky · "A" (+ Right Shift)');
+assert.equal(finger.dataset.reachRow, 'home');
+assert.equal(shiftFinger.dataset.reachRow, 'shift');
+assert.equal(shiftFinger.tag.textContent, '⇧', 'the reaching pinky labels Shift');
+assert.ok(shiftFinger.styles.has('--reach-angle'), 'the Shift cue includes a finger reach');
+assert.equal(hint.textContent, 'Left Pinky · "A" · home row (+ Right Shift)');
 view.highlightTarget(' ');
 assert.ok(thumb.classes.has('active'));
 assert.ok(leftThumb.classes.has('active'), 'either thumb can press Space');
 assert.ok(!shiftFinger.classes.has('shift-active'), 'Space clears the previous Shift cue');
-assert.equal(hint.textContent, 'Either thumb · Space');
+assert.equal(thumb.dataset.reachRow, 'space');
+assert.equal(finger.styles.size, 0, 'the previous finger returns to its home pose');
+assert.equal(shiftFinger.tag.textContent, ';', 'the previous Shift finger restores its home key');
+assert.equal(hint.textContent, 'Either thumb · Space · press Space');
 view.highlightTarget(null);
 assert.ok(!thumb.classes.has('active'), 'completion clears finger highlights');
 assert.ok(!key.classes.has('key-target'), 'completion clears the target key');
+for (const item of [finger, thumb, leftThumb, shiftFinger]) {
+    assert.equal(item.styles.size, 0, 'completion restores every home pose');
+    assert.equal(item.dataset.targetKey, undefined, 'completion clears target labels');
+    assert.equal(item.tag.textContent, item.dataset.homeKey);
+}
 view.pressKey('KeyA');
 view.pressKey('ShiftRight');
 view.clearPressedKeys();
