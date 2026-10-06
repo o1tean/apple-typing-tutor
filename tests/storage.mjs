@@ -196,6 +196,87 @@ try {
     for (let index = 0; index < 55; index++) await storage.recordLesson('custom', stats);
     assert.equal(storage.data.history.length, 50);
 
+    const staleTab = new storage.constructor();
+    const newer = {
+        schemaVersion: 2,
+        futureRoot: { keys: { q: { errors: 3, latency: [150, 200] } } },
+        ['__proto__']: { futureOwn: true },
+        settings: { volume: 'invalid', futureSetting: { layout: 'future-layout' } },
+        stats: { totalSessions: 5, highestWpm: -1, futureStats: [null, 0, false] },
+        progress: Object.fromEntries(['__proto__', 'constructor'].map(id => [id, {
+            ...lesson,
+            timestamp: 'invalid',
+            futureProgress: { id, attempts: [1, 2] }
+        }])),
+        history: [{
+            ...previous,
+            wpmMetric: 'words-v1',
+            rawWpm: 'invalid',
+            consistency: null,
+            testWordCount: -1,
+            correctKeystrokes: 'invalid',
+            recordEligible: 'invalid',
+            recordReason: 42,
+            futureHistory: { drill: 'q', errors: [1, 4] }
+        }]
+    };
+    const futureFields = data => ({
+        version: data.schemaVersion,
+        root: data.futureRoot,
+        ownProto: data['__proto__'],
+        settings: data.settings.futureSetting,
+        stats: data.stats.futureStats,
+        progress: Object.fromEntries(['__proto__', 'constructor'].map(id => [id, data
+            .progress[id].futureProgress])),
+        history: data.history.find(entry => entry.lessonId === previous.lessonId)
+            .futureHistory
+    });
+    const expectedFuture = futureFields(newer);
+    reload(newer);
+    assert.deepEqual(futureFields(storage.data), expectedFuture, 'load preserves newer fields');
+    assert.equal(storage.getSetting('volume'), defaults.volume, 'known settings remain validated');
+    assert.equal(storage.getStats().highestWpm, 0, 'known stats remain validated');
+    const invalidHistoryFields = ['rawWpm', 'consistency', 'testWordCount', 'correctKeystrokes',
+        'recordEligible', 'recordReason'];
+    for (const key of invalidHistoryFields) {
+        assert.equal(Object.hasOwn(storage.data.history[0], key), false,
+            `loaded invalid ${key} is removed despite preserving history extras`);
+    }
+    assert.equal(Object.hasOwn(storage.data.progress['__proto__'], 'timestamp'), false);
+    assert.equal(Object.getPrototypeOf(storage.getAllProgress()), null);
+    assert.equal(Object.getPrototypeOf(storage.data), Object.prototype);
+    assert.equal({}.futureOwn, undefined,
+        'preserved prototype-sensitive keys cannot pollute objects');
+
+    await storage.setSetting('soundMuted', true);
+    assert.deepEqual(futureFields(JSON.parse(saved)), expectedFuture,
+        'a setting save preserves newer fields');
+    await storage.recordLesson('__proto__', stats);
+    assert.deepEqual(futureFields(JSON.parse(saved)), expectedFuture,
+        'recording a result preserves newer fields, including that lesson\'s metadata');
+    await staleTab.setSetting('theme', 'light');
+    assert.deepEqual(futureFields(JSON.parse(saved)), expectedFuture,
+        'a tab opened before the newer save refreshes and preserves its fields');
+    assert.equal(staleTab.getStats().totalSessions, 6, 'stale saves keep the latest result');
+    assert.equal(staleTab.getSetting('soundMuted'), true,
+        'stale saves keep unrelated new settings');
+
+    blocked = true;
+    assert.equal((await storage.recordLesson('constructor', stats)).saved, false);
+    blocked = false;
+    assert.deepEqual(futureFields(JSON.parse(storage.exportBackup()).session), expectedFuture,
+        'recovery backups retain unknown fields with the unsaved result');
+    assert.equal(await storage.retrySave(), true);
+    assert.deepEqual(futureFields(JSON.parse(saved)), expectedFuture,
+        'quota recovery preserves newer fields');
+    assert.equal(storage.getStats().totalSessions, 7, 'recovery records the result exactly once');
+    const persistedHistory = JSON.parse(saved).history.find(entry =>
+        entry.lessonId === previous.lessonId);
+    for (const key of invalidHistoryFields) {
+        assert.equal(Object.hasOwn(persistedHistory, key), false,
+            `saving cannot restore invalid known ${key}`);
+    }
+
     reload({ progress: { 'time-30': lesson } });
     const plain = {
         testMode: 'time',

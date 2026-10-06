@@ -65,11 +65,12 @@ function progressKey(lessonId, options, settings) {
     ])}`;
 }
 
-function historyEntry(value) {
+function historyEntry(value, preserveUnknown = false) {
     if (!isObject(value) || typeof value.lessonId !== 'string' || !value.lessonId
         || value.lessonId.length > 200 || !validMetric(value.wpmMetric)) return null;
 
     const entry = {
+        ...(preserveUnknown ? value : {}),
         lessonId: value.lessonId,
         wpm: number(value.wpm),
         accuracy: number(value.accuracy, 100),
@@ -79,17 +80,23 @@ function historyEntry(value) {
             .date : null
     };
     for (const key of ['rawWpm', 'consistency', 'elapsedSeconds', 'elapsedMilliseconds']) {
+        delete entry[key];
         if (isNumber(value[key], key === 'consistency' ? 100 : Number.MAX_SAFE_INTEGER)) entry[
             key] = value[key];
     }
     for (const key of TEST_SETTINGS) {
+        delete entry[key];
         if (validSetting(key, value[key])) entry[key] = value[key];
     }
+    delete entry.wpmMetric;
     if (value.wpmMetric === 'words-v1') entry.wpmMetric = value.wpmMetric;
     for (const key of ['totalKeystrokes', 'correctKeystrokes', 'correctNonSpaceChars',
             'errorKeystrokes', 'skippedChars']) {
+        delete entry[key];
         if (Number.isSafeInteger(value[key]) && isNumber(value[key])) entry[key] = value[key];
     }
+    delete entry.recordEligible;
+    delete entry.recordReason;
     if (typeof value.recordEligible === 'boolean') entry.recordEligible = value.recordEligible;
     if (typeof value.recordReason === 'string') entry.recordReason = value.recordReason.slice(0,
         200);
@@ -108,7 +115,7 @@ class StorageManager {
     }
 
     load() {
-        const data = {
+        let data = {
             settings: { ...DEFAULT_DATA.settings },
             progress: Object.create(null),
             history: [],
@@ -140,9 +147,11 @@ class StorageManager {
         try {
             const parsed = JSON.parse(raw);
             if (!isObject(parsed)) return data;
+            data = { ...parsed, ...data };
 
             if (isObject(parsed.settings)) {
-                for (const key of Object.keys(data.settings)) {
+                data.settings = { ...parsed.settings, ...DEFAULT_DATA.settings };
+                for (const key of Object.keys(DEFAULT_DATA.settings)) {
                     if (validSetting(key, parsed.settings[key])) data.settings[key] = parsed
                         .settings[key];
                 }
@@ -151,22 +160,27 @@ class StorageManager {
                 for (const [lessonId, progress] of Object.entries(parsed.progress)) {
                     if (!lessonId || !isObject(progress)) continue;
                     data.progress[lessonId] = {
+                        ...progress,
                         completed: progress.completed === true,
                         bestWpm: number(progress.bestWpm),
                         bestAccuracy: number(progress.bestAccuracy, 100),
                         stars: count(progress.stars, 3)
                     };
                     for (const key of ['lastPlayed', 'timestamp']) {
+                        delete data.progress[lessonId][key];
                         if (isNumber(progress[key])) data.progress[lessonId][key] = progress[
                             key];
                     }
                 }
             }
             if (Array.isArray(parsed.history)) {
-                data.history = parsed.history.map(historyEntry).filter(Boolean).slice(0, 50);
+                data.history = parsed.history.map(value => historyEntry(value, true)).filter(
+                        Boolean)
+                    .slice(0, 50);
             }
             if (isObject(parsed.stats)) {
-                for (const key of Object.keys(data.stats)) {
+                data.stats = { ...parsed.stats, ...DEFAULT_DATA.stats };
+                for (const key of Object.keys(DEFAULT_DATA.stats)) {
                     data.stats[key] = key === 'totalSessions' || key === 'totalKeystrokes'
                         ? count(parsed.stats[key]) : number(parsed.stats[key]);
                 }
