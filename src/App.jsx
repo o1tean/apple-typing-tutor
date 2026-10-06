@@ -436,6 +436,83 @@ const Arena = React.memo(function Arena({
     );
 });
 
+function KeyHeatmap({ learning }) {
+    const keyboard = useRef(null);
+    useEffect(() => {
+        if (keyboard.current)
+            new KeyboardView(keyboard.current).showHeatmap(learning);
+    }, [learning]);
+    if (!learning || !Object.keys(learning.keys).length) return null;
+    return (
+        <section className="key-map" aria-label="Target-key heatmap">
+            <h2>Your key map</h2>
+            <p className="field-help">
+                This session’s target keys, including skipped keys. Average
+                reach measures time between strokes; pauses and backspace gaps
+                are excluded.
+            </p>
+            <div
+                ref={keyboard}
+                className="keyboard-container"
+                aria-hidden="true"
+            />
+            <p className="heat-legend field-help">
+                <span>● Clean</span>
+                <span>● Errors — stronger color means a higher rate</span>
+                <span>○ Not tried</span>
+            </p>
+            <details>
+                <summary>View key and pair details</summary>
+                {['keys', 'bigrams'].map((name) => (
+                    <table key={name}>
+                        <caption>
+                            {name === 'keys'
+                                ? 'Target keys'
+                                : 'Most difficult pairs'}{' '}
+                            · ␣ means Space
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    {name === 'keys' ? 'Key' : 'Pair'}
+                                </th>
+                                <th scope="col">Attempts</th>
+                                <th scope="col">Errors</th>
+                                <th scope="col">Average reach</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.entries(learning[name])
+                                .sort(
+                                    (a, b) =>
+                                        b[1].errors / b[1].attempts -
+                                            a[1].errors / a[1].attempts ||
+                                        b[1].latencyTotalMs /
+                                            (b[1].latencySamples || 1) -
+                                            a[1].latencyTotalMs /
+                                                (a[1].latencySamples || 1),
+                                )
+                                .slice(0, name === 'keys' ? 95 : 12)
+                                .map(([key, cell]) => (
+                                    <tr key={key}>
+                                        <td>{key.replaceAll(' ', '␣')}</td>
+                                        <td>{cell.attempts}</td>
+                                        <td>{cell.errors}</td>
+                                        <td>
+                                            {cell.latencySamples
+                                                ? `${Math.round(cell.latencyTotalMs / cell.latencySamples)} ms`
+                                                : '—'}
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                ))}
+            </details>
+        </section>
+    );
+}
+
 function Results({
     result,
     samples,
@@ -619,6 +696,7 @@ function Results({
                           .join(' · ')}`
                     : 'Every key in its place. No mistakes.'}
             </p>
+            <KeyHeatmap learning={result.learning} />
             {result.recordReason && (
                 <p className="focus-keys">{result.recordReason}</p>
             )}

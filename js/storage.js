@@ -1,5 +1,7 @@
 /** Persist preferences, lesson progress, and recent results. */
 
+import { migrateLearning, readSessionLearning, mergeLearning } from './learning.js';
+
 const STORAGE_KEY = 'apple_typing_tutor_data_v1';
 
 const DEFAULT_DATA = {
@@ -100,6 +102,9 @@ function historyEntry(value, preserveUnknown = false) {
     if (typeof value.recordEligible === 'boolean') entry.recordEligible = value.recordEligible;
     if (typeof value.recordReason === 'string') entry.recordReason = value.recordReason.slice(0,
         200);
+    delete entry.learning;
+    const learning = readSessionLearning(value.learning, preserveUnknown);
+    if (learning) entry.learning = learning;
     return entry;
 }
 
@@ -119,6 +124,7 @@ class StorageManager {
             settings: { ...DEFAULT_DATA.settings },
             progress: Object.create(null),
             history: [],
+            learning: migrateLearning(),
             stats: { ...DEFAULT_DATA.stats }
         };
 
@@ -148,6 +154,7 @@ class StorageManager {
             const parsed = JSON.parse(raw);
             if (!isObject(parsed)) return data;
             data = { ...parsed, ...data };
+            data.learning = migrateLearning(parsed.learning);
 
             if (isObject(parsed.settings)) {
                 data.settings = { ...parsed.settings, ...DEFAULT_DATA.settings };
@@ -339,12 +346,15 @@ class StorageManager {
             skippedChars: stats.skippedChars,
             recordEligible,
             recordReason,
+            learning: stats.learning,
             date: new Date(timestamp).toISOString()
         });
         const key = progressKey(lessonId, entry, this.data.settings);
         this.pendingLessons.push(entry);
         return this.write(() => {
             this.refresh();
+
+            this.data.learning = mergeLearning(this.data.learning, entry.learning);
 
             const existing = this.data.progress[key] || {
                 bestWpm: 0,
@@ -404,6 +414,10 @@ class StorageManager {
 
     getStats() {
         return this.data.stats;
+    }
+
+    getLearning() {
+        return this.data.learning;
     }
 }
 

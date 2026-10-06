@@ -279,6 +279,41 @@ export class KeyboardView {
         this.container.appendChild(boardEl);
     }
 
+    showHeatmap(learning) {
+        const cells = new Map();
+        for (const [char, cell] of Object.entries(learning?.keys || {})) {
+            const code = CHAR_TO_CODE[char];
+            if (!code) continue;
+            const combined = cells.get(code) || {
+                attempts: 0,
+                errors: 0,
+                latencySamples: 0,
+                latencyTotalMs: 0
+            };
+            for (const field of Object.keys(combined)) combined[field] += cell[field];
+            cells.set(code, combined);
+        }
+        for (const [code, element] of this.keyElements) {
+            const cell = cells.get(code);
+            element.classList.toggle('key-measured', Boolean(cell?.attempts));
+            if (!cell?.attempts) {
+                element.title = 'Not tried in this session';
+                continue;
+            }
+            const rate = cell.errors / cell.attempts;
+            element.style.setProperty('--key-heat', rate ? 'var(--error)' : 'var(--accent)');
+            element.style.setProperty('--key-heat-strength',
+                `${rate ? Math.round(12 + rate * 30) : 22}%`);
+            const label = code === 'Space' ? 'Space' : element.querySelector('.key-main-label')
+                .textContent;
+            const reach = cell.latencySamples ?
+                `${Math.round(cell.latencyTotalMs / cell.latencySamples)} ms average reach` :
+                'reach not measured';
+            element.title =
+                `${label}: ${cell.errors} ${cell.errors === 1 ? 'error' : 'errors'} · ${cell.attempts} attempts · ${reach}`;
+        }
+    }
+
     renderHands() {
         if (!this.handsContainer) return;
         const fingers = [

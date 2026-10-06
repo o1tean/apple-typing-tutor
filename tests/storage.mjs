@@ -496,6 +496,196 @@ try {
     assert.equal(storage.data.history.length, 3,
         'invalid record identifiers cannot append null entries');
 
+    const legacyLearningSave = {
+        settings: { ...defaults, theme: 'light' },
+        progress: { 'amat-intro': lesson },
+        history: [previous],
+        stats: {
+            totalSessions: 1,
+            totalKeystrokes: 100,
+            totalTimeSeconds: 30.5,
+            highestWpm: 80
+        },
+        futureRoot: { preserved: true }
+    };
+    reload(legacyLearningSave);
+    assert.equal(storage.getLearning().version, 1, 'old-format saves migrate to an empty profile');
+    assert.deepEqual(Object.keys(storage.getLearning().keys), []);
+    assert.deepEqual(Object.keys(storage.getLearning().bigrams), []);
+    assert.deepEqual(storage.data.settings, legacyLearningSave.settings);
+    assert.deepEqual(storage.getLessonProgress('amat-intro'), lesson);
+    assert.deepEqual(storage.data.history, [previous]);
+    assert.equal(saved, JSON.stringify(legacyLearningSave), 'migration never writes at startup');
+    const firstLearning = {
+        keys: {
+            a: { attempts: 2, errors: 1, latencySamples: 1, latencyTotalMs: 250 },
+            b: { attempts: 1, errors: 0, latencySamples: 1, latencyTotalMs: 100 }
+        },
+        bigrams: { ab: { attempts: 1, errors: 0, latencySamples: 1, latencyTotalMs: 100 } }
+    };
+    const nextLearning = {
+        keys: {
+            a: { attempts: 3, errors: 0, latencySamples: 2, latencyTotalMs: 200 },
+            b: { attempts: 1, errors: 0, latencySamples: 1, latencyTotalMs: 100 }
+        },
+        bigrams: { ab: { attempts: 1, errors: 0, latencySamples: 1, latencyTotalMs: 100 } }
+    };
+    const learningTab = new storage.constructor();
+    await storage.recordLesson('learning-one', { ...stats, learning: firstLearning });
+    const firstProfile = storage.getLearning();
+    await learningTab.recordLesson('learning-two', { ...stats, learning: nextLearning });
+    storage.data = storage.load();
+    const counters = ({ attempts, errors, latencySamples, latencyTotalMs }) => ({
+        attempts,
+        errors,
+        latencySamples,
+        latencyTotalMs
+    });
+    const jsonLearning = value => JSON.parse(JSON.stringify(value));
+    assert.deepEqual(counters(storage.getLearning().keys.a), {
+        attempts: 5,
+        errors: 1,
+        latencySamples: 3,
+        latencyTotalMs: 450
+    }, 'a second session in an older tab merges rather than replaces measured keys');
+    assert.deepEqual(counters(storage.getLearning().bigrams.ab), {
+        attempts: 2,
+        errors: 0,
+        latencySamples: 2,
+        latencyTotalMs: 200
+    });
+    assert.ok(storage.getLearning().keys.a.recentErrorRate < firstProfile.keys.a.recentErrorRate,
+        'recent weakness responds to cleaner practice');
+    assert.ok(storage.getLearning().keys.a.recentLatencyMs < firstProfile.keys.a.recentLatencyMs,
+        'recent reach responds to faster practice');
+    assert.deepEqual(jsonLearning(storage.data.history[0].learning), nextLearning);
+    assert.deepEqual(jsonLearning(storage.data.history[1].learning), firstLearning);
+    assert.deepEqual(storage.data.history[2], previous);
+    assert.deepEqual(storage.getLessonProgress('amat-intro'), lesson);
+    assert.deepEqual(storage.data.futureRoot, legacyLearningSave.futureRoot);
+    assert.equal(storage.getSetting('theme'), 'light');
+    assert.deepEqual(storage.load(), storage.data,
+        'measured profile and session data survive reload');
+
+    const futureCell = {
+        ...firstLearning.keys.a,
+        futureCell: { lessons: ['future'] },
+        recentErrorRate: 'invalid',
+        recentLatencyMs: -1
+    };
+    const learnedHistory = {
+        ...previous,
+        learning: {
+            ...firstLearning,
+            futureSession: { layout: 'future' },
+            keys: { a: { ...firstLearning.keys.a, futureCell: { retained: true } } }
+        }
+    };
+    reload({
+        history: [learnedHistory],
+        learning: {
+            version: 1,
+            futureProfile: { layout: 'future' },
+            keys: {
+                a: futureCell,
+                b: { ...firstLearning.keys.b, attempts: -1 },
+                c: { ...firstLearning.keys.b, errors: 2 },
+                d: { ...firstLearning.keys.b, latencySamples: 2 },
+                e: { ...firstLearning.keys.b, latencySamples: 0 },
+                ['__proto__']: firstLearning.keys.b,
+                constructor: firstLearning.keys.b
+            },
+            bigrams: {
+                ab: { ...firstLearning.bigrams.ab, futurePair: ['retained'] },
+                abc: firstLearning.bigrams.ab,
+                ['\u0000a']: firstLearning.bigrams.ab
+            }
+        }
+    });
+    assert.deepEqual(Object.keys(storage.getLearning().keys), ['a'],
+        'invalid counts, impossible sample totals and non-key names cannot enter the profile');
+    assert.deepEqual(Object.keys(storage.getLearning().bigrams), ['ab']);
+    assert.equal(storage.getLearning().keys.a.recentErrorRate, 0.5);
+    assert.equal(storage.getLearning().keys.a.recentLatencyMs, 250);
+    assert.equal({}.attempts, undefined, 'prototype-sensitive names cannot pollute objects');
+    await storage.setSetting('soundMuted', true);
+    const cyclicLearning = {};
+    cyclicLearning.self = cyclicLearning;
+    await storage.recordLesson('untrusted-learning', {
+        ...stats,
+        learning: {
+            ...nextLearning,
+            unknown: cyclicLearning,
+            keys: {
+                a: { ...nextLearning.keys.a, unknown: cyclicLearning },
+                b: cyclicLearning
+            },
+            bigrams: { ab: { ...nextLearning.bigrams.ab, unknown: cyclicLearning } }
+        }
+    });
+    assert.equal(Object.hasOwn(storage.data.history[0].learning, 'unknown'), false);
+    assert.equal(Object.hasOwn(storage.data.history[0].learning.keys.a, 'unknown'), false,
+        'cyclic untrusted session extras are discarded before saving');
+    assert.equal(Object.hasOwn(storage.data.history[0].learning.keys, 'b'), false);
+    assert.deepEqual(storage.getLearning().futureProfile, { layout: 'future' });
+    assert.deepEqual(storage.getLearning().keys.a.futureCell, futureCell.futureCell);
+    assert.deepEqual(storage.getLearning().bigrams.ab.futurePair, ['retained']);
+    assert.deepEqual(storage.data.history[1].learning.futureSession, { layout: 'future' });
+    assert.deepEqual(storage.data.history[1].learning.keys.a.futureCell, { retained: true });
+    assert.deepEqual(storage.load(), storage.data,
+        'validated learning saves preserve loaded future profile, cell and session fields');
+    for (const malformedMaps of [{}, { keys: [], bigrams: null }]) {
+        reload({ learning: { version: 1, ...malformedMaps, futureProfile: { retained: true } } });
+        assert.deepEqual(Object.keys(storage.getLearning().keys), []);
+        assert.deepEqual(Object.keys(storage.getLearning().bigrams), []);
+        await storage.setSetting('soundMuted', true);
+        assert.deepEqual(JSON.parse(saved).learning.futureProfile, { retained: true },
+            'missing or malformed known maps cannot erase unrelated future profile fields');
+    }
+    const futureLearning = {
+        version: 2,
+        keys: { future: { attempts: 'new-format' } },
+        bigrams: [],
+        layout: { opaque: true }
+    };
+    reload({ learning: futureLearning });
+    await storage.setSetting('theme', 'light');
+    await storage.recordLesson('future-profile', { ...stats, learning: firstLearning });
+    assert.deepEqual(storage.getLearning(), futureLearning,
+        'an older open tab preserves an unsupported future learning version opaquely');
+    assert.deepEqual(JSON.parse(saved).learning, futureLearning);
+    assert.deepEqual(jsonLearning(storage.data.history[0].learning), firstLearning,
+        'a preserved future profile does not prevent saving the current session');
+
+    for (const historyLearning of [
+            {
+                version: 2,
+                keys: { future: ['new-format'] },
+                bigrams: null,
+                futureSession: { opaque: true }
+            },
+            { keys: [], bigrams: null, futureSession: { retained: true } }
+    ]) {
+        reload({
+            history: [{
+                ...previous,
+                lessonId: 'future-history',
+                learning: historyLearning
+            }]
+        });
+        const expectedLearning = historyLearning.version === 2 ? historyLearning
+            : { ...historyLearning, keys: {}, bigrams: {} };
+        assert.deepEqual(jsonLearning(storage.data.history[0].learning), expectedLearning,
+            'loading retains future session data while sanitizing only supported maps');
+        await storage.setSetting('volume', 0.4);
+        await storage.recordLesson('current-learning', { ...stats, learning: firstLearning });
+        const retained = JSON.parse(saved).history.find(entry => entry.lessonId ===
+            'future-history');
+        assert.deepEqual(retained.learning, expectedLearning,
+            'setting and result saves preserve opaque future history and unrelated session fields'
+        );
+    }
+
     reload(null);
     const storageListeners = [];
     globalThis.window = {
@@ -640,9 +830,11 @@ try {
     const queued = new storage.constructor();
     const cyclic = {};
     cyclic.self = cyclic;
+    const queuedLearning = structuredClone(firstLearning);
     const submittedStats = {
         ...wordStats,
         elapsedMilliseconds: 125,
+        learning: queuedLearning,
         rawWpm: cyclic,
         unknown: cyclic
     };
@@ -651,7 +843,11 @@ try {
     Date.now = () => completedAt;
     const firstQueued = queued.recordLesson('queued-a', submittedStats, 45, 95, submittedSettings);
     Date.now = originalNow;
-    const secondQueued = queued.recordLesson('queued-b', { ...wordStats, wpm: 80 }, 45, 95, plain);
+    const secondQueued = queued.recordLesson('queued-b', {
+        ...wordStats,
+        wpm: 80,
+        learning: nextLearning
+    }, 45, 95, plain);
     const queuedOther = new storage.constructor();
     const thirdQueued = queuedOther.recordLesson('queued-c', wordStats, 45, 95, plain);
     assert.equal((await queued.recordLesson('queued-unknown', {
@@ -671,6 +867,8 @@ try {
     assert.equal(Object.hasOwn(waitingBackup.pendingLessons[0], 'rawWpm'), false);
     assert.equal(Object.hasOwn(waitingBackup.pendingLessons[0], 'unknown'), false,
         'unaccepted cyclic fields cannot break queued backups');
+    assert.deepEqual(waitingBackup.pendingLessons[0].learning, firstLearning,
+        'the queued backup includes the measured learning snapshot');
     assert.equal(saved, 'null', 'a queued backup cannot write or bypass the lock');
     Object.assign(submittedStats, {
         wpm: 999,
@@ -685,6 +883,7 @@ try {
         typingMode: 'strict',
         recordEligible: false
     });
+    queuedLearning.keys.a.attempts = 999;
     grantLock();
     assert.equal((await firstQueued).saved, true);
     assert.equal(queued.getLessonProgress('queued-a', { ...plain, ...wordMetric }).bestWpm, 70,
@@ -695,6 +894,8 @@ try {
         'queued word-based results cannot enter legacy progress');
     assert.equal(queued.getStats().totalTimeSeconds, 0.125);
     assert.equal(queued.getStats().totalKeystrokes, 200);
+    assert.deepEqual(counters(queued.getLearning().keys.a), firstLearning.keys.a,
+        'learning counters are captured before waiting for the existing save lock');
     const partlySaved = JSON.parse(queued.exportBackup());
     assert.equal(partlySaved.session.stats.totalSessions, 1);
     assert.deepEqual(partlySaved.pendingLessons.map(entry => entry.lessonId), ['queued-b']);
@@ -709,6 +910,12 @@ try {
     assert.equal(queuedOther.load().stats.totalSessions, 3);
     assert.equal(queuedOther.load().stats.highestWpm, 0);
     assert.equal(queuedOther.load().stats.wordHighestWpm, 80);
+    assert.deepEqual(counters(queuedOther.load().learning.keys.a), {
+        attempts: 5,
+        errors: 1,
+        latencySamples: 3,
+        latencyTotalMs: 450
+    }, 'queued sessions merge learning against the latest locked snapshot exactly once');
     assert.deepEqual(queuedOther.load().history.map(entry => entry.lessonId), ['queued-c',
         'queued-b', 'queued-a']);
     assert.equal(queued.pendingLessons.length, 0);

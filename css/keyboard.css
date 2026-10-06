@@ -35,6 +35,34 @@
     transition: transform .08s, background .15s, box-shadow .15s;
 }
 
+.key-map .magic-key.key-measured {
+    background: color-mix(in srgb, var(--key-heat) var(--key-heat-strength), var(--key-bg));
+    border-color: var(--key-heat);
+}
+
+@media (max-width: 600px) {
+    .key-map .magic-keyboard {
+        min-width: 0;
+        gap: 3px;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .key-map .keyboard-row {
+        gap: 3px;
+        height: 28px;
+    }
+
+    .key-map .key-main-label {
+        font-size: 9px;
+    }
+
+    .key-map :is(.key-shift-label, .key-sub-label, .caps-led, .tactile-bump),
+    .key-map :is(.key-delete, .key-tab, .key-caps, .key-return, .key-shift, .key-control, .key-option, .key-command) .key-labels {
+        display: none;
+    }
+}
+
 .key-labels {
     display: flex;
     flex-direction: column;

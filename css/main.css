@@ -1006,6 +1006,41 @@ input[type='range'] {
     margin-top: 24px;
 }
 
+.key-map {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.key-map h2 {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.key-map summary {
+    cursor: pointer;
+    padding-block: 8px;
+    font-size: 12px;
+}
+
+.key-map table {
+    margin-top: 24px;
+}
+
+.heat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.heat-legend span:first-child {
+    color: var(--accent);
+}
+
+.heat-legend span:nth-child(2) {
+    color: var(--error);
+}
+
 .result-actions {
     display: flex;
     flex-wrap: wrap;

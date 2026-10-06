@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Results now show a keyboard error map and measured key/pair reach times, retained across sessions with safe old-save migration.
+
 - Added 1,189 public-domain words and 100 sourced quotations; removed persona prose and kept saved quote identities stable.
 - Saves now preserve newer data fields through settings changes, results and quota recovery, including updates from an older open tab.
 - Added a re-shootable teaching GIF and Typeflow social preview; the README leads with learning and the one-click demo.

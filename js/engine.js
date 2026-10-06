@@ -1,5 +1,7 @@
 /** Typing state, word submission, line progression, and measured test statistics. */
 
+import { readSessionLearning } from './learning.js';
+
 export class TypingEngine {
     constructor(options = {}) {
         this.mode = options.mode || 'strict'; // 'strict' or 'flow'
@@ -32,6 +34,10 @@ export class TypingEngine {
         this.errorsByChar = {}; // { 's': 3, 'a': 1 }
         this.keystrokeIntervals = [];
         this.lastKeystrokeTime = null;
+        this.learning = { keys: Object.create(null), bigrams: Object.create(null) };
+        this.learningPrevious = this.learningLinePrevious = null;
+        this.learningSnapshot = null;
+        this.learningTimingBreak = false;
 
         // Callbacks
         this.onCharTyped = options.onCharTyped || (() => {});
@@ -118,6 +124,36 @@ export class TypingEngine {
         this.errorsByChar = {};
         this.keystrokeIntervals = [];
         this.lastKeystrokeTime = null;
+        this.learning = { keys: Object.create(null), bigrams: Object.create(null) };
+        this.learningPrevious = this.learningLinePrevious = null;
+        this.learningSnapshot = null;
+        this.learningTimingBreak = false;
+    }
+
+    measureLearning(target, error, latency, advance = true) {
+        const key = typeof target === 'string' && /^[\x20-\x7e]$/.test(target) ? target
+            .toLowerCase() : null;
+        if (key !== null) {
+            const pairs = [['keys', key]];
+            if (this.learningPrevious !== null) pairs.push(['bigrams', this.learningPrevious +
+                key]);
+            for (const [name, id] of pairs) {
+                const cell = this.learning[name][id] ||= {
+                    attempts: 0,
+                    errors: 0,
+                    latencySamples: 0,
+                    latencyTotalMs: 0
+                };
+                cell.attempts++;
+                cell.errors += Number(error);
+                if (Number.isFinite(latency) && latency >= 0) {
+                    cell.latencySamples++;
+                    cell.latencyTotalMs += latency;
+                }
+            }
+            this.learningSnapshot = null;
+        } else this.learningTimingBreak = true;
+        if (advance) this.learningPrevious = key;
     }
 
     getCurrentChar() {
@@ -164,6 +200,9 @@ export class TypingEngine {
 
         if (!this.isRunning) this.start();
         const now = performance.now();
+        const latency = this.lastKeystrokeTime === null || this.learningTimingBreak ? null
+            : now - this.lastKeystrokeTime;
+        this.learningTimingBreak = false;
         if (this.lastKeystrokeTime !== null) {
             this.keystrokeIntervals.push(now - this.lastKeystrokeTime);
             if (this.keystrokeIntervals.length > 30) this.keystrokeIntervals.shift();
@@ -173,6 +212,8 @@ export class TypingEngine {
         this.totalKeystrokes++;
 
         if (this.mode === 'strict') {
+            this.measureLearning(targetChar, typedChar !== targetChar, latency, typedChar ===
+                targetChar);
             if (!this.typedChars[this.currentCharIndex].typed) this.netTypedChars++;
             // Touch-typing tutor strict mode: must type correct char before advancing
             if (typedChar === targetChar) {
@@ -201,12 +242,13 @@ export class TypingEngine {
         } else {
             // Flow input stays inside a word until Space submits it.
             if (typedChar === ' ') {
-                this.submitWord();
+                this.submitWord(latency);
                 this.updateTick();
                 return;
             }
             this.netTypedChars++;
             if (targetChar === ' ' || targetChar === null) {
+                this.measureLearning(targetChar, true, latency, false);
                 this.typedChars.splice(this.currentCharIndex, 0, {
                     char: typedChar,
                     status: 'incorrect',
@@ -222,6 +264,7 @@ export class TypingEngine {
                 return;
             }
             const isCorrect = typedChar === targetChar;
+            this.measureLearning(targetChar, !isCorrect, latency);
             if (isCorrect) {
                 this.correctKeystrokes++;
                 this.netCorrectChars++;
@@ -281,15 +324,21 @@ export class TypingEngine {
             skipped.status = 'pending';
             delete skipped.skipped;
         }
+        const preceding = this.typedChars.slice(0, this.currentCharIndex).findLast(item => !item
+            .extra)?.char;
+        this.learningPrevious = preceding === undefined ? this.learningLinePrevious
+            : /^[\x20-\x7e]$/.test(preceding) ? preceding.toLowerCase() : null;
+        this.learningTimingBreak = true;
         return true;
     }
 
-    submitWord() {
+    submitWord(latency = null) {
         const firstSkipped = this.getCurrentChar();
         let skipped = false;
         while (this.currentCharIndex < this.typedChars.length && this.getCurrentChar() !==
             ' ') {
             const item = this.typedChars[this.currentCharIndex++];
+            this.measureLearning(item.char, true, skipped ? null : latency);
             item.status = 'incorrect';
             item.skipped = true;
             this.skippedChars++;
@@ -302,6 +351,7 @@ export class TypingEngine {
         const hasFollowingLine = this.timedDuration > 0 || this.currentLineIndex < this.lines
             .length - 1;
         if (hasSeparator || hasFollowingLine) {
+            this.measureLearning(' ', false, skipped ? null : latency);
             this.correctKeystrokes++;
             this.netCorrectChars++;
             this.netTypedChars++;
@@ -339,6 +389,7 @@ export class TypingEngine {
     }
 
     advanceLine(includeSeparator = false) {
+        this.learningLinePrevious = this.learningPrevious;
         this.currentLineIndex++;
         // Timed tests continue through the word pool until their deadline.
         if (this.timedDuration > 0 && this.currentLineIndex >= this.lines.length) {
@@ -423,6 +474,7 @@ export class TypingEngine {
             errorKeystrokes: this.errorKeystrokes,
             skippedChars: this.skippedChars,
             errorsByChar: this.errorsByChar,
+            learning: this.learningSnapshot ||= readSessionLearning(this.learning),
             currentLineIndex: this.currentLineIndex,
             totalLines: this.lines.length
         };
