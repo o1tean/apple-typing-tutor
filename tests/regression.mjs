@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { TypingEngine } from '../js/engine.js';
 import { CURRICULUM } from '../js/lessons.js';
 import { sound } from '../js/audio.js';
+import { generateLessonDrill } from '../js/practice.js';
 
 let now = 0;
 const originalNow = performance.now;
@@ -13,28 +14,31 @@ const type = text => {
 
 try {
     // Every course must render the next line before its notification and finish once.
-    for (const lesson of [...CURRICULUM.amateur, ...CURRICULUM.pro]) {
-        let completions = 0;
-        engine.onComplete = () => completions++;
-        engine.onLineComplete = index => {
-            if (index < engine.lines.length) {
-                assert.equal(engine.typedChars.map(item => item.char).join(''), lesson.lines[
-                    index]);
-                assert.equal(engine.currentCharIndex, 0);
+    for (const track of ['amateur', 'pro']) {
+        for (const [index, lesson] of CURRICULUM[track].entries()) {
+            const lines = generateLessonDrill(track, index, () => 0.25);
+            let completions = 0;
+            engine.onComplete = () => completions++;
+            engine.onLineComplete = index => {
+                if (index < engine.lines.length) {
+                    assert.equal(engine.typedChars.map(item => item.char).join(''), lines[
+                        index]);
+                    assert.equal(engine.currentCharIndex, 0);
+                }
+            };
+            engine.loadExercise(lines);
+            for (const line of lines) {
+                now += 1000;
+                type(line);
             }
-        };
-        engine.loadExercise(lesson.lines);
-        for (const line of lesson.lines) {
-            now += 1000;
-            type(line);
+            assert.equal(completions, 1, lesson.id);
+            assert.equal(engine.getStats().accuracy, 100);
+            const finished = engine.getStats();
+            now += 60_000;
+            assert.deepEqual(engine.getStats(), finished, 'finished statistics stay frozen');
+            type('x');
+            assert.equal(completions, 1);
         }
-        assert.equal(completions, 1, lesson.id);
-        assert.equal(engine.getStats().accuracy, 100);
-        const finished = engine.getStats();
-        now += 60_000;
-        assert.deepEqual(engine.getStats(), finished, 'finished statistics stay frozen');
-        type('x');
-        assert.equal(completions, 1);
     }
     engine.onComplete = () => {};
     engine.onLineComplete = () => {};

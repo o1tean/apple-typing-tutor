@@ -3,6 +3,7 @@ import { sound } from '../js/audio.js';
 import { KeyboardView } from '../js/keyboard.js';
 import { CURRICULUM } from '../js/lessons.js';
 import { isDialogBackdrop } from '../js/dialog.js';
+import { generateLessonDrill } from '../js/practice.js';
 
 const dialog = {
     getBoundingClientRect: () => ({ left: 103, top: 24, right: 643, bottom: 780 })
@@ -189,20 +190,25 @@ view.clearPressedKeys();
 assert.ok(!key.classes.has('key-pressed') && !shift.classes.has('key-pressed'),
     'focus loss or restart can clear keys whose keyup event was missed');
 
-for (const track of [CURRICULUM.amateur, CURRICULUM.pro]) {
+for (const track of ['amateur', 'pro']) {
     const introduced = new Set([' ']);
-    for (const lesson of track) {
+    for (const [index, lesson] of CURRICULUM[track].entries()) {
         const newKeys = lesson.keysIntroduced.filter(char => char.length === 1 && !introduced.has(
             char));
         newKeys.forEach(char => introduced.add(char));
         if (lesson.keysIntroduced.includes('Capitals')) {
             [...introduced].forEach(char => introduced.add(char.toUpperCase()));
         }
-        const characters = new Set(lesson.lines.join(' '));
+        const characters = new Set(generateLessonDrill(track, index, () => 0.25).join(' '));
         assert.ok([...characters].every(char => introduced.has(char)),
             `${lesson.id}: only introduced keys`);
         assert.ok(newKeys.every(char => characters.has(char)),
             `${lesson.id}: each new key is practiced`);
+        if (['amat-intro', 'amat-1', 'amat-2', 'pro-1', 'pro-2'].includes(lesson.id)) {
+            const handKeys = new Set([' ', ...lesson.keysIntroduced]);
+            assert.ok([...characters].every(char => handKeys.has(char)),
+                `${lesson.id}: home-hand drills stay inside their own introduced keys`);
+        }
     }
 }
 

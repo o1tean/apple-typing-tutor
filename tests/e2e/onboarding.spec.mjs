@@ -10,17 +10,23 @@ test('a first visit starts lesson 1 with working finger and keyboard guides', as
         .toBeVisible();
     await expect(page.locator('.hands-container')).toBeVisible();
     await expect(page.locator('.keyboard-container')).toBeVisible();
-    await expect(page.locator('[data-code="KeyD"]')).toHaveClass(/key-target/);
-    await expect(page.locator('#finger-left-middle')).toHaveClass(/active/);
     expect(await page.evaluate(key => localStorage.getItem(key), storageKey))
         .toBeNull();
 
     const input = page.getByRole('textbox', { name: 'Typing input' });
     await expect(input).toBeFocused();
-    await input.pressSequentially('dd');
-    await expect(page.locator('.typing-text .char.correct')).toHaveCount(2);
-    await expect(page.locator('[data-code="KeyA"]')).toHaveClass(/key-target/);
-    await expect(page.locator('#finger-left-pinky')).toHaveClass(/active/);
+    const firstKeys = (await page.locator('.typing-text .word').allTextContents())
+        .join('').replace(/\u00a0/g, ' ').slice(0, 3);
+    const fingers = { a: 'pinky', s: 'ring', d: 'middle', f: 'index', ' ': 'thumb' };
+    for (const [index, key] of Array.from(firstKeys).entries()) {
+        expect(fingers[key]).toBeDefined();
+        const code = key === ' ' ? 'Space' : `Key${key.toUpperCase()}`;
+        await expect(page.locator(`[data-code="${code}"]`)).toHaveClass(/key-target/);
+        await expect(page.locator(`#finger-left-${fingers[key]}`)).toHaveClass(
+            /active/);
+        await input.pressSequentially(key);
+        await expect(page.locator('.typing-text .char.correct')).toHaveCount(index + 1);
+    }
 
     await page.getByRole('button', { name: 'Skip to test', exact: true }).click();
     await page.getByRole('button', { name: 'words', exact: true }).click();
@@ -123,7 +129,10 @@ test.describe('touch first visit', () => {
                 name: 'click here to start typing',
                 exact: true
             }).tap();
-            await input.pressSequentially('d');
+            const firstKey = (await page.locator('.typing-text .word').first()
+                    .textContent())
+                .replace(/\u00a0/g, ' ')[0];
+            await input.pressSequentially(firstKey);
             await expect(page.locator('.typing-text .char.correct')).toHaveCount(1);
             await page.getByRole('button', { name: 'Skip to test', exact: true })
                 .tap();

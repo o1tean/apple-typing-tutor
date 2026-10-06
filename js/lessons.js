@@ -12,13 +12,7 @@ export const CURRICULUM = {
             description: "Learn the resting position for your 8 fingers. Rest your left fingers on A S D F and right fingers on J K L ;. Feel the tactile bumps on F and J.",
             keysIntroduced: ["a", "s", "d", "f", "j", "k", "l", ";", " "],
             targetWpm: 15,
-            targetAccuracy: 95,
-            lines: [
-        "asdf jkl; asdf jkl; asdf jkl; asdf jkl;",
-        "fdsa ;lkj fdsa ;lkj fdsa ;lkj fdsa ;lkj",
-        "aa ss dd ff jj kk ll ;; asdf jkl; asdf",
-        "as df jk l; fa sd ;l kj asdf jkl; asdf"
-      ]
+            targetAccuracy: 95
     },
         {
             id: "amat-1",
@@ -28,13 +22,7 @@ export const CURRICULUM = {
             description: "Focus on your left hand resting position: Pinky (A), Ring (S), Middle (D), Index (F), and Thumb on Space.",
             keysIntroduced: ["a", "s", "d", "f", " "],
             targetWpm: 20,
-            targetAccuracy: 96,
-            lines: [
-        "ddaf ads fsas saas fss dfsa sf sff fad sads fsdss",
-        "sf dafd faa ss add fdsfs dsa dsf fssa fafa asafd",
-        "asa da sad dddf ada saa ddff sdfs sad dsf ad aaasa",
-        "adss fssad faafd dd sdf asss aff sdf sfdd sdfss"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-2",
@@ -44,13 +32,7 @@ export const CURRICULUM = {
             description: "Train your right hand resting position: Index (J), Middle (K), Ring (L), Pinky (;), and Thumb on Space.",
             keysIntroduced: ["j", "k", "l", ";", " "],
             targetWpm: 20,
-            targetAccuracy: 96,
-            lines: [
-        "jkl; ;lkj jkl; ;lkj jj kk ll ;; jk l; kj ;l",
-        "jlk; k;jl ljk; ;klj jkl; kl;j ljk; ;lkj jk;l",
-        "jjj kkk lll ;;; jk ;l kj l; jlk; ;lkj k;lj",
-        "jkl; lk;j j;kl kj;l lkj; jkl; ;lkj jkl; ;lkj"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-3",
@@ -60,13 +42,7 @@ export const CURRICULUM = {
             description: "Combine both hands on the home row to form real words without moving your hands away from basic position.",
             keysIntroduced: ["a", "s", "d", "f", "j", "k", "l", ";"],
             targetWpm: 25,
-            targetAccuracy: 97,
-            lines: [
-        "ask dad fall flask salad lads adds fall sad asks",
-        "all dads salad flask lads ask fall adds alfalfa all",
-        "flask asks salad fall lads adds all dads salad ask",
-        "adds fall flask dad ask salad all lads dads salad"
-      ]
+            targetAccuracy: 97
     },
         {
             id: "amat-4",
@@ -76,13 +52,7 @@ export const CURRICULUM = {
             description: "Extend your left index finger rightward to G, and right index finger leftward to H. Always return to F and J.",
             keysIntroduced: ["g", "h"],
             targetWpm: 25,
-            targetAccuracy: 96,
-            lines: [
-        "fgf jhj fgf jhj fg hj gf jh fghj jhhg fgf jhj",
-        "gas had half flag dash flash glad hall slag fall",
-        "shah sash glad flash half flags dash gas hall slag",
-        "flash flags half had dash glass gas hall glad flask"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-5",
@@ -92,13 +62,7 @@ export const CURRICULUM = {
             description: "Reach left middle finger up to E and right middle finger up to I. These are two of the most common vowels in English.",
             keysIntroduced: ["e", "i"],
             targetWpm: 28,
-            targetAccuracy: 96,
-            lines: [
-        "ded kik ded kik de ki ed ik died like feed silk",
-        "life file side sail field safe hide deal slid idle",
-        "like feed lake silk hide leaf file side safe died",
-        "idea seal leak hill leaf disk self heal slide life"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-6",
@@ -108,13 +72,7 @@ export const CURRICULUM = {
             description: "Master all left-hand top keys: Pinky (Q), Ring (W), Index (R, T). Return each finger to its home key after reaching.",
             keysIntroduced: ["q", "w", "r", "t"],
             targetWpm: 30,
-            targetAccuracy: 96,
-            lines: [
-        "frf ftf sws aqa red wet tree west sweet star ware",
-        "water street fast start great water treat their raw",
-        "were raw wait write draw rest wear rate treat water",
-        "star teeth write aware sweet treat start treat west"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-7",
@@ -124,13 +82,7 @@ export const CURRICULUM = {
             description: "Master right-hand top keys: Index (Y, U), Ring (O), Pinky (P). Your hands now control the entire top two rows.",
             keysIntroduced: ["y", "u", "o", "p"],
             targetWpm: 32,
-            targetAccuracy: 96,
-            lines: [
-        "juj jyj lol ;p; you out pour play loop drop port",
-        "party you people pure supply poetry youth proud top",
-        "hope yellow paper power quiet your type output post",
-        "you play poetry power update layout proper youth report"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-8",
@@ -140,13 +92,7 @@ export const CURRICULUM = {
             description: "Extend downwards: Pinky (Z), Ring (X), Middle (C), Index (V, B). Keep wrists relaxed and elevated slightly.",
             keysIntroduced: ["z", "x", "c", "v", "b"],
             targetWpm: 32,
-            targetAccuracy: 96,
-            lines: [
-        "aza sxs dcd fvf fbf back cave base zero view verb",
-        "box civic brave exact zebra cover circle black buzz",
-        "vivid basic voice curve brick excel check brave zero",
-        "brave circle vector block zest cave browse vibe fabric"
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-9",
@@ -156,13 +102,7 @@ export const CURRICULUM = {
             description: "Reach downwards: Index (N, M), Middle (,), Ring (.). You have now practiced all three rows of letter keys.",
             keysIntroduced: ["n", "m", ",", "."],
             targetWpm: 35,
-            targetAccuracy: 96,
-            lines: [
-        "jnj jmj k,k l.l man name main mind plan moon norm",
-        "mind, moon, plan, norm, simple, dream, lemon, main.",
-        "fine mind, open land, clean room, common form.",
-        "learn to touch type, build speed, and enjoy the flow."
-      ]
+            targetAccuracy: 96
     },
         {
             id: "amat-10",
@@ -170,15 +110,9 @@ export const CURRICULUM = {
             subtitle: "Complete Lowercase Mastery",
             badge: "Lesson 10",
             description: "Seamless transitions across all three letter rows. Strive for consistent cadence rather than bursts of speed.",
-            keysIntroduced: ["all letters"],
+            keysIntroduced: Array.from("abcdefghijklmnopqrstuvwxyz"),
             targetWpm: 38,
-            targetAccuracy: 97,
-            lines: [
-        "the quick brown fox jumps over the lazy dog near the river.",
-        "pack my box with five dozen liquor jugs and bright gems.",
-        "bright vixens jump quickly and do waltz with playful zeal.",
-        "touch typing brings precision, effortless rhythm, and high speed."
-      ]
+            targetAccuracy: 97
     },
         {
             id: "amat-11",
@@ -186,15 +120,9 @@ export const CURRICULUM = {
             subtitle: "Speed & Flow Evaluation",
             badge: "Amateur Final",
             description: "Review all four lines at a target of 40 WPM and 98% accuracy. This lesson is untimed.",
-            keysIntroduced: ["review"],
+            keysIntroduced: Array.from("abcdefghijklmnopqrstuvwxyz ,.;"),
             targetWpm: 40,
-            targetAccuracy: 98,
-            lines: [
-        "focus on smooth motion and relaxed fingers on the home row.",
-        "speed is a byproduct of accuracy, repetition, and calm focus.",
-        "practice each day to make familiar movements feel more natural.",
-        "you have mastered the fundamentals of the modern keyboard."
-      ]
+            targetAccuracy: 98
     }
   ],
 
@@ -207,13 +135,7 @@ export const CURRICULUM = {
             description: "Build left-hand accuracy with a target of 25 WPM and 98% accuracy.",
             keysIntroduced: ["a", "s", "d", "f", " "],
             targetWpm: 25,
-            targetAccuracy: 98,
-            lines: [
-        "ddaf ads fsas saas fss dfsa sf sff fad sads fsdss",
-        "sf dafd faa ss add fdsfs dsa dsf fssa fafa asafd",
-        "asa da sad dddf ada saa ddff sdfs sad dsf ad aaasa",
-        "adss fssad faafd dd sdf asss aff sdf sfdd sdfss"
-      ]
+            targetAccuracy: 98
     },
         {
             id: "pro-2",
@@ -223,13 +145,7 @@ export const CURRICULUM = {
             description: "Rigorous right hand balance and pinky precision.",
             keysIntroduced: ["j", "k", "l", ";", " "],
             targetWpm: 25,
-            targetAccuracy: 98,
-            lines: [
-        "jkl; ;lkj jkl; ;lkj jj kk ll ;; jk l; kj ;l",
-        "jlk; k;jl ljk; ;klj jkl; kl;j ljk; ;lkj jk;l",
-        "jjj kkk lll ;;; jk ;l kj l; jlk; ;lkj k;lj",
-        "jkl; lk;j j;kl kj;l lkj; jkl; ;lkj jkl; ;lkj"
-      ]
+            targetAccuracy: 98
     },
         {
             id: "pro-3",
@@ -239,13 +155,7 @@ export const CURRICULUM = {
             description: "Fast alternating strokes between left and right hands on the home row.",
             keysIntroduced: ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";"],
             targetWpm: 30,
-            targetAccuracy: 98,
-            lines: [
-        "flash glad half dash salad flask alfalfa flags hall",
-        "all dads salad flask lads ask fall glad alfalfa all",
-        "dash flags half had dash glass gas hall glad flask",
-        "flask asks salad fall lads glad all dads salad ask"
-      ]
+            targetAccuracy: 98
     },
         {
             id: "pro-4",
@@ -255,13 +165,7 @@ export const CURRICULUM = {
             description: "Speed drills covering Q W E R T Y U I O P combined with home row.",
             keysIntroduced: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
             targetWpm: 35,
-            targetAccuracy: 98,
-            lines: [
-        "type writer quiet youth output proper report paper power",
-        "repeat poetry requests quietly with steady replies",
-        "write great poetry without worry or tired wrists",
-        "quiet thoughtful replies require steady effort"
-      ]
+            targetAccuracy: 98
     },
         {
             id: "pro-5",
@@ -271,13 +175,7 @@ export const CURRICULUM = {
             description: "Z X C V B N M with commas and periods.",
             keysIntroduced: ["z", "x", "c", "v", "b", "n", "m", ",", "."],
             targetWpm: 38,
-            targetAccuracy: 98,
-            lines: [
-        "zebra, civil, vector, combat, bronze, dynamic, mix.",
-        "make every keystroke count, move with calm, precise hands.",
-        "brave new ideas come from disciplined, daily practice.",
-        "the beauty of typing is thinking directly onto the glass."
-      ]
+            targetAccuracy: 98
     },
         {
             id: "pro-6",
@@ -285,15 +183,9 @@ export const CURRICULUM = {
             subtitle: "Opposite Hand Shift Mechanics",
             badge: "Lesson 6",
             description: "Use the opposite hand for Shift: hold Left Shift with your left pinky for right-hand capitals, and Right Shift with your right pinky for left-hand capitals.",
-            keysIntroduced: ["Shift", "Capitals"],
+            keysIntroduced: Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
             targetWpm: 35,
-            targetAccuracy: 97,
-            lines: [
-        "Amber Birch Cedar Daisy Elm Fern Grove Hazel Iris Jasmine",
-        "Bright Mornings Bring Clear Thoughts And Gentle Focus.",
-        "London Bristol Oxford Leeds Bath York Durham Chester",
-        "Read A New Page. Write A Clear Note. Share A Good Idea."
-      ]
+            targetAccuracy: 97
     },
         {
             id: "pro-7",
@@ -303,13 +195,7 @@ export const CURRICULUM = {
             description: "Reach from your home positions to the number row, then return each finger to its home key.",
             keysIntroduced: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
             targetWpm: 30,
-            targetAccuracy: 96,
-            lines: [
-        "10 20 30 40 50 60 70 80 90 100 2020 2024 2028 2032",
-        "room 101, flight 404, gate 72, seat 38, order 9582",
-        "the library has 120 books on shelf 3 and 48 on shelf 4.",
-        "we have 365 days, 24 hours, 60 minutes, and 3600 seconds."
-      ]
+            targetAccuracy: 96
     },
         {
             id: "pro-8",
@@ -319,13 +205,7 @@ export const CURRICULUM = {
             description: "Master essential punctuation for articles, essays, and executive communications.",
             keysIntroduced: ["'", "\"", "-", ":", ";", "(", ")", "!", "?"],
             targetWpm: 35,
-            targetAccuracy: 96,
-            lines: [
-        "\"A clear sentence carries one useful thought.\"",
-        "Can't, won't, it's, they're, who's ready to begin?",
-        "Notes: practice, patience, progress - is that clear? Yes!",
-        "She said, \"Try one more line (and take your time).\""
-      ]
+            targetAccuracy: 96
     },
         {
             id: "pro-9",
@@ -336,14 +216,7 @@ export const CURRICULUM = {
             keysIntroduced: ["{", "}", "[", "]", "<", ">", "/", "\\", "=", "+", "*", "&",
                 "%", "$"],
             targetWpm: 30,
-            targetAccuracy: 95,
-            lines: [
-        "const sum = (a, b) => { return [a + b, a * b]; };",
-        "if (index >= 0 && status === 'active') { array.push(item); }",
-        "<div className=\"container\" style={{ display: 'flex' }} />",
-        "git commit -m \"feat: optimized typing tutor engine 100%\"",
-        "paths: src/main.js src\\main.js; price = $20; discount = 10%;"
-      ]
+            targetAccuracy: 95
     },
         {
             id: "pro-10",
@@ -351,15 +224,11 @@ export const CURRICULUM = {
             subtitle: "Full Keyboard Review",
             badge: "Pro Final",
             description: "The final review combines capitals, numbers, symbols, and sustained speed.",
-            keysIntroduced: ["Full Keyboard Mastery"],
+            keysIntroduced: Array.from(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,.;'\"-:()!?{}[]<>/\\=+*&%$"
+            ),
             targetWpm: 50,
-            targetAccuracy: 98,
-            lines: [
-        "A quiet morning offers room for clear thought, careful work, and a new idea worth exploring.",
-        "Read 12 pages, write 3 short notes, and check each detail before moving to the next task.",
-        "Use {braces}, [brackets], and (parentheses) with care: every symbol has a place.",
-        "Practice for 15 minutes, aim for 98% accuracy, and let steady progress build your confidence."
-      ]
+            targetAccuracy: 98
     }
   ],
 

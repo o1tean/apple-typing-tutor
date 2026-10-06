@@ -15,6 +15,9 @@ import {
     currentWord,
     formatElapsedTime,
     generateWords,
+    generateWeakDrill,
+    generateLessonDrill,
+    focusKeys,
     normalizeCustomText,
     recordSpeedSample,
     resultFeedback,
@@ -87,6 +90,7 @@ function practice(settings) {
 function lessonExercise(track, index) {
     return {
         ...CURRICULUM[track][index],
+        lines: generateLessonDrill(track, index),
         track: 'lesson',
         lessonTrack: track,
         lessonIndex: index,
@@ -520,6 +524,7 @@ function Results({
     onRestart,
     onRepeat,
     onPracticeMissed,
+    onPracticeWeak,
     onNext,
 }) {
     const maximum = Math.max(20, ...samples.map((sample) => sample.wpm));
@@ -740,6 +745,11 @@ function Results({
                 {result.missedWords.length > 0 && (
                     <button className="text-button" onClick={onPracticeMissed}>
                         Practice missed words
+                    </button>
+                )}
+                {onPracticeWeak && (
+                    <button className="text-button" onClick={onPracticeWeak}>
+                        Practice weak keys
                     </button>
                 )}
                 {onNext && (
@@ -1002,6 +1012,9 @@ export default function App() {
     const restartExercise = () => {
         if (exercise.track === 'test') setExercise(practice(settings));
         else if (exercise.track === 'quote') loadQuote();
+        else if (exercise.track === 'lesson')
+            loadLesson(exercise.lessonTrack, exercise.lessonIndex);
+        else if (exercise.track === 'weak') practiceWeak();
         else setExercise({ ...exercise });
     };
     const repeatExercise = () =>
@@ -1016,6 +1029,21 @@ export default function App() {
             title: `missed words · ${result.missedWords.length}`,
             lines: [result.missedWords.join(' ')],
         });
+    const weakFocus = useMemo(
+        () => focusKeys(storage.getLearning()),
+        [storage.data.learning],
+    );
+    const practiceWeak = () => {
+        const drill = generateWeakDrill(storage.getLearning());
+        if (!drill.focusKeys.length) return;
+        setExercise({
+            ...drill,
+            track: 'weak',
+            id: 'weak-keys',
+            title: 'Weak-key practice',
+            options: { recordEligible: false },
+        });
+    };
     const currentDuration =
         settings.testMode === 'time'
             ? settings.testDuration
@@ -1030,7 +1058,7 @@ export default function App() {
 
     return (
         <div
-            className={`app ${exercise.track === 'lesson' ? 'lesson-mode' : ''}`}
+            className={`app ${['lesson', 'weak'].includes(exercise.track) ? 'lesson-mode' : ''}`}
         >
             <header className="header">
                 <button
@@ -1214,6 +1242,11 @@ export default function App() {
                             )}
                         </>
                     )}
+                    {!result && weakFocus.length > 0 && (
+                        <button className="text-button" onClick={practiceWeak}>
+                            Practice weak keys
+                        </button>
+                    )}
                 </div>
                 {result ? (
                     <Results
@@ -1223,6 +1256,7 @@ export default function App() {
                         onRestart={restartExercise}
                         onRepeat={repeatExercise}
                         onPracticeMissed={practiceMissed}
+                        onPracticeWeak={weakFocus.length ? practiceWeak : null}
                         onNext={nextLesson}
                     />
                 ) : (
@@ -1230,16 +1264,18 @@ export default function App() {
                         <div className="test-heading">
                             <div>
                                 <p className="eyebrow">
-                                    {exercise.track === 'lesson'
+                                    {['lesson', 'weak'].includes(exercise.track)
                                         ? exercise.title
                                         : 'a moment of focus'}
                                 </p>
                                 <h1>
                                     {exercise.track === 'lesson'
                                         ? 'Learn touch typing.'
-                                        : engine.isRunning
-                                          ? 'Stay in the flow.'
-                                          : 'Just you and the keys.'}
+                                        : exercise.track === 'weak'
+                                          ? 'Make the tricky keys familiar.'
+                                          : engine.isRunning
+                                            ? 'Stay in the flow.'
+                                            : 'Just you and the keys.'}
                                 </h1>
                             </div>
                             <div
@@ -1306,6 +1342,29 @@ export default function App() {
                                     {exercise.targetAccuracy}% accuracy · no
                                     skipped characters
                                 </details>
+                            </aside>
+                        )}
+                        {exercise.track === 'weak' && (
+                            <aside
+                                className="lesson-instructions"
+                                aria-label="Adaptive practice instructions"
+                            >
+                                <p>
+                                    Slow down and aim for accuracy. Your next
+                                    drill changes as these keys improve.
+                                </p>
+                                <ul
+                                    className="focus-chips"
+                                    aria-label="Focus keys"
+                                >
+                                    {exercise.focusKeys.map((key) => (
+                                        <li key={key}>
+                                            <kbd>
+                                                {key === ' ' ? 'Space' : key}
+                                            </kbd>
+                                        </li>
+                                    ))}
+                                </ul>
                             </aside>
                         )}
                         <Arena

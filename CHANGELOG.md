@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added adaptive weak-key drills with rotating focus keys and fresh lesson retries generated from introduced keys.
+
 - Results now show a keyboard error map and measured key/pair reach times, retained across sessions with safe old-save migration.
 
 - Added 1,189 public-domain words and 100 sourced quotations; removed persona prose and kept saved quote identities stable.

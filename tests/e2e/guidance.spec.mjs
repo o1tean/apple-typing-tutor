@@ -11,6 +11,10 @@ const fingertip = finger => finger.evaluate(element => {
 
 test('the next key moves its finger in the physical reach direction', async ({ page }) => {
     await page.goto('./');
+    await page.getByRole('button', { name: 'custom', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Text to practice', exact: true }).fill(
+        'df');
+    await page.getByRole('button', { name: 'Start practice', exact: true }).click();
     const middle = page.locator('#finger-left-middle');
     const leftIndex = page.locator('#finger-left-index');
     const rightIndex = page.locator('#finger-right-index');
@@ -137,6 +141,13 @@ test.describe('reduced motion', () => {
     test('keeps the target finger reach without transitions or animations',
         async ({ page }) => {
             await page.goto('./');
+            await page.getByRole('button', { name: 'custom', exact: true }).click();
+            await page.getByRole('textbox', {
+                name: 'Text to practice',
+                exact: true
+            }).fill('df');
+            await page.getByRole('button', { name: 'Start practice', exact: true })
+                .click();
             const middle = page.locator('#finger-left-middle');
             const home = await fingertip(middle);
             await page.getByRole('button', { name: 'custom', exact: true }).click();

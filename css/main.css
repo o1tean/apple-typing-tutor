@@ -998,6 +998,23 @@ input[type='range'] {
     font-weight: 400;
 }
 
+.focus-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.focus-chips kbd {
+    display: block;
+    padding: 8px 12px;
+    color: var(--accent);
+    border-color: var(--accent);
+    font-size: 16px;
+}
+
 .focus-keys {
     font-family: var(--font-mono);
     font-size: 12px;

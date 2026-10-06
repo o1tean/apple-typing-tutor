@@ -1,4 +1,76 @@
-import { CURRICULUM } from './lessons.js';
+import { CURRICULUM, FINGER_MAP } from './lessons.js';
+import { migrateLearning } from './learning.js';
+
+export function focusKeys(profile, limit = 3) {
+    if (profile?.version !== 1) return [];
+    const cells = Object.entries(migrateLearning(profile).keys).filter(([, cell]) => cell.attempts >
+        0);
+    const slowest = Math.max(1, ...cells.filter(([, cell]) => cell.latencySamples > 0)
+        .map(([, cell]) => cell.recentLatencyMs));
+    const ranked = cells.map(([key, cell]) => ({
+        key,
+        score: 2 * cell.recentErrorRate + (cell.latencySamples > 0 ? cell
+            .recentLatencyMs / slowest : 0)
+    })).filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.key.localeCompare(b
+        .key));
+    return ranked.filter(item => item.score >= (ranked[0]?.score || 0) * 0.6)
+        .slice(0, Math.max(0, limit)).map(item => item.key);
+}
+
+function drillLines(focus, allowed, random) {
+    if (!focus.length) return [];
+    const columns = Math.max(8, Math.ceil(focus.length / 4));
+    const choose = items => items[Math.floor(random() * items.length)];
+    const context = Array.from(allowed).filter(key => key !== ' ');
+    if (!context.length) return [];
+    if (focus.includes(' ')) {
+        const letters = focus.filter(key => key !== ' ');
+        return Array.from({ length: 4 }, () => Array.from({ length: columns }, () =>
+            choose(letters.length ? letters : context)).join(' '));
+    }
+    const home = Array.from('asdfjkl;');
+    const pools = focus.map(key => CURRICULUM.speedWords.map(word => /[A-Z]/.test(key)
+        ? word.toUpperCase() : word).filter(word => word.length <= 8 &&
+        Array.from(word).every(char => allowed.has(char)) &&
+        Array.from(word).filter(char => char === key).length >= Math.max(2, (word.length +
+            1) / 3)));
+    const offset = Math.floor(random() * focus.length);
+    return Array.from({ length: 4 }, (_, line) => Array.from({ length: columns }, (_, column) => {
+        const index = (offset + line * columns + column) % focus.length;
+        const key = focus[index];
+        if (pools[index].length && random() < 0.5) return choose(pools[index]);
+        const finger = FINGER_MAP[key];
+        const rest = home.find(char => allowed.has(char) && char !== key &&
+            FINGER_MAP[char]?.hand === finger?.hand && FINGER_MAP[char]?.finger ===
+            finger?.finger);
+        const nearby = home.filter(char => allowed.has(char) && char !== key &&
+            FINGER_MAP[char]?.hand === finger?.hand);
+        const other = rest || choose(nearby.length ? nearby : context);
+        // Two focused characters per four-character reach survive the separating Space.
+        return choose([key + other + key + other, key + other + other + key,
+            other + key + other + key]);
+    }).join(' '));
+}
+
+export function generateWeakDrill(profile, random = Math.random) {
+    const keys = focusKeys(profile);
+    return {
+        lines: drillLines(keys, new Set([...Array.from('abcdefghijklmnopqrstuvwxyz'), ...keys]),
+            random),
+        focusKeys: keys
+    };
+}
+
+export function generateLessonDrill(track, index, random = Math.random) {
+    const lessons = ['amateur', 'pro'].includes(track) ? CURRICULUM[track] : null;
+    const lesson = lessons?.[index];
+    if (!lesson || !Number.isInteger(index)) return [];
+    const ownHand = track === 'amateur' ? index <= 2 : index <= 1;
+    const taught = ownHand ? [lesson] : lessons.slice(track === 'amateur' ? 1 : 0, index + 1);
+    const allowed = new Set([' ', ...taught.flatMap(item => item.keysIntroduced)]);
+    const current = lesson.keysIntroduced.filter(key => key !== ' ');
+    return drillLines(current.length ? current : [' '], allowed, random);
+}
 
 export function generateWords(count, options = {}, random = Math.random) {
     const pool = CURRICULUM.speedWords;

@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
 import { TypingEngine } from '../js/engine.js';
 import { CURRICULUM } from '../js/lessons.js';
+import { mergeLearning } from '../js/learning.js';
 import {
     currentWord,
+    focusKeys,
     formatElapsedTime,
+    generateLessonDrill,
+    generateWeakDrill,
     generateWords,
     normalizeCustomText,
     recordSpeedSample,
@@ -161,6 +165,92 @@ assert.equal(sessionLabel({
         numbers: true
     }),
     '25 words · numbers');
+
+for (const key of ['q', ';', '7', ' ']) {
+    const profile = {
+        version: 1,
+        keys: {
+            [key]: {
+                attempts: 40,
+                errors: 36,
+                latencySamples: 40,
+                latencyTotalMs: 36000,
+                recentErrorRate: 0.9,
+                recentLatencyMs: 900
+            }
+        },
+        bigrams: {}
+    };
+    const before = JSON.stringify(profile);
+    const variants = [];
+    for (const value of [0, 0.5, 0.999]) {
+        const drill = generateWeakDrill(profile, () => value);
+        assert.ok(drill.focusKeys.includes(key), 'observed weak keys remain eligible for practice');
+        const text = drill.lines.join('');
+        assert.ok(text.length > 0);
+        assert.ok(Array.from(text).filter(char => char === key).length / text.length >= 1 / 3,
+            `weak ${JSON.stringify(key)} occupies at least a third of all characters, including spaces`
+        );
+        assert.deepEqual(generateWeakDrill(profile, () => value), drill,
+            'an injected random source gives a reproducible drill');
+        variants.push(text);
+    }
+    assert.notEqual(variants[0], variants[2], 'fresh random choices vary the practiced text');
+    assert.equal(JSON.stringify(profile), before, 'generating practice never mutates learned data');
+}
+for (const track of ['amateur', 'pro']) {
+    const introduced = new Set([' ']);
+    for (const [index, item] of CURRICULUM[track].entries()) {
+        const before = JSON.stringify(item);
+        assert.ok(item.keysIntroduced.every(key => Array.from(key).length === 1),
+            'lesson generation uses explicit introduced characters');
+        for (const key of item.keysIntroduced) introduced.add(key);
+        const ownHand = ['amat-intro', 'amat-1', 'amat-2', 'pro-1', 'pro-2'].includes(item.id);
+        const available = ownHand ? new Set([' ', ...item.keysIntroduced]) : introduced;
+        const first = generateLessonDrill(track, index, () => 0);
+        const retry = generateLessonDrill(track, index, () => 0.999);
+        assert.ok(first.join('').length > 0 && retry.join('').length > 0);
+        for (const lines of [first, retry]) {
+            assert.ok(Array.from(lines.join('')).every(key => available.has(key)),
+                `${item.id} cannot practice a character outside its introduced keys`);
+        }
+        assert.notDeepEqual(first, retry, `${item.id} retries are generated instead of memorized`);
+        assert.equal(JSON.stringify(item), before,
+            'lesson IDs, targets and definitions stay intact');
+    }
+}
+const weakProfile = {
+    version: 1,
+    keys: {
+        q: {
+            attempts: 40,
+            errors: 36,
+            latencySamples: 40,
+            latencyTotalMs: 36000,
+            recentErrorRate: 0.9,
+            recentLatencyMs: 900
+        },
+        w: {
+            attempts: 40,
+            errors: 12,
+            latencySamples: 40,
+            latencyTotalMs: 20000,
+            recentErrorRate: 0.3,
+            recentLatencyMs: 500
+        }
+    },
+    bigrams: {}
+};
+assert.deepEqual(focusKeys(weakProfile), ['q']);
+const improved = mergeLearning(weakProfile, {
+    keys: {
+        q: { attempts: 25, errors: 0, latencySamples: 25, latencyTotalMs: 1250 }
+    },
+    bigrams: {}
+});
+assert.deepEqual(focusKeys(improved), ['w'],
+    'cleaner and faster recent practice rotates the old focus out toward the next weak key');
+assert.equal(improved.keys.q.errors, 36, 'rotation preserves lifetime errors');
 console.log(
     'Practice generation, custom Unicode cleanup, exact speed samples, elapsed labels, typing feedback, and result coaching checks passed.'
 );
