@@ -2,24 +2,18 @@
 
 ## Unreleased
 
-- Added a local result-card PNG with metrics, keyboard heatmap and demo URL; social metadata now previews Typeflow teaching.
+## 1.0.0 — Prepared locally; publication pending
 
-- Added adaptive weak-key drills with rotating focus keys and fresh lesson retries generated from introduced keys.
-
-- Results now show a keyboard error map and measured key/pair reach times, retained across sessions with safe old-save migration.
-
+- First visits start lesson 1 with finger/keyboard guidance, skip-to-test and an honest physical-keyboard notice; existing settings stay unchanged.
+- Finger guidance reaches for each row, inner keys, Space and opposite-hand Shift; reduced motion keeps a static teaching pose.
+- Adaptive weak-key drills emphasize rotating focus keys; all 22 lessons generate fresh retries from introduced keys.
+- Results show a keyboard error map and key/pair reach times, retained across sessions with tested old-save migration.
+- Saves preserve newer fields through settings changes, results and quota recovery, including older open-tab updates.
 - Added 1,189 public-domain words and 100 sourced quotations; removed persona prose and kept saved quote identities stable.
-- Saves now preserve newer data fields through settings changes, results and quota recovery, including updates from an older open tab.
-- Added a re-shootable teaching GIF and Typeflow social preview; the README leads with learning and the one-click demo.
-- Finger guidance now reaches for each row, inner keys, Space and opposite-hand Shift; reduced motion keeps a static teaching pose.
-- First visits now start lesson 1 with finger/keyboard guidance, skip-to-test and an honest touch-keyboard notice; existing settings stay unchanged.
-- Restored the built live demo through verified Actions Pages deployment, relative assets, Playwright smoke, CI/format gates, MIT license and visitor docs.
-- Established durable launch criteria and archived the retired plans and private course research locally.
-- Rounds 1–13: established React/Vite tests, 22 lessons, quotes, custom text and guided/free-flow input.
-- Added same-text retries, missed-word practice and lesson instructions, introduced keys and targets.
-- Corrected editing, skipped/extra characters, pause/resume and input/composition boundaries.
-- Qualified records by settings, accuracy and measured time; preserved older scores and lesson stars.
-- Added save recovery, export backups, queued-attempt preservation, immediate results and shared mute/volume control.
-- Improved responsive layouts, dialogs/focus, text feedback, coaching, selection, original icons and Shift guidance.
-- Made chart labels/timestamps readable and exact; report insufficient consistency data honestly.
-- Cleaned invisible copied layout markers while preserving visible hyphens and meaningful joining characters.
+- Native result-card PNG downloads include metrics, heatmap and demo URL; absolute social metadata previews Typeflow teaching.
+- Added a re-shootable teaching GIF, social preview, visitor README and MIT license.
+- Built main deploys through tested Actions artifacts and relative assets; the legacy Pages source setting still awaits user correction.
+- Added push/PR CI, keyboard-only browser coverage and three-run mobile Lighthouse evidence; medians 98 performance, 100 accessibility, 100 best practices.
+- Foundation rounds 1–13 established React/Vite, guided/free-flow tests, custom text, same-text/missed-word retries and lesson instructions/targets.
+- Those rounds corrected editing, skipped/extra characters, pause/composition boundaries and copied layout markers; scoring preserves older records/stars.
+- They added safe save recovery/export/queued attempts, immediate results, shared audio controls and accessible responsive dialogs/feedback/charts.
