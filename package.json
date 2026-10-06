@@ -1,30 +1,40 @@
 {
   "name": "typeflow-apple-typing-tutor",
   "version": "1.0.0",
-  "description": "A focused React typing test and touch typing tutor.",
+  "description": "Learn touch typing with guided lessons and live finger guidance.",
   "type": "module",
   "scripts": {
     "start": "vite --host 127.0.0.1",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs"
+    "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs",
+    "e2e": "playwright test",
+    "format:check": "prettier --check \"**/*.jsx\" \"**/*.svg\""
   },
   "keywords": [
     "touch-typing",
-    "apple",
     "typing-tutor",
-    "magic-keyboard",
     "web-audio"
   ],
-  "author": "Antigravity",
+  "author": "o1tean",
   "license": "MIT",
   "dependencies": {
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "prettier": "3.9.9",
     "vite": "^8.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o1tean/apple-typing-tutor.git"
+  },
+  "homepage": "https://o1tean.github.io/apple-typing-tutor/",
+  "bugs": {
+    "url": "https://github.com/o1tean/apple-typing-tutor/issues"
   }
 }

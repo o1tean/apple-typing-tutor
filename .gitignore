@@ -6,3 +6,8 @@ dist/
 *.log
 .checkpoints/
 RESUME_CHECKPOINT.md
+.local/
+launch/
+LOCAL_NOTES.md
+playwright-report/
+test-results/
