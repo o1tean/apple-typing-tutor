@@ -1,3 +1,4 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/o1tean/apple-typing-tutor?utm_source=oss&utm_medium=github&utm_campaign=o1tean%2Fapple-typing-tutor&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 # TypeFlow
 
 A focused touch typing tutor with an Apple-inspired interface. Floating controls and dialogs use a CSS interpretation of Liquid Glass: translucent materials, soft reflections, rounded edges, and gentle press feedback. The exercise itself stays clear and readable.
