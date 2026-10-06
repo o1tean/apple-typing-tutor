@@ -55,3 +55,5 @@ context against the live demo and writes `docs/media/hero.gif` and
 `docs/media/social-preview.png`. To record a running preview instead, set
 `TYPEFLOW_DEMO_URL` to its URL. The script enforces the 5 MB hero limit; inspect
 the animation and 1280×640 preview before committing.
+
+Run `npm run audit` with Node.js 22+ and Playwright Chromium installed for the pinned Lighthouse CLI audit. It runs three mobile audits with fresh temporary profiles and writes `docs/quality-report.json`; full reports stay in ignored `.local/lighthouse/`. `TYPEFLOW_AUDIT_URL` selects a different URL; the default is the live demo.

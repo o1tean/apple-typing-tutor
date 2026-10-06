@@ -1,0 +1,191 @@
+{
+  "sourceCommit": "dc8fc29a1864773f58829d7d65bed1a5ac595c4e",
+  "toolSource": "https://github.com/GoogleChrome/lighthouse",
+  "profile": "Fresh temporary Chromium profile for every run; default mobile throttling.",
+  "thresholds": {
+    "performance": 90,
+    "accessibility": 95,
+    "best-practices": 95
+  },
+  "median": {
+    "performance": 98,
+    "accessibility": 100,
+    "best-practices": 100
+  },
+  "runs": [
+    {
+      "timestamp": "2026-10-06T17:04:55.688Z",
+      "lighthouseVersion": "13.5.0",
+      "url": "https://o1tean.github.io/apple-typing-tutor/",
+      "scores": {
+        "performance": 89,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "opportunities": [
+        {
+          "id": "first-contentful-paint",
+          "title": "First Contentful Paint",
+          "score": 0.94,
+          "value": "1.6 s"
+        },
+        {
+          "id": "largest-contentful-paint",
+          "title": "Largest Contentful Paint",
+          "score": 0.99,
+          "value": "1.6 s"
+        },
+        {
+          "id": "speed-index",
+          "title": "Speed Index",
+          "score": 0,
+          "value": "27.1 s"
+        },
+        {
+          "id": "max-potential-fid",
+          "title": "Max Potential First Input Delay",
+          "score": 0.99,
+          "value": "80 ms"
+        },
+        {
+          "id": "unused-javascript",
+          "title": "Reduce unused JavaScript",
+          "score": 0,
+          "value": "Est savings of 51 KiB"
+        },
+        {
+          "id": "cache-insight",
+          "title": "Use efficient cache lifetimes",
+          "score": 0,
+          "value": "Est savings of 100 KiB"
+        },
+        {
+          "id": "lcp-breakdown-insight",
+          "title": "LCP breakdown",
+          "score": 0,
+          "value": null
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "title": "Network dependency tree",
+          "score": 0,
+          "value": null
+        },
+        {
+          "id": "render-blocking-insight",
+          "title": "Render-blocking requests",
+          "score": 0.5,
+          "value": null
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-10-06T17:05:26.054Z",
+      "lighthouseVersion": "13.5.0",
+      "url": "https://o1tean.github.io/apple-typing-tutor/",
+      "scores": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "opportunities": [
+        {
+          "id": "first-contentful-paint",
+          "title": "First Contentful Paint",
+          "score": 0.97,
+          "value": "1.4 s"
+        },
+        {
+          "id": "speed-index",
+          "title": "Speed Index",
+          "score": 0.83,
+          "value": "3.9 s"
+        },
+        {
+          "id": "max-potential-fid",
+          "title": "Max Potential First Input Delay",
+          "score": 0.99,
+          "value": "80 ms"
+        },
+        {
+          "id": "unused-javascript",
+          "title": "Reduce unused JavaScript",
+          "score": 0,
+          "value": "Est savings of 51 KiB"
+        },
+        {
+          "id": "cache-insight",
+          "title": "Use efficient cache lifetimes",
+          "score": 0,
+          "value": "Est savings of 100 KiB"
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "title": "Network dependency tree",
+          "score": 0,
+          "value": null
+        },
+        {
+          "id": "render-blocking-insight",
+          "title": "Render-blocking requests",
+          "score": 0.5,
+          "value": null
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-10-06T17:05:39.224Z",
+      "lighthouseVersion": "13.5.0",
+      "url": "https://o1tean.github.io/apple-typing-tutor/",
+      "scores": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "opportunities": [
+        {
+          "id": "first-contentful-paint",
+          "title": "First Contentful Paint",
+          "score": 0.96,
+          "value": "1.5 s"
+        },
+        {
+          "id": "speed-index",
+          "title": "Speed Index",
+          "score": 0.82,
+          "value": "3.9 s"
+        },
+        {
+          "id": "max-potential-fid",
+          "title": "Max Potential First Input Delay",
+          "score": 0.99,
+          "value": "80 ms"
+        },
+        {
+          "id": "unused-javascript",
+          "title": "Reduce unused JavaScript",
+          "score": 0,
+          "value": "Est savings of 51 KiB"
+        },
+        {
+          "id": "cache-insight",
+          "title": "Use efficient cache lifetimes",
+          "score": 0,
+          "value": "Est savings of 100 KiB"
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "title": "Network dependency tree",
+          "score": 0,
+          "value": null
+        },
+        {
+          "id": "render-blocking-insight",
+          "title": "Render-blocking requests",
+          "score": 0.5,
+          "value": null
+        }
+      ]
+    }
+  ]
+}
