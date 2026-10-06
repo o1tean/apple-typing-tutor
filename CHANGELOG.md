@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a re-shootable teaching GIF and Typeflow social preview; the README leads with learning and the one-click demo.
 - Finger guidance now reaches for each row, inner keys, Space and opposite-hand Shift; reduced motion keeps a static teaching pose.
 - First visits now start lesson 1 with finger/keyboard guidance, skip-to-test and an honest touch-keyboard notice; existing settings stay unchanged.
 - Restored the built live demo through verified Actions Pages deployment, relative assets, Playwright smoke, CI/format gates, MIT license and visitor docs.

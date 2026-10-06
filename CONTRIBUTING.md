@@ -46,3 +46,12 @@ Use `npx prettier --write` with the specific JSX or SVG files you changed.
 Keep machine-specific setup in gitignored `LOCAL_NOTES.md`. Do not create
 `AGENTS.override.md`, which replaces the shared rules. Keep temporary QA hooks
 out of production source, and never restore `.checkpoints` over tracked files.
+
+## Re-shoot the launch media
+
+With Playwright Chromium (`npx playwright install chromium`) and `ffmpeg` on
+PATH, run `node docs/media/record-demo.mjs`. It records real typing in an isolated
+context against the live demo and writes `docs/media/hero.gif` and
+`docs/media/social-preview.png`. To record a running preview instead, set
+`TYPEFLOW_DEMO_URL` to its URL. The script enforces the 5 MB hero limit; inspect
+the animation and 1280×640 preview before committing.
