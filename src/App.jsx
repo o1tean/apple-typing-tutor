@@ -11,6 +11,7 @@ import { KeyboardView } from '../js/keyboard.js';
 import { sound } from '../js/audio.js';
 import { storage } from '../js/storage.js';
 import { isDialogBackdrop } from '../js/dialog.js';
+import { resultCard } from '../js/share.js';
 import {
     currentWord,
     formatElapsedTime,
@@ -527,6 +528,26 @@ function Results({
     onPracticeWeak,
     onNext,
 }) {
+    const [downloading, setDownloading] = useState(false);
+    const [downloadMessage, setDownloadMessage] = useState('');
+    const downloadCard = async () => {
+        setDownloading(true);
+        setDownloadMessage('');
+        try {
+            const blob = await resultCard(result, exercise);
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `typeflow-${result.wpm}wpm.png`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            setDownloadMessage('Result card downloaded.');
+        } catch {
+            setDownloadMessage('Could not create the result card. Try again.');
+        } finally {
+            setDownloading(false);
+        }
+    };
     const maximum = Math.max(20, ...samples.map((sample) => sample.wpm));
     const duration = result.elapsedMilliseconds;
     const points = samples
@@ -757,7 +778,19 @@ function Results({
                         Next lesson <Icon name="next" />
                     </button>
                 )}
+                <button
+                    className="text-button"
+                    onClick={downloadCard}
+                    disabled={downloading}
+                >
+                    {downloading
+                        ? 'Preparing result card…'
+                        : 'Download result card'}
+                </button>
             </div>
+            <p className="field-help" aria-live="polite">
+                {downloadMessage}
+            </p>
         </section>
     );
 }

@@ -193,6 +193,23 @@ const CHAR_TO_CODE = {
     ' ': 'Space'
 };
 
+export function keyMeasurements(learning) {
+    const cells = new Map();
+    for (const [char, cell] of Object.entries(learning?.keys || {})) {
+        const code = Object.hasOwn(CHAR_TO_CODE, char) ? CHAR_TO_CODE[char] : null;
+        if (!code) continue;
+        const combined = cells.get(code) || {
+            attempts: 0,
+            errors: 0,
+            latencySamples: 0,
+            latencyTotalMs: 0
+        };
+        for (const field of Object.keys(combined)) combined[field] += cell[field];
+        cells.set(code, combined);
+    }
+    return cells;
+}
+
 export class KeyboardView {
     constructor(containerEl, handsContainerEl, fingerHintEl) {
         this.container = containerEl;
@@ -280,19 +297,7 @@ export class KeyboardView {
     }
 
     showHeatmap(learning) {
-        const cells = new Map();
-        for (const [char, cell] of Object.entries(learning?.keys || {})) {
-            const code = CHAR_TO_CODE[char];
-            if (!code) continue;
-            const combined = cells.get(code) || {
-                attempts: 0,
-                errors: 0,
-                latencySamples: 0,
-                latencyTotalMs: 0
-            };
-            for (const field of Object.keys(combined)) combined[field] += cell[field];
-            cells.set(code, combined);
-        }
+        const cells = keyMeasurements(learning);
         for (const [code, element] of this.keyElements) {
             const cell = cells.get(code);
             element.classList.toggle('key-measured', Boolean(cell?.attempts));

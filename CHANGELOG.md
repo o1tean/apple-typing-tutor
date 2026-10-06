@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a local result-card PNG with metrics, keyboard heatmap and demo URL; social metadata now previews Typeflow teaching.
+
 - Added adaptive weak-key drills with rotating focus keys and fresh lesson retries generated from introduced keys.
 
 - Results now show a keyboard error map and measured key/pair reach times, retained across sessions with safe old-save migration.

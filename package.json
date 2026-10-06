@@ -6,7 +6,7 @@
   "scripts": {
     "start": "vite --host 127.0.0.1",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "build": "vite build && node -e \"require('node:fs').copyFileSync('docs/media/social-preview.png', 'dist/og-image.png')\"",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs && node tests/content.mjs && node tests/learning.mjs",
     "e2e": "playwright test",
