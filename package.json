@@ -1,13 +1,14 @@
 {
   "name": "typeflow-apple-typing-tutor",
   "version": "1.0.0",
-  "description": "Apple-grade touch typing tutor inspired by TypingMe, optimized for modern UX with Magic Keyboard visualization, scissor-switch acoustics, and real-time guidance.",
+  "description": "A focused React typing test and touch typing tutor.",
   "type": "module",
-  "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 3000",
-    "dev": "python3 -m http.server 3000",
-    "test": "node tests/regression.mjs"
+    "start": "vite --host 127.0.0.1",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs"
   },
   "keywords": [
     "touch-typing",
@@ -17,5 +18,13 @@
     "web-audio"
   ],
   "author": "Antigravity",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.3"
+  }
 }

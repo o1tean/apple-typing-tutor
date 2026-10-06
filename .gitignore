@@ -1,5 +1,8 @@
 .DS_Store
 node_modules/
+dist/
 .vscode/
 .idea/
 *.log
+.checkpoints/
+RESUME_CHECKPOINT.md

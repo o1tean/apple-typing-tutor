@@ -1,22 +1,165 @@
-.hands-display { display: flex; justify-content: center; align-items: center; gap: 22px; width: 100%; margin: 0 auto; }
-.hand-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.hand-label { font-size: 9px; color: var(--text-tertiary); order: 2; }
-.hand-svg { width: 76px; height: 66px; overflow: visible; }
-.palm-shape { fill: var(--surface-hover); stroke: var(--border-prominent); stroke-width: 1.5; }
-.finger-pill { fill: var(--surface-active); stroke: var(--border-prominent); stroke-width: 1.2; transition: fill .15s; }
-.finger-tag { fill: var(--text-secondary); font-family: var(--font-mono); font-size: 11px; text-anchor: middle; pointer-events: none; }
-.finger-pill.active { stroke-width: 2; stroke: var(--target-color); fill: var(--target-color); }
-.accent-pinky { --target-color: var(--finger-pinky); }
-.accent-ring { --target-color: var(--finger-ring); }
-.accent-middle { --target-color: var(--finger-middle); }
-.accent-index { --target-color: var(--finger-index); }
-.accent-thumb { --target-color: var(--finger-thumb); }
-.finger-instruction-pill { display: flex; align-items: center; justify-content: center; gap: 8px; max-width: 280px; min-width: 230px; padding: 10px 14px; }
-.finger-pulse-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--accent-blue); }
-.finger-instruction-text { font-size: 12px; line-height: 1.5; color: var(--text-secondary); text-align: center; }
-@media (max-width: 700px) {
-  .hands-display { gap: 8px; }
-  .hand-svg { width: 60px; height: 56px; }
-  .finger-instruction-pill { min-width: 0; flex: 1; padding: 8px 0; }
-  .finger-instruction-text { font-size: 11px; }
+.hands-display {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 30px;
+    width: min(100%, 460px);
+    margin: 0 auto;
+}
+
+.hand-wrapper {
+    min-width: 0;
+    text-align: center;
+}
+
+.hand-svg {
+    display: block;
+    width: 100%;
+    max-width: 205px;
+    height: auto;
+    margin: auto;
+    overflow: visible;
+}
+
+.hand-outline {
+    fill: var(--surface);
+    stroke: var(--muted);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.finger-shape {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 1.5;
+    transition: fill .12s, stroke .12s;
+}
+
+.hand-detail,
+.finger-joint {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-linecap: round;
+    opacity: .45;
+}
+
+.finger-nail {
+    fill: var(--bg);
+    stroke: var(--border);
+    stroke-width: 1;
+}
+
+.finger-tag {
+    fill: var(--text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    text-anchor: middle;
+}
+
+.home-bump {
+    stroke: var(--muted);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+
+.finger-pill.active .finger-shape {
+    fill: color-mix(in srgb, var(--target-color) 24%, var(--surface));
+    stroke: var(--target-color);
+}
+
+.finger-pill.active .finger-nail {
+    fill: var(--target-color);
+    stroke: var(--target-color);
+}
+
+.finger-pill.active .finger-tag {
+    fill: #181d21;
+    font-weight: 700;
+}
+
+.finger-pill.active .home-bump {
+    stroke: #181d21;
+}
+
+[data-theme='light'] .finger-pill.active .finger-shape {
+    stroke: var(--text);
+    stroke-width: 2;
+}
+
+.finger-pill.shift-active .finger-shape {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-dasharray: 4 3;
+}
+
+.finger-pill.shift-active .finger-nail {
+    stroke: var(--accent);
+}
+
+.accent-pinky {
+    --target-color: var(--finger-pinky);
+}
+
+.accent-ring {
+    --target-color: var(--finger-ring);
+}
+
+.accent-middle {
+    --target-color: var(--finger-middle);
+}
+
+.accent-index {
+    --target-color: var(--finger-index);
+}
+
+.accent-thumb {
+    --target-color: var(--finger-thumb);
+}
+
+.hand-label {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.hand-label span {
+    color: var(--text);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+.finger-instructions {
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+.finger-instruction-text {
+    margin: 0;
+    min-height: 1.6em;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.hand-rest-note {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+    .hands-display {
+        gap: 12px 16px;
+        max-width: 390px;
+    }
+
+    .finger-instruction-text {
+        font-size: 12px;
+    }
 }

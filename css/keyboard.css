@@ -1,34 +1,139 @@
 /* Sculpted keycaps, a brushed chassis, and a single clear target. */
 .magic-keyboard {
-  width: 100%; max-width: 860px; min-width: 620px;
-  display: flex; flex-direction: column; gap: 6px;
-  background: var(--kb-chassis); border: 1px solid var(--kb-chassis-border);
-  border-radius: 19px; padding: 11px 11px 13px;
-  box-shadow: inset 0 1px #ffffff30, 0 3px 0 #10182820, 0 16px 30px #0b193018;
+    width: 100%;
+    max-width: 860px;
+    min-width: 620px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--kb-chassis);
+    border: 1px solid var(--kb-chassis-border);
+    border-radius: 19px;
+    padding: 11px 11px 13px;
+    box-shadow: inset 0 1px #ffffff30, 0 3px 0 #10182820, 0 16px 30px #0b193018;
 }
-.keyboard-row { display: flex; gap: 6px; height: 41px; }
+
+.keyboard-row {
+    display: flex;
+    gap: 6px;
+    height: 41px;
+}
+
 .magic-key {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  min-width: 0; height: 100%; border-radius: 7px;
-  background: var(--key-bg); border: 1px solid var(--key-border);
-  box-shadow: var(--key-shadow); color: var(--key-text); user-select: none;
-  transition: transform .08s, background .15s, box-shadow .15s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 100%;
+    border-radius: 7px;
+    background: var(--key-bg);
+    border: 1px solid var(--key-border);
+    box-shadow: var(--key-shadow);
+    color: var(--key-text);
+    user-select: none;
+    transition: transform .08s, background .15s, box-shadow .15s;
 }
-.key-labels { display: flex; flex-direction: column; align-items: center; line-height: 1.1; pointer-events: none; }
-.key-main-label { font-size: 12px; font-weight: 500; }
-.key-shift-label, .key-sub-label { font-size: 9px; color: var(--key-subtext); }
-.key-shift-label { margin-bottom: 1px; }
-.key-sub-label { margin-top: 1px; }
-:is(.key-delete, .key-tab, .key-caps, .key-return, .key-shift, .key-control, .key-option, .key-command) .key-main-label { font-size: 9px; color: var(--key-subtext); }
-.tactile-bump { position: absolute; bottom: 5px; width: 10px; height: 2px; background: var(--key-subtext); border-radius: 2px; opacity: .55; }
-.caps-led { position: absolute; top: 6px; left: 6px; width: 4px; height: 4px; border-radius: 50%; background: var(--key-border); }
-.caps-active .caps-led { background: var(--accent-green); }
-.magic-key.key-target { background: var(--target-color, var(--finger-ring)); border-color: #ffffff80; color: #172435; box-shadow: 0 2px 1px #0b182440, 0 0 0 3px color-mix(in srgb, var(--target-color, var(--finger-ring)) 18%, transparent); }
-.key-target .key-main-label, .key-target .key-shift-label { color: #172435; font-weight: 650; }
-.finger-pinky { --target-color: var(--finger-pinky); }
-.finger-ring { --target-color: var(--finger-ring); }
-.finger-middle { --target-color: var(--finger-middle); }
-.finger-index { --target-color: var(--finger-index); }
-.finger-thumb { --target-color: var(--finger-thumb); }
-.magic-key.key-shift-target { border-color: var(--accent-orange); box-shadow: inset 0 0 0 1px var(--accent-orange); }
-.magic-key.key-pressed { transform: translateY(2px); box-shadow: inset 0 1px 3px #0003; }
+
+.key-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+    pointer-events: none;
+}
+
+.key-main-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.key-shift-label,
+.key-sub-label {
+    font-size: 9px;
+    color: var(--key-subtext);
+}
+
+.key-shift-label {
+    margin-bottom: 1px;
+}
+
+.key-sub-label {
+    margin-top: 1px;
+}
+
+:is(.key-delete, .key-tab, .key-caps, .key-return, .key-shift, .key-control, .key-option, .key-command) .key-main-label {
+    font-size: 9px;
+    color: var(--key-subtext);
+}
+
+.tactile-bump {
+    position: absolute;
+    bottom: 5px;
+    width: 10px;
+    height: 2px;
+    background: var(--key-subtext);
+    border-radius: 2px;
+    opacity: .55;
+}
+
+.caps-led {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--key-border);
+}
+
+.caps-active .caps-led {
+    background: var(--accent-green);
+}
+
+.magic-key.key-target {
+    background: var(--target-color, var(--finger-ring));
+    border-color: #ffffff80;
+    color: #172435;
+    box-shadow: 0 2px 1px #0b182440, 0 0 0 3px color-mix(in srgb, var(--target-color, var(--finger-ring)) 18%, transparent);
+}
+
+.key-target .key-main-label,
+.key-target .key-shift-label {
+    color: #172435;
+    font-weight: 650;
+}
+
+.finger-pinky {
+    --target-color: var(--finger-pinky);
+}
+
+.finger-ring {
+    --target-color: var(--finger-ring);
+}
+
+.finger-middle {
+    --target-color: var(--finger-middle);
+}
+
+.finger-index {
+    --target-color: var(--finger-index);
+}
+
+.finger-thumb {
+    --target-color: var(--finger-thumb);
+}
+
+.magic-key.key-shift-target {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+[data-theme='light'] .magic-key:is(.key-target, .key-shift-target) {
+    border-color: var(--text);
+}
+
+.magic-key.key-pressed {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 3px #0003;
+}
