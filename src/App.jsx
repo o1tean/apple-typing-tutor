@@ -421,6 +421,14 @@ const Arena = React.memo(function Arena({
                     ? 'Take your time. Each correct key moves you forward.'
                     : 'Find your rhythm. Space moves to the next word; backspace corrects mistakes.'}
             </p>
+            {exercise.source && (
+                <p className="arena-help">
+                    {exercise.author} · Public-domain quotation ·{' '}
+                    <a href={exercise.source} target="_blank" rel="noreferrer">
+                        Read the source
+                    </a>
+                </p>
+            )}
             <p className="sr-only" id="typing-feedback" role="status">
                 {inputFeedback}
             </p>
@@ -905,10 +913,12 @@ export default function App() {
         const quote = CURRICULUM.quotes[index];
         setExercise({
             track: 'quote',
-            id: `quote-${index}`,
+            id: `quote-${quote.id}`,
             title: `quote · ${quote.author}`,
             lines: [quote.text],
             quoteIndex: index,
+            author: quote.author,
+            source: quote.source,
         });
     };
     const restartExercise = () => {

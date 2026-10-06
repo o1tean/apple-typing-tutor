@@ -1,7 +1,6 @@
-/**
- * Apple-grade Typing Tutor - Curriculum & Lessons
- * Inspired by TypingMe touch typing methodology, optimized for UX and flow.
- */
+/** Typeflow lessons progress from home-row control to the full keyboard. */
+
+import { WORDS, QUOTES } from './content.js';
 
 export const CURRICULUM = {
     amateur: [
@@ -290,10 +289,10 @@ export const CURRICULUM = {
             targetWpm: 35,
             targetAccuracy: 97,
             lines: [
-        "Apple Cupertino California Mac iPad iPhone Watch Vision",
-        "San Francisco London Tokyo Paris Berlin Sydney Toronto",
-        "Steve Jobs and Steve Wozniak founded Apple in April.",
-        "Think Different. The crazy ones, the misfits, the rebels."
+        "Amber Birch Cedar Daisy Elm Fern Grove Hazel Iris Jasmine",
+        "Bright Mornings Bring Clear Thoughts And Gentle Focus.",
+        "London Bristol Oxford Leeds Bath York Durham Chester",
+        "Read A New Page. Write A Clear Note. Share A Good Idea."
       ]
     },
         {
@@ -306,9 +305,9 @@ export const CURRICULUM = {
             targetWpm: 30,
             targetAccuracy: 96,
             lines: [
-        "10 20 30 40 50 60 70 80 90 100 2024 1984 1997 2007",
+        "10 20 30 40 50 60 70 80 90 100 2020 2024 2028 2032",
         "room 101, flight 404, gate 72, seat 38, order 9582",
-        "in 1984 Macintosh arrived, in 2001 iPod, in 2007 iPhone.",
+        "the library has 120 books on shelf 3 and 48 on shelf 4.",
         "we have 365 days, 24 hours, 60 minutes, and 3600 seconds."
       ]
     },
@@ -322,10 +321,10 @@ export const CURRICULUM = {
             targetWpm: 35,
             targetAccuracy: 96,
             lines: [
-        "\"Design is not just what it looks like; it's how it works.\"",
-        "Can't, won't, it's, they're, who's (and Apple's vision).",
-        "Keynotes: simplicity, clarity, elegance - is that clear? Yes!",
-        "\"Stay hungry, stay foolish!\" - Whole Earth Epilog, 1974."
+        "\"A clear sentence carries one useful thought.\"",
+        "Can't, won't, it's, they're, who's ready to begin?",
+        "Notes: practice, patience, progress - is that clear? Yes!",
+        "She said, \"Try one more line (and take your time).\""
       ]
     },
         {
@@ -349,55 +348,23 @@ export const CURRICULUM = {
         {
             id: "pro-10",
             title: "Lesson 10: Master Touch Typist",
-            subtitle: "Full Spectrum Apple Prose",
+            subtitle: "Full Keyboard Review",
             badge: "Pro Final",
             description: "The final review combines capitals, numbers, symbols, and sustained speed.",
             keysIntroduced: ["Full Keyboard Mastery"],
             targetWpm: 50,
             targetAccuracy: 98,
             lines: [
-        "Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.",
-        "Simple can be harder than complex: You have to work hard to get your thinking clean to make it simple. But it's worth it in the end.",
-        "Here's to the crazy ones. The round pegs in the square holes. They change things. They push the human race forward.",
+        "A quiet morning offers room for clear thought, careful work, and a new idea worth exploring.",
+        "Read 12 pages, write 3 short notes, and check each detail before moving to the next task.",
+        "Use {braces}, [brackets], and (parentheses) with care: every symbol has a place.",
         "Practice for 15 minutes, aim for 98% accuracy, and let steady progress build your confidence."
       ]
     }
   ],
 
-    // Speed test word pools for 15s, 30s, 60s timed sprints
-    speedWords: [
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
-    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
-    "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
-    "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
-    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
-    "when", "make", "can", "like", "time", "no", "just", "him", "know", "take",
-    "people", "into", "year", "your", "good", "some", "could", "them", "see", "other",
-    "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
-    "back", "after", "use", "two", "how", "our", "work", "first", "well", "way",
-    "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
-    "apple", "design", "create", "simple", "clean", "focus", "flow", "rhythm", "light", "space"
-  ],
-
-    // Famous Quotes for Zen & Quote mode
-    quotes: [
-        {
-            author: "Steve Jobs",
-            text: "Design is a funny word. Some people think design means how it looks. But of course, if you dig deeper, it's really how it works."
-    },
-        {
-            author: "Jony Ive",
-            text: "Simplicity isn't just the visual style. It's not just minimalism or the absence of clutter. It involves digging through the depth of the complexity."
-    },
-        {
-            author: "Steve Jobs",
-            text: "Remembering that you are going to die is the best way I know to avoid the trap of thinking you have something to lose. You are already naked."
-    },
-        {
-            author: "Antoine de Saint-Exupéry",
-            text: "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away."
-    }
-  ]
+    speedWords: WORDS,
+    quotes: QUOTES
 };
 
 // Map each character to the correct finger and hand

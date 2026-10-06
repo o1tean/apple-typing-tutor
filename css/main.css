@@ -88,6 +88,7 @@ button:hover:not(:disabled) {
 }
 
 button:focus-visible,
+a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 summary:focus-visible {
@@ -110,6 +111,11 @@ button svg {
 
 [hidden] {
     display: none !important;
+}
+
+.arena-help a {
+    color: var(--accent);
+    text-underline-offset: .2em;
 }
 
 .app {

@@ -11,7 +11,7 @@ Learn touch typing with guided lessons and live finger guidance.
 
 - Start lesson 1 immediately, then build accuracy through 22 foundation and advanced lessons.
 - Follow the moving finger and keyboard guides, with a static pose when reduced motion is preferred.
-- Practice with timed tests, word tests, quotes, or your own text; retry the words you missed.
+- Practice with 1,189 common words, 100 public-domain quotes, timed tests or your own text; retry the words you missed.
 - Keep progress on your device, with light/dark appearance, keyboard sounds and reduced motion support.
 
 ## Quick start

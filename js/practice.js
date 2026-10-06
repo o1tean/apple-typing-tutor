@@ -104,8 +104,10 @@ export function resultFeedback(result, exercise) {
 export function sessionLabel(entry) {
     if (entry.lessonId === 'custom') return 'Custom text';
     if (entry.lessonId === 'missed-words') return 'Missed words';
-    const quote = /^quote-(\d+)$/.exec(entry.lessonId);
-    if (quote) return `Quote · ${CURRICULUM.quotes[Number(quote[1])]?.author || 'practice'}`;
+    const quote = CURRICULUM.quotes.find(item => `quote-${item.id}` === entry.lessonId);
+    if (quote) return `Quote · ${quote.author}`;
+    if (/^quote-\d+$/.test(entry.lessonId)) return 'Quote · legacy selection';
+    if (entry.lessonId.startsWith('quote-')) return 'Quote · practice';
     const lesson = [...CURRICULUM.amateur, ...CURRICULUM.pro]
         .find(item => item.id === entry.lessonId);
     if (lesson) return lesson.title.replace(/^Lesson \d+: /, '');

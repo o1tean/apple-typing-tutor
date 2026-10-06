@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { TypingEngine } from '../js/engine.js';
+import { CURRICULUM } from '../js/lessons.js';
 import {
     currentWord,
     formatElapsedTime,
@@ -134,6 +135,23 @@ for (const [stats, exercise, heading, advice] of [
         'Choose Practice missed words or Repeat this text. You can also start a fresh passage.']
 ]) assert.deepEqual(resultFeedback({ ...result, ...stats }, exercise), { heading, advice });
 assert.equal(sessionLabel({ lessonId: 'custom' }), 'Custom text');
+for (const lessonId of ['quote-0', 'quote-3', 'quote-99', 'quote-999']) {
+    const entry = { lessonId, wpm: 80, accuracy: 99 };
+    const before = { ...entry };
+    assert.equal(sessionLabel(entry), 'Quote · legacy selection',
+        'old numeric selections cannot inherit an unrelated new quote author');
+    assert.deepEqual(entry, before, 'history labels never rewrite saved quote IDs or scores');
+}
+const quote = CURRICULUM.quotes[0];
+const originalQuotes = CURRICULUM.quotes;
+CURRICULUM.quotes = [...originalQuotes].reverse();
+try {
+    assert.equal(sessionLabel({ lessonId: `quote-${quote.id}` }), `Quote · ${quote.author}`,
+        'source identities keep the right author after the corpus is reordered');
+} finally {
+    CURRICULUM.quotes = originalQuotes;
+}
+assert.equal(sessionLabel({ lessonId: 'quote-bartlett-unavailable-source' }), 'Quote · practice');
 assert.equal(sessionLabel({ lessonId: 'time-30-punctuation', typingMode: 'strict' }),
     '30 seconds · guided · punctuation');
 assert.equal(sessionLabel({
