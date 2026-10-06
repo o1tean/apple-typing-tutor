@@ -31,6 +31,11 @@ try {
         saved = typeof value === 'string' ? value : JSON.stringify(value);
         storage.data = storage.load();
     };
+    assert.equal(storage.getSetting('typingMode'), 'strict');
+    assert.equal(storage.getSetting('showHands'), true);
+    assert.equal(storage.getSetting('showKeyboard'), true);
+    assert.equal(saved, null, 'first-visit defaults never write during startup');
+    reload({});
     const defaults = { ...storage.data.settings };
     assert.equal(defaults.typingMode, 'flow');
     assert.equal(defaults.showHands, false);

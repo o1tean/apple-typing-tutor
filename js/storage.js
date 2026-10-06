@@ -130,6 +130,13 @@ class StorageManager {
             return data;
         }
 
+        if (raw === null) {
+            data.settings.typingMode = 'strict';
+            data.settings.showHands = true;
+            data.settings.showKeyboard = true;
+            return data;
+        }
+
         try {
             const parsed = JSON.parse(raw);
             if (!isObject(parsed)) return data;

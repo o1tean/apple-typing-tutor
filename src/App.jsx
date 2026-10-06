@@ -84,6 +84,15 @@ function practice(settings) {
     };
 }
 
+function lessonExercise(track, index) {
+    return {
+        ...CURRICULUM[track][index],
+        track: 'lesson',
+        lessonTrack: track,
+        lessonIndex: index,
+    };
+}
+
 function Choice({ value, selected, children, onClick, ...props }) {
     return (
         <button
@@ -661,12 +670,18 @@ export default function App() {
     const [settings, setSettings] = useState(() => ({
         ...storage.data.settings,
     }));
-    const [exercise, setExercise] = useState(() => practice(settings));
+    const [exercise, setExercise] = useState(() =>
+        storage.lastSavedRaw === null && !storage.loadFailed
+            ? lessonExercise('amateur', 1)
+            : practice(settings),
+    );
     const [revision, setRevision] = useState(0);
     const [dialog, setDialog] = useState(null);
     const [lessonTrack, setLessonTrack] = useState('amateur');
     const [customText, setCustomText] = useState('');
-    const [focused, setFocused] = useState(true);
+    const [focused, setFocused] = useState(
+        () => !matchMedia('(pointer: coarse)').matches,
+    );
     const [inputFeedback, setInputFeedback] = useState('');
     const [result, setResult] = useState(null);
     const [recoveryMessage, setRecoveryMessage] = useState('');
@@ -748,7 +763,8 @@ export default function App() {
         setRevision((value) => value + 1);
         const frame = requestAnimationFrame(() => {
             window.scrollTo(0, 0);
-            input.current?.focus({ preventScroll: true });
+            if (!matchMedia('(pointer: coarse)').matches)
+                input.current?.focus({ preventScroll: true });
         });
         return () => {
             cancelAnimationFrame(frame);
@@ -878,13 +894,7 @@ export default function App() {
         }
     };
     const loadLesson = (track, index) => {
-        const lesson = CURRICULUM[track][index];
-        setExercise({
-            ...lesson,
-            track: 'lesson',
-            lessonTrack: track,
-            lessonIndex: index,
-        });
+        setExercise(lessonExercise(track, index));
         setDialog(null);
     };
     const loadQuote = () => {
@@ -931,7 +941,9 @@ export default function App() {
         exercise.track === 'quote' ? 'Next quote' : 'Restart test';
 
     return (
-        <div className="app">
+        <div
+            className={`app ${exercise.track === 'lesson' ? 'lesson-mode' : ''}`}
+        >
             <header className="header">
                 <button
                     className="brand"
@@ -1081,16 +1093,28 @@ export default function App() {
                         </>
                     ) : (
                         <>
-                            <span className="exercise-title">
-                                {exercise.title.replace(/^Lesson \d+: /, '')}
-                            </span>
+                            {exercise.track !== 'lesson' && (
+                                <span className="exercise-title">
+                                    {exercise.title}
+                                </span>
+                            )}
                             {exercise.track === 'lesson' && (
-                                <button
-                                    className="text-button"
-                                    onClick={() => openDialog('lessons')}
-                                >
-                                    Change lesson
-                                </button>
+                                <>
+                                    <button
+                                        className="text-button"
+                                        onClick={() => openDialog('lessons')}
+                                    >
+                                        Change lesson
+                                    </button>
+                                    <button
+                                        className="text-button skip-to-test"
+                                        onClick={() =>
+                                            setExercise(practice(settings))
+                                        }
+                                    >
+                                        Skip to test
+                                    </button>
+                                </>
                             )}
                             {exercise.track === 'custom' && (
                                 <button
@@ -1117,17 +1141,27 @@ export default function App() {
                     <section className="test" aria-label={exercise.title}>
                         <div className="test-heading">
                             <div>
-                                <p className="eyebrow">a moment of focus</p>
+                                <p className="eyebrow">
+                                    {exercise.track === 'lesson'
+                                        ? exercise.title
+                                        : 'a moment of focus'}
+                                </p>
                                 <h1>
-                                    {engine.isRunning
-                                        ? 'Stay in the flow.'
-                                        : 'Just you and the keys.'}
+                                    {exercise.track === 'lesson'
+                                        ? 'Learn touch typing.'
+                                        : engine.isRunning
+                                          ? 'Stay in the flow.'
+                                          : 'Just you and the keys.'}
                                 </h1>
                             </div>
                             <div
                                 className="live-stats"
                                 role="group"
                                 aria-label="Live statistics"
+                                hidden={
+                                    exercise.track === 'lesson' &&
+                                    !engine.isRunning
+                                }
                             >
                                 <strong>
                                     <span className="sr-only">
@@ -1159,6 +1193,11 @@ export default function App() {
                                 </span>
                             </div>
                         </div>
+                        <p className="keyboard-notice">
+                            Best with a physical keyboard. Connect one to follow
+                            the finger guide. Onscreen keyboards do not teach
+                            finger placement.
+                        </p>
                         {exercise.track === 'lesson' && (
                             <aside
                                 className="lesson-instructions"
@@ -1172,12 +1211,13 @@ export default function App() {
                                             key === ' ' ? 'Space' : key,
                                         )
                                         .join(' · ')}
-                                    <span className="lesson-goal">
-                                        3 stars: {exercise.targetWpm} WPM ·{' '}
-                                        {exercise.targetAccuracy}% accuracy · no
-                                        skipped characters
-                                    </span>
                                 </p>
+                                <details className="lesson-goal">
+                                    <summary>Lesson targets</summary>3 stars:{' '}
+                                    {exercise.targetWpm} WPM ·{' '}
+                                    {exercise.targetAccuracy}% accuracy · no
+                                    skipped characters
+                                </details>
                             </aside>
                         )}
                         <Arena

@@ -220,6 +220,52 @@ button svg {
     padding-top: clamp(30px, 8vh, 96px);
 }
 
+.lesson-mode .main {
+    padding-top: 20px;
+}
+
+.lesson-mode .test-toolbar {
+    margin-bottom: 24px;
+}
+
+.lesson-mode .test-heading {
+    margin-bottom: 20px;
+}
+
+.lesson-mode .text-viewport {
+    height: 3.8em;
+}
+
+.lesson-mode .lesson-instructions {
+    margin-bottom: 12px;
+}
+
+.lesson-mode .arena-help {
+    margin-top: 10px;
+}
+
+.lesson-mode .restart-row {
+    margin-top: 8px;
+}
+
+.lesson-mode .guidance {
+    margin-top: 4px;
+}
+
+.keyboard-notice {
+    display: none;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0 0 18px;
+}
+
+@media (pointer: coarse) {
+    .keyboard-notice {
+        display: block;
+    }
+}
+
 .test-toolbar {
     width: fit-content;
     max-width: 100%;
@@ -488,6 +534,22 @@ h1 {
     flex-direction: column;
     gap: 18px;
     margin-top: 16px;
+}
+
+@media (min-width: 1000px) {
+    .lesson-mode .guidance {
+        flex-direction: row;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .lesson-mode .hands-container {
+        flex: 1;
+    }
+
+    .lesson-mode .keyboard-container {
+        flex: 2;
+    }
 }
 
 .guidance:has(.hands-container[hidden]):has(.keyboard-container[hidden]) {
