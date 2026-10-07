@@ -49,10 +49,10 @@ export function latestLesson(history, progress = {}) {
     return null;
 }
 
-export function focusKeys(profile, limit = 3) {
+export function focusKeys(profile, limit = 3, group = 'keys') {
     if (profile?.version !== 1) return [];
-    const cells = Object.entries(migrateLearning(profile).keys).filter(([, cell]) => cell.attempts >
-        0);
+    const cells = Object.entries(migrateLearning(profile)[group]).filter(([key, cell]) =>
+        cell.attempts > 0 && (group === 'keys' || key.trim()));
     const slowest = Math.max(1, ...cells.filter(([, cell]) => cell.latencySamples > 0)
         .map(([, cell]) => cell.recentLatencyMs));
     const ranked = cells.map(([key, cell]) => ({
@@ -63,6 +63,10 @@ export function focusKeys(profile, limit = 3) {
         .key));
     return ranked.filter(item => item.score >= (ranked[0]?.score || 0) * 0.6)
         .slice(0, Math.max(0, limit)).map(item => item.key);
+}
+
+export function focusLabel(key) {
+    return Array.from(key, char => char === ' ' ? 'Space' : char).join(' → ');
 }
 
 function drillLines(focus, allowed, random, layout) {
@@ -101,11 +105,15 @@ function drillLines(focus, allowed, random, layout) {
     }).join(' '));
 }
 
-export function generateWeakDrill(profile, random = Math.random, preset = 'mac-us') {
-    const keys = focusKeys(profile);
+export function generateWeakDrill(profile, random = Math.random, preset = 'mac-us', group =
+    'keys') {
+    const keys = focusKeys(profile, group === 'bigrams' ? 1 : 3, group);
     return {
-        lines: drillLines(keys, new Set([...Array.from('abcdefghijklmnopqrstuvwxyz'), ...keys]),
-            random, keyboardLayout(preset)),
+        lines: group === 'bigrams' && keys.length ? Array.from({ length: 2 }, () =>
+            Array.from({ length: 8 }, () => keys[0].repeat(2 + Math.floor(random() * 2)))
+            .join(' ').replace(/\s+/g, ' ').trim()) : drillLines(keys,
+            new Set([...Array.from('abcdefghijklmnopqrstuvwxyz'), ...keys]), random,
+            keyboardLayout(preset)),
         focusKeys: keys
     };
 }

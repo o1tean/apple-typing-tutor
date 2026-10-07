@@ -24,6 +24,7 @@ import {
     generateLessonDrill,
     lessonsForLayout,
     focusKeys,
+    focusLabel,
     normalizeCustomText,
     recordSpeedSample,
     resultFeedback,
@@ -870,6 +871,7 @@ export default function App() {
                         storage.getLearning(),
                         undefined,
                         preset,
+                        next.focusGroup,
                     ),
                 };
         }
@@ -1131,7 +1133,7 @@ export default function App() {
         else if (exercise.track === 'quote') loadQuote();
         else if (exercise.track === 'lesson')
             loadLesson(exercise.lessonTrack, exercise.lessonIndex);
-        else if (exercise.track === 'weak') practiceWeak();
+        else if (exercise.track === 'weak') practiceWeak(exercise.focusGroup);
         else setExercise({ ...exercise });
     };
     const repeatExercise = () =>
@@ -1146,22 +1148,27 @@ export default function App() {
             title: `missed words · ${result.missedWords.length}`,
             lines: [result.missedWords.join(' ')],
         });
-    const weakFocus = useMemo(
-        () => focusKeys(storage.getLearning()),
+    const [weakFocus, pairFocus] = useMemo(
+        () => [
+            focusKeys(storage.getLearning()),
+            focusKeys(storage.getLearning(), 1, 'bigrams'),
+        ],
         [storage.data.learning],
     );
-    const practiceWeak = () => {
+    const practiceWeak = (group = 'keys') => {
         const drill = generateWeakDrill(
             storage.getLearning(),
             undefined,
             settings.keyboardLayout,
+            group,
         );
         if (!drill.focusKeys.length) return;
         setExercise({
             ...drill,
             track: 'weak',
-            id: 'weak-keys',
-            title: 'Weak-key practice',
+            focusGroup: group,
+            id: group === 'keys' ? 'weak-keys' : 'weak-pairs',
+            title: group === 'keys' ? 'Weak-key practice' : 'Pair practice',
             options: { recordEligible: false },
         });
     };
@@ -1368,7 +1375,7 @@ export default function App() {
                         weakFocus.length > 0 && (
                             <button
                                 className="text-button"
-                                onClick={practiceWeak}
+                                onClick={() => practiceWeak()}
                             >
                                 Practice weak keys
                             </button>
@@ -1380,6 +1387,7 @@ export default function App() {
                         progress={storage.data.progress}
                         learning={storage.getLearning()}
                         focus={weakFocus}
+                        pairFocus={pairFocus}
                         preset={settings.keyboardLayout}
                         onLesson={loadLesson}
                         onPractice={practiceWeak}
@@ -1393,7 +1401,9 @@ export default function App() {
                         onRestart={restartExercise}
                         onRepeat={repeatExercise}
                         onPracticeMissed={practiceMissed}
-                        onPracticeWeak={weakFocus.length ? practiceWeak : null}
+                        onPracticeWeak={
+                            weakFocus.length ? () => practiceWeak() : null
+                        }
                         onNext={nextLesson}
                         onChooseLesson={() => openDialog('lessons')}
                         actionRef={resultAction}
@@ -1521,17 +1531,19 @@ export default function App() {
                             >
                                 <p>
                                     Slow down and aim for accuracy. Your next
-                                    drill changes as these keys improve.
+                                    drill changes as you improve.
                                 </p>
                                 <ul
                                     className="focus-chips"
-                                    aria-label="Focus keys"
+                                    aria-label={
+                                        exercise.focusGroup === 'bigrams'
+                                            ? 'Focus pair'
+                                            : 'Focus keys'
+                                    }
                                 >
                                     {exercise.focusKeys.map((key) => (
                                         <li key={key}>
-                                            <kbd>
-                                                {key === ' ' ? 'Space' : key}
-                                            </kbd>
+                                            <kbd>{focusLabel(key)}</kbd>
                                         </li>
                                     ))}
                                 </ul>

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Practice a suggested key pair in a short fresh drill, with recent error/reach evidence, visible Space transitions, and focus that changes as you improve.
 - Continue your latest recorded lesson in one click, inspect the recent errors/reach times behind suggested key practice, and follow a clear next action after each lesson.
 - Choose Mac US, Colemak, Dvorak, or UK ISO guidance with matching lessons, physical finger reaches, and session-layout result cards; ISO includes its extra key and L-shaped Enter.
 - Install Typeflow and complete lessons offline after the first visit; updates wait until existing tabs close, preserving open attempts and saved progress.

@@ -1,10 +1,11 @@
-import { latestLesson, lessonsForLayout } from '../js/practice.js';
+import { latestLesson, lessonsForLayout, focusLabel } from '../js/practice.js';
 
 export default function LearningPrompt({
     history,
     progress,
     learning,
     focus,
+    pairFocus,
     preset,
     onLesson,
     onPractice,
@@ -34,49 +35,70 @@ export default function LearningPrompt({
                     </button>
                 </div>
             )}
-            <details>
-                <summary>Suggested key practice</summary>
-                <section aria-label="Learning recommendation">
-                    {focus.length ? (
-                        <>
-                            <p>
-                                Selected from recent errors and relative reach
-                                times across layouts.
-                            </p>
-                            <p>
-                                {focus
-                                    .map((key) => {
-                                        const cell = learning.keys[key];
-                                        return `${key === ' ' ? 'Space' : key}: ${(cell.recentErrorRate * 100).toFixed(1)}% recent errors${cell.latencySamples ? `, ${Math.round(cell.recentLatencyMs)} ms recent reach` : ', no reach timing yet'}`;
-                                    })
-                                    .join(' · ')}
-                            </p>
-                            {focus.some(
-                                (key) =>
-                                    learning.keys[key].attempts < 5 ||
-                                    (learning.keys[key].latencySamples > 0 &&
-                                        learning.keys[key].latencySamples < 5),
-                            ) && (
+            {[
+                ['keys', focus, 'key'],
+                ['bigrams', pairFocus, 'pair'],
+            ].map(([group, targets, label]) => (
+                <div key={group}>
+                    <details>
+                        <summary>Suggested {label} practice</summary>
+                        <section
+                            aria-label={
+                                group === 'keys'
+                                    ? 'Learning recommendation'
+                                    : 'Pair recommendation'
+                            }
+                        >
+                            {targets.length ? (
+                                <>
+                                    <p>
+                                        Selected from recent errors and relative
+                                        reach times across layouts.
+                                    </p>
+                                    <p>
+                                        {targets
+                                            .map((key) => {
+                                                const cell =
+                                                    learning[group][key];
+                                                return `${focusLabel(key)}: ${(cell.recentErrorRate * 100).toFixed(1)}% recent errors${cell.latencySamples ? `, ${Math.round(cell.recentLatencyMs)} ms recent reach` : ', no reach timing yet'}`;
+                                            })
+                                            .join(' · ')}
+                                    </p>
+                                    {targets.some(
+                                        (key) =>
+                                            learning[group][key].attempts < 5 ||
+                                            (learning[group][key]
+                                                .latencySamples > 0 &&
+                                                learning[group][key]
+                                                    .latencySamples < 5),
+                                    ) && (
+                                        <p>
+                                            Early suggestion — only a few
+                                            observations so far.
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
                                 <p>
-                                    Early suggestion — only a few observations
-                                    so far.
+                                    {learning.version > 1
+                                        ? 'Recommendations are unavailable for this newer saved profile. Your progress is preserved.'
+                                        : `No ${label} recommendation yet. Complete a lesson or test to gather more observations.`}
                                 </p>
                             )}
-                        </>
-                    ) : (
-                        <p>
-                            {learning.version > 1
-                                ? 'Key recommendations are unavailable for this newer saved profile. Your progress is preserved.'
-                                : 'No key recommendation yet. Complete a lesson or test to gather more observations.'}
-                        </p>
+                        </section>
+                    </details>
+                    {targets.length > 0 && (
+                        <button
+                            className="text-button"
+                            onClick={() => onPractice(group)}
+                        >
+                            {group === 'keys'
+                                ? 'Practice weak keys'
+                                : `Practice this pair: ${focusLabel(targets[0])}`}
+                        </button>
                     )}
-                </section>
-            </details>
-            {focus.length > 0 && (
-                <button className="text-button" onClick={onPractice}>
-                    Practice weak keys
-                </button>
-            )}
+                </div>
+            ))}
         </aside>
     );
 }

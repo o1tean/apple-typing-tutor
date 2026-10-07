@@ -287,6 +287,81 @@ assert.deepEqual(focusKeys(improved), ['w'],
     'cleaner and faster recent practice rotates the old focus out toward the next weak key');
 assert.equal(improved.keys.q.errors, 36, 'rotation preserves lifetime errors');
 
+for (const pair of ['th', 'ht', 'll', ' q', 'q ', ';?', '#@']) {
+    const profile = {
+        version: 1,
+        keys: {},
+        bigrams: {
+            [pair]: { ...weakProfile.keys.q }
+        }
+    };
+    const before = JSON.stringify(profile);
+    assert.deepEqual(focusKeys(profile, 1, 'bigrams'), [pair]);
+    for (const preset of ['mac-us', 'colemak', 'dvorak', 'uk-iso']) {
+        const first = generateWeakDrill(profile, () => 0, preset, 'bigrams');
+        const retry = generateWeakDrill(profile, () => 0.999, preset, 'bigrams');
+        assert.deepEqual(first.focusKeys, [pair]);
+        assert.equal(first.lines.length, 2, 'pair practice stays short');
+        assert.notDeepEqual(first.lines, retry.lines, 'fresh pair drills vary repetition');
+        for (const drill of [first, retry]) {
+            assert.ok(drill.lines.every(line => line === normalizeCustomText(line)),
+                'Space transitions have no untypeable leading, trailing or doubled whitespace');
+            const text = drill.lines.join(' ');
+            assert.ok(text.split(pair).length - 1 >= 20, 'every pair has enough repeated practice');
+            const engine = new TypingEngine({ mode: 'strict' });
+            try {
+                engine.loadExercise(drill.lines);
+                for (const key of text) engine.handleKey({ key });
+                assert.equal(engine.isComplete, true);
+                assert.ok(engine.getStats().learning.bigrams[pair].attempts >= 20,
+                    'real typing measures the ordered target pair, including Space');
+            } finally {
+                engine.reset();
+            }
+        }
+    }
+    assert.equal(JSON.stringify(profile), before, 'pair practice never changes saved observations');
+}
+for (const profile of [undefined, { version: 2, future: true },
+        { version: 1, keys: {}, bigrams: { '  ': weakProfile.keys.q } },
+        {
+            version: 1,
+            keys: {},
+            bigrams: {
+                th: {
+                    attempts: 2,
+                    errors: 0,
+                    latencySamples: 0,
+                    latencyTotalMs: 0
+                }
+            }
+        }]) {
+    assert.deepEqual(focusKeys(profile, 1, 'bigrams'), []);
+    assert.deepEqual(generateWeakDrill(profile, () => 0, 'mac-us', 'bigrams'), {
+        lines: [],
+        focusKeys: []
+    }, 'absent or unusable pair evidence never invents a target');
+}
+const pairProfile = {
+    version: 1,
+    keys: {},
+    bigrams: {
+        qz: { ...weakProfile.keys.q, futurePair: true },
+        wv: { ...weakProfile.keys.w }
+    }
+};
+const betterPairs = mergeLearning(pairProfile, {
+    keys: {},
+    bigrams: {
+        qz: { attempts: 25, errors: 0, latencySamples: 25, latencyTotalMs: 1250 }
+    }
+});
+assert.deepEqual(focusKeys(pairProfile, 1, 'bigrams'), ['qz']);
+assert.deepEqual(focusKeys(betterPairs, 1, 'bigrams'), ['wv'],
+    'improvement rotates the pair focus');
+assert.equal(betterPairs.bigrams.qz.errors, 36, 'pair rotation preserves lifetime observations');
+assert.equal(betterPairs.bigrams.qz.futurePair, true, 'pair rotation preserves unknown fields');
+
 for (const [preset, left, right, inner, upper, lower, rest] of [
     ['colemak', 'arst', 'neio', 'dh', 'qwfpgjluy;', 'zxcvbkm,.', 't'],
     ['dvorak', 'aoeu', 'htns', 'id', "',.pyfgcrl", ';qjkxbmwv', 'u']
