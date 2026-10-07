@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- See saved track completion and three-star counts, with a suggested unfinished lesson or review; all lessons remain available and Basic Position stays optional.
 - Practice a suggested key pair in a short fresh drill, with recent error/reach evidence, visible Space transitions, and focus that changes as you improve.
 - Continue your latest recorded lesson in one click, inspect the recent errors/reach times behind suggested key practice, and follow a clear next action after each lesson.
 - Choose Mac US, Colemak, Dvorak, or UK ISO guidance with matching lessons, physical finger reaches, and session-layout result cards; ISO includes its extra key and L-shaped Enter.

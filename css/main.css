@@ -980,6 +980,13 @@ input[type='range'] {
     gap: 5px;
 }
 
+.lesson-path {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
 .lesson-list button {
     display: flex;
     align-items: center;

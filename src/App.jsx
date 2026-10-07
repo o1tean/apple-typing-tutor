@@ -16,6 +16,7 @@ import SessionProgress from './Progress.jsx';
 import PhoneDemo from './PhoneDemo.jsx';
 import OfflineStatus from './OfflineStatus.jsx';
 import LearningPrompt from './LearningPrompt.jsx';
+import LessonPicker from './LessonPicker.jsx';
 import {
     currentWord,
     formatElapsedTime,
@@ -1109,6 +1110,7 @@ export default function App() {
         }
     };
     const loadLesson = (track, index) => {
+        setLessonTrack(track);
         setExercise(lessonExercise(track, index, settings.keyboardLayout));
         setDialog(null);
     };
@@ -1974,55 +1976,14 @@ export default function App() {
                                     Advanced
                                 </Choice>
                             </div>
-                            <p className="field-help">
-                                Earned stars carry forward across layouts.
-                            </p>
-                            <div className="lesson-list">
-                                {lessonsForLayout(
-                                    lessonTrack,
-                                    settings.keyboardLayout,
-                                ).map((lesson, index) => {
-                                    const stars = Math.max(
-                                        storage.getLessonProgress(lesson.id)
-                                            ?.stars || 0,
-                                        storage.getLessonProgress(lesson.id, {
-                                            wpmMetric: 'words-v1',
-                                        })?.stars || 0,
-                                    );
-                                    return (
-                                        <button
-                                            key={lesson.id}
-                                            onClick={() =>
-                                                loadLesson(lessonTrack, index)
-                                            }
-                                        >
-                                            <span className="lesson-number">
-                                                {String(index + 1).padStart(
-                                                    2,
-                                                    '0',
-                                                )}
-                                            </span>
-                                            <span>
-                                                <strong>
-                                                    {lesson.title.replace(
-                                                        /^Lesson \d+: /,
-                                                        '',
-                                                    )}
-                                                </strong>
-                                                <small>{lesson.subtitle}</small>
-                                            </span>
-                                            <span
-                                                className="lesson-stars"
-                                                role="img"
-                                                aria-label={`Earned stars: ${stars} of 3`}
-                                            >
-                                                {'★'.repeat(stars)}
-                                                {'☆'.repeat(3 - stars)}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            <LessonPicker
+                                track={lessonTrack}
+                                preset={settings.keyboardLayout}
+                                progress={storage.data.progress}
+                                onSelect={(index) =>
+                                    loadLesson(lessonTrack, index)
+                                }
+                            />
                         </>
                     )}
                     {dialog === 'custom' && (

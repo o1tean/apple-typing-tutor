@@ -34,6 +34,32 @@ export function lessonsForLayout(track, preset = 'mac-us') {
     });
 }
 
+export function lessonPath(lessons, progress) {
+    const steps = lessons.map((lesson, index) => {
+        const saved = [progress[lesson.id], progress[`words-v1:${lesson.id}`]];
+        const stars = Math.max(...saved.map(entry => entry?.stars || 0));
+        return {
+            ...lesson,
+            index,
+            stars,
+            completed: stars > 0 || saved.some(entry => entry?.completed === true)
+        };
+    });
+    const numbered = steps.filter(lesson => lesson.id !== 'amat-intro');
+    const unfinished = numbered.find(lesson => !lesson.completed);
+    const target = numbered.find(lesson => lesson.stars < 3);
+    return {
+        steps,
+        total: numbered.length,
+        completed: numbered.filter(lesson => lesson.completed).length,
+        threeStar: numbered.filter(lesson => lesson.stars === 3).length,
+        next: unfinished || target || numbered.at(-1),
+        reason: unfinished ? 'First lesson without a saved completion.'
+            : target ? 'All lessons completed. Work toward 3 stars here.'
+            : 'All 3-star targets earned. Revisit the final lesson.'
+    };
+}
+
 export function latestLesson(history, progress = {}) {
     const previous = Object.entries(progress)
         .filter(([, lesson]) => lesson.completed === true && Number.isFinite(lesson.lastPlayed)

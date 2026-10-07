@@ -10,6 +10,7 @@ import {
     generateWeakDrill,
     generateWords,
     lessonsForLayout,
+    lessonPath,
     latestLesson,
     normalizeCustomText,
     recordSpeedSample,
@@ -442,6 +443,45 @@ for (const track of ['amateur', 'pro']) {
 }
 assert.equal(sessionLabel({ lessonId: 'amat-4' }), 'Inner Reach');
 assert.equal(sessionLabel({ lessonId: 'amat-9' }), 'Bottom Row Right');
+for (const track of ['amateur', 'pro']) {
+    const lessons = lessonsForLayout(track);
+    const numbered = lessons.filter(item => item.id !== 'amat-intro');
+    const [first, second, third] = numbered;
+    const saved = {
+        'amat-intro': { stars: 3 },
+        unknown: { stars: 3, completed: true, future: ['keep'] },
+        [first.id]: { stars: 1, completed: true, future: true },
+        [`words-v1:${first.id}`]: { stars: 3 },
+        [third.id]: { stars: 0, completed: true }
+    };
+    const before = JSON.stringify(saved);
+    for (const preset of ['mac-us', 'colemak', 'dvorak', 'uk-iso']) {
+        const layoutLessons = lessonsForLayout(track, preset);
+        const fresh = lessonPath(layoutLessons, {});
+        assert.equal(fresh.total, track === 'amateur' ? 11 : 10);
+        assert.equal(fresh.completed, 0);
+        assert.equal(fresh.threeStar, 0);
+        assert.equal(fresh.next.id, first.id, 'optional introduction is never suggested');
+        const partial = lessonPath(layoutLessons, saved);
+        assert.equal(partial.completed, 2, 'merge metrics once and honor completed-only saves');
+        assert.equal(partial.threeStar, 1, 'honor sparse earned stars without completion flag');
+        assert.equal(partial.next.id, second.id, 'suggest first unfinished numbered lesson');
+        assert.equal(partial.next.title, layoutLessons[partial.next.index].title);
+        const complete = Object.fromEntries(numbered.map(item => [item.id, { stars: 3 }]));
+        complete[second.id] = { stars: 2 };
+        const review = lessonPath(layoutLessons, complete);
+        assert.equal(review.completed, numbered.length);
+        assert.equal(review.threeStar, numbered.length - 1);
+        assert.equal(review.next.id, second.id);
+        assert.match(review.reason, /Work toward 3 stars/);
+        complete[second.id].stars = 3;
+        const full = lessonPath(layoutLessons, complete);
+        assert.equal(full.threeStar, numbered.length);
+        assert.equal(full.next.id, numbered.at(-1).id);
+        assert.match(full.reason, /Revisit the final lesson/);
+    }
+    assert.equal(JSON.stringify(saved), before, 'summaries never mutate saved progress');
+}
 console.log(
     'Practice generation, layout curriculum, custom Unicode cleanup, exact speed samples, elapsed labels, typing feedback, and result coaching checks passed.'
 );
