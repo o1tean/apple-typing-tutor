@@ -13,6 +13,7 @@ import {
     lessonPath,
     latestLesson,
     normalizeCustomText,
+    practiceObservation,
     recordSpeedSample,
     resultFeedback,
     sessionLabel,
@@ -25,6 +26,46 @@ for (const count of [10, 25, 50, 100, 400]) {
     assert.ok(words.every((word, index) => word && word !== words[index - 1]));
 }
 const modified = generateWords(25, { punctuation: true, numbers: true }, () => 0.5);
+const observation = {
+    attempts: 40,
+    errors: 36,
+    latencySamples: 40,
+    latencyTotalMs: 40000,
+    recentErrorRate: 0.8,
+    recentLatencyMs: 900
+};
+assert.equal(practiceObservation(observation, true), '80.0% recent errors, 900 ms recent reach');
+assert.equal(practiceObservation(observation),
+    '90.0% errors, 1000 ms reach · 36/40 errors · 40 timed');
+assert.equal(practiceObservation(undefined), 'No observations yet.');
+assert.equal(practiceObservation({ attempts: 0 }), 'No observations yet.');
+assert.equal(practiceObservation({
+    attempts: 2,
+    errors: 0,
+    latencySamples: 0,
+    latencyTotalMs: 0
+}), '0.0% errors, no reach timing yet · 0/2 errors · 0 timed · few observations');
+assert.equal(practiceObservation({ ...observation, attempts: 4, latencySamples: 0 }, true),
+    '80.0% recent errors, no reach timing yet · few observations');
+for (const group of ['keys', 'bigrams']) {
+    const key = group === 'keys' ? 'q' : 'qz';
+    const profile = { version: 1, keys: {}, bigrams: {}, future: { keep: true } };
+    profile[group][key] = { ...observation };
+    const snapshot = JSON.stringify(profile);
+    const drill = generateWeakDrill(profile, () => 0, 'mac-us', group);
+    assert.equal(JSON.stringify(profile), snapshot, 'capturing a baseline does not write');
+    profile[group][key].recentErrorRate = 0;
+    profile.future.keep = false;
+    assert.equal(drill.learningBefore[group][key].recentErrorRate, 0.8);
+    assert.equal(drill.learningBefore.future.keep, true, 'the drill owns a separate snapshot');
+    const session = { keys: {}, bigrams: {} };
+    session[group][key] = { attempts: 25, errors: 0, latencySamples: 24, latencyTotalMs: 240 };
+    const next = mergeLearning(drill.learningBefore, session);
+    assert.equal(next[group][key].recentErrorRate, 0);
+    assert.equal(next[group][key].recentLatencyMs, 10);
+    assert.equal(drill.learningBefore[group][key].recentErrorRate, 0.8,
+        'projection leaves earlier observations intact while a save is pending');
+}
 assert.match(modified, /^[A-Z]/);
 assert.match(modified, /\d+/);
 assert.match(modified, /,/);
@@ -129,6 +170,7 @@ for (const [stats, exercise, heading, advice] of [
         'Aim for 95% accuracy. Choose Try again.'],
     [{}, { track: 'custom' }, 'Practice complete.', 'Choose Try again.'],
     [{}, { track: 'retry' }, 'Practice complete.', 'Choose Try again.'],
+    [{}, { track: 'weak' }, 'Practice complete.', 'Review your focus below.'],
     [{}, { ...lesson, options: { recordEligible: false } }, 'Practice complete.',
         'Choose Try again.'],
     [{}, { track: 'quote', options: { recordEligible: false } }, 'Practice complete.',
@@ -338,10 +380,9 @@ for (const profile of [undefined, { version: 2, future: true },
             }
         }]) {
     assert.deepEqual(focusKeys(profile, 1, 'bigrams'), []);
-    assert.deepEqual(generateWeakDrill(profile, () => 0, 'mac-us', 'bigrams'), {
-        lines: [],
-        focusKeys: []
-    }, 'absent or unusable pair evidence never invents a target');
+    const drill = generateWeakDrill(profile, () => 0, 'mac-us', 'bigrams');
+    assert.deepEqual([drill.lines, drill.focusKeys], [[], []],
+        'absent or unusable pair evidence never invents a target');
 }
 const pairProfile = {
     version: 1,

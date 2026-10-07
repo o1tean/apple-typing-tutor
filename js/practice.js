@@ -95,6 +95,18 @@ export function focusLabel(key) {
     return Array.from(key, char => char === ' ' ? 'Space' : char).join(' → ');
 }
 
+export function practiceObservation(cell, recent = false) {
+    if (!cell?.attempts) return 'No observations yet.';
+    const rate = recent ? cell.recentErrorRate : cell.errors / cell.attempts;
+    const reach = recent ? cell.recentLatencyMs : cell.latencyTotalMs / cell.latencySamples;
+    const label = recent ? 'recent ' : '';
+    return `${(rate * 100).toFixed(1)}% ${label}errors, `
+        + (cell.latencySamples ? `${Math.round(reach)} ms ${label}reach` : 'no reach timing yet')
+        + (recent ? '' : ` · ${cell.errors}/${cell.attempts} errors · ${cell.latencySamples} timed`)
+        + (cell.attempts < 5 || cell.latencySamples > 0 && cell.latencySamples < 5
+            ? ' · few observations' : '');
+}
+
 function drillLines(focus, allowed, random, layout) {
     if (!focus.length) return [];
     const columns = Math.max(8, Math.ceil(focus.length / 4));
@@ -140,7 +152,8 @@ export function generateWeakDrill(profile, random = Math.random, preset = 'mac-u
             .join(' ').replace(/\s+/g, ' ').trim()) : drillLines(keys,
             new Set([...Array.from('abcdefghijklmnopqrstuvwxyz'), ...keys]), random,
             keyboardLayout(preset)),
-        focusKeys: keys
+        focusKeys: keys,
+        learningBefore: migrateLearning(profile)
     };
 }
 
@@ -241,6 +254,8 @@ export function resultFeedback(result, exercise, nextLabel = 'Next lesson') {
         heading: 'Accuracy comes first.',
         advice: `Aim for ${targetAccuracy}% accuracy. ${retry}`
     };
+    if (exercise.track === 'weak')
+        return { heading: 'Practice complete.', advice: 'Review your focus below.' };
     if (['custom', 'retry'].includes(exercise.track) || exercise.options?.recordEligible === false)
         return { heading: 'Practice complete.', advice: retry };
     if (exercise.track === 'lesson') return result.wpm < exercise.targetWpm ? {

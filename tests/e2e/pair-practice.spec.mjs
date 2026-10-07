@@ -149,7 +149,8 @@ test('recent pair evidence produces a fresh drill and clean practice rotates its
         expect(after.futureRoot).toEqual(saved.futureRoot);
         expect(after.stats.futureStats).toEqual(saved.stats.futureStats);
         const stored = await savedBytes(page);
-        await results.getByRole('button', { name: 'Try again', exact: true }).click();
+        await results.getByRole('button', { name: 'Start next drill', exact: true })
+            .click();
         await expect(arena).toBeVisible();
         await expect(focus).toHaveText('w → v');
         expect(await savedBytes(page)).toBe(stored);

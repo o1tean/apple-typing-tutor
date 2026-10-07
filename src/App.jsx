@@ -17,6 +17,8 @@ import PhoneDemo from './PhoneDemo.jsx';
 import OfflineStatus from './OfflineStatus.jsx';
 import LearningPrompt from './LearningPrompt.jsx';
 import LessonPicker from './LessonPicker.jsx';
+import PracticeResults from './PracticeResults.jsx';
+import { mergeLearning } from '../js/learning.js';
 import {
     currentWord,
     formatElapsedTime,
@@ -542,6 +544,7 @@ function Results({
     onRepeat,
     onPracticeMissed,
     onPracticeWeak,
+    onPracticeNext,
     onNext,
     onChooseLesson,
     actionRef,
@@ -604,6 +607,15 @@ function Results({
                     <span className="record">personal best ↗</span>
                 )}
             </div>
+            {exercise.track === 'weak' && (
+                <PracticeResults
+                    exercise={exercise}
+                    result={result}
+                    onNext={onPracticeNext}
+                    onLesson={onChooseLesson}
+                    actionRef={actionRef}
+                />
+            )}
             <div className="result-main">
                 <div className="result-primary">
                     <span>wpm</span>
@@ -782,7 +794,7 @@ function Results({
                 {(exercise.track !== 'lesson' || feedback.advance) && (
                     <button
                         className={
-                            exercise.track === 'lesson'
+                            ['lesson', 'weak'].includes(exercise.track)
                                 ? 'text-button'
                                 : 'primary-button'
                         }
@@ -869,7 +881,7 @@ export default function App() {
                 next = {
                     ...next,
                     ...generateWeakDrill(
-                        storage.getLearning(),
+                        next.learningBefore,
                         undefined,
                         preset,
                         next.focusGroup,
@@ -1065,8 +1077,10 @@ export default function App() {
             ].includes(key)
         ) {
             setExercise(practice(next));
-        } else if (key === 'typingMode') setExercise({ ...exercise });
-        else if (key === 'keyboardLayout' && !result && !phoneDemo)
+        } else if (key === 'typingMode') {
+            if (result && exercise.track === 'weak') repeatExercise();
+            else setExercise({ ...exercise });
+        } else if (key === 'keyboardLayout' && !result && !phoneDemo)
             setExercise({ ...exercise }, value);
     };
     const downloadBackup = () => {
@@ -1141,6 +1155,13 @@ export default function App() {
     const repeatExercise = () =>
         setExercise({
             ...exercise,
+            keyboardLayout: settings.keyboardLayout,
+            ...(exercise.track === 'weak' && {
+                learningBefore: mergeLearning(
+                    exercise.learningBefore,
+                    result.learning,
+                ),
+            }),
             options: { ...exercise.options, recordEligible: false },
         });
     const practiceMissed = () =>
@@ -1157,9 +1178,9 @@ export default function App() {
         ],
         [storage.data.learning],
     );
-    const practiceWeak = (group = 'keys') => {
+    const practiceWeak = (group = 'keys', profile = storage.getLearning()) => {
         const drill = generateWeakDrill(
-            storage.getLearning(),
+            profile,
             undefined,
             settings.keyboardLayout,
             group,
@@ -1400,11 +1421,18 @@ export default function App() {
                         result={result}
                         samples={samples.current}
                         exercise={exercise}
-                        onRestart={restartExercise}
+                        onRestart={
+                            exercise.track === 'weak'
+                                ? repeatExercise
+                                : restartExercise
+                        }
                         onRepeat={repeatExercise}
                         onPracticeMissed={practiceMissed}
                         onPracticeWeak={
                             weakFocus.length ? () => practiceWeak() : null
+                        }
+                        onPracticeNext={(profile) =>
+                            practiceWeak(exercise.focusGroup, profile)
                         }
                         onNext={nextLesson}
                         onChooseLesson={() => openDialog('lessons')}

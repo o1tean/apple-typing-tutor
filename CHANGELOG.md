@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Compare earlier recent key/pair observations with this drill’s measurements, see why the next focus stays or changes, and choose a next drill or repeat the same one while saves finish.
 - See saved track completion and three-star counts, with a suggested unfinished lesson or review; all lessons remain available and Basic Position stays optional.
 - Practice a suggested key pair in a short fresh drill, with recent error/reach evidence, visible Space transitions, and focus that changes as you improve.
 - Continue your latest recorded lesson in one click, inspect the recent errors/reach times behind suggested key practice, and follow a clear next action after each lesson.
