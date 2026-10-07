@@ -106,6 +106,9 @@ test('reduced motion keeps the phone demo manual, including live preference chan
         await page.clock.runFor(1100);
         await expect(target).toHaveText('Space');
         await page.emulateMedia({ reducedMotion: 'reduce' });
+        await expect(demo).toContainText('Reduced motion: use Next key');
+        await expect(demo.getByRole('button', { name: /Play demo|Pause demo/ }))
+            .toHaveCount(0);
         await page.clock.runFor(5000);
         await expect(target).toHaveText('Space');
         expect(await page.evaluate(key => localStorage.getItem(key), storageKey))
