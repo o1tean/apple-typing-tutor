@@ -89,7 +89,7 @@ export default function SessionProgress({ history }) {
                 ))}
             </dl>
             <p className="field-help">
-                Consecutive local days with a completed session. Your current
+                Consecutive local days with a recorded session. Your current
                 streak stays active if you practiced today or yesterday. Based
                 on retained sessions; older activity may be missing.
             </p>
