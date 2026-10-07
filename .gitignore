@@ -9,5 +9,11 @@ RESUME_CHECKPOINT.md
 .local/
 launch/
 LOCAL_NOTES.md
+AGENTS.md
+PLANS.md
+DESIGN_RESEARCH.md
+IMPROVEMENT_PLAN.md
+docs/design-notes.md
+docs/releases/
 playwright-report/
 test-results/

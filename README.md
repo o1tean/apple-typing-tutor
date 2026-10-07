@@ -36,7 +36,6 @@ When an update is ready, finish and save your session, then close all Typeflow t
 Clearing this site's data removes saved progress and offline lessons.
 
 [Contribute](https://github.com/o1tean/apple-typing-tutor/blob/main/CONTRIBUTING.md) ·
-[Metric definitions](https://github.com/o1tean/apple-typing-tutor/blob/main/docs/metrics.md) ·
-[Design notes](https://github.com/o1tean/apple-typing-tutor/blob/main/docs/design-notes.md)
+[Metric definitions](https://github.com/o1tean/apple-typing-tutor/blob/main/docs/metrics.md)
 
 [![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/o1tean/apple-typing-tutor?label=CodeRabbit+Reviews)](https://coderabbit.ai)

@@ -1,7 +1,6 @@
 # Contributing to Typeflow
 
-Typeflow teaches touch typing. Read [AGENTS.md](AGENTS.md) for durable rules and
-[PLANS.md](PLANS.md) for the current launch criteria and next round.
+Typeflow teaches touch typing through guided lessons and live finger guidance.
 
 Use Node.js 22.12+ (or 20.19+), then run `npm ci` and `npm run dev`.
 Keep changes focused on an observed visitor experience; reproduce bugs before
@@ -43,9 +42,8 @@ The committed `.prettierrc` uses four-space indentation, single quotes, and an
 HTML-parser override for `*.svg`. `npm run format:check` covers only those files.
 Use `npx prettier --write` with the specific JSX or SVG files you changed.
 
-Keep machine-specific setup in gitignored `LOCAL_NOTES.md`. Do not create
-`AGENTS.override.md`, which replaces the shared rules. Keep temporary QA hooks
-out of production source, and never restore `.checkpoints` over tracked files.
+Keep personal setup and working notes out of commits. Keep temporary QA hooks
+out of production source.
 
 ## Re-shoot the launch media
 

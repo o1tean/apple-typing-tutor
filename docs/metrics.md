@@ -1,7 +1,6 @@
 # Typeflow metric definitions
 
-These definitions are frozen except for a reproduced P0. The implementation is
-independent; comparison sources are in [design notes](design-notes.md).
+Typeflow calculates typing metrics as follows.
 
 - WPM credits characters in correct words, including their separators, and a
   clean unfinished word, divided by five and measured elapsed minutes. Incorrect
