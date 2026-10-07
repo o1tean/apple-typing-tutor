@@ -12,6 +12,7 @@ import { sound } from '../js/audio.js';
 import { storage } from '../js/storage.js';
 import { isDialogBackdrop } from '../js/dialog.js';
 import { resultCard } from '../js/share.js';
+import SessionProgress from './Progress.jsx';
 import {
     currentWord,
     formatElapsedTime,
@@ -1878,6 +1879,11 @@ export default function App() {
                     {dialog === 'history' && (
                         <>
                             {storage.data.history.length > 0 && (
+                                <SessionProgress
+                                    history={storage.data.history}
+                                />
+                            )}
+                            {storage.data.history.length > 0 && (
                                 <p className="field-help">
                                     Earlier scores keep their original values.
                                     Personal bests compare scores using the same
@@ -1970,8 +1976,8 @@ export default function App() {
                                 <div className="empty-state">
                                     <h3>Your first session is waiting.</h3>
                                     <p>
-                                        Finish a test to start tracking your
-                                        progress.
+                                        Finish a lesson or test to start
+                                        tracking your progress.
                                     </p>
                                     <button
                                         className="primary-button"

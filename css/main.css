@@ -1070,6 +1070,64 @@ input[type='range'] {
     overflow-x: auto;
 }
 
+.practice-progress {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-streaks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 40px;
+    margin: 0;
+}
+
+.progress-streaks dt {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.progress-streaks dd {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 32px;
+    margin: 6px 0 0;
+}
+
+.progress-streaks small {
+    font-size: 14px;
+}
+
+.practice-progress h3 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 24px 0 0;
+}
+
+.progress-charts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin: 20px 0;
+}
+
+.progress-charts h4 {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    margin: 0 0 16px;
+}
+
+.progress-charts svg {
+    height: 6rem;
+}
+
+.practice-progress summary {
+    cursor: pointer;
+    font-size: 12px;
+    padding-block: 12px;
+}
+
 .history-note {
     display: block;
     color: var(--muted);

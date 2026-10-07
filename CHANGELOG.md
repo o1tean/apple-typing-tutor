@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Session history now shows 14-day WPM/accuracy averages and practice streaks from retained sessions, with visible gaps and separate earlier scoring.
+
 ## 1.0.0 — Prepared locally; publication pending
 
 - First visits start lesson 1 with finger/keyboard guidance, skip-to-test and an honest physical-keyboard notice; existing settings stay unchanged.
