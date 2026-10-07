@@ -318,6 +318,93 @@ button svg {
     margin: 0 0 18px;
 }
 
+.keyboard-notice button {
+    margin-left: 8px;
+}
+
+.phone-demo {
+    max-width: 640px;
+    margin-inline: auto;
+}
+
+.phone-demo h2 {
+    font-size: 18px;
+}
+
+.phone-demo>p {
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 8px 0;
+}
+
+.phone-demo .demo-letters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--muted);
+}
+
+.demo-letters span {
+    padding: 2px;
+    border-radius: 3px;
+}
+
+.demo-letters .complete {
+    color: var(--text);
+}
+
+.demo-letters .current {
+    background: var(--accent);
+    color: var(--accent-ink);
+}
+
+.demo-target {
+    text-align: center;
+}
+
+.demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 16px;
+    margin: 12px 0;
+}
+
+.demo-actions button {
+    min-height: 44px;
+}
+
+.phone-demo .hands-display {
+    max-width: 400px;
+}
+
+.phone-demo .keyboard-container {
+    margin-top: 12px;
+}
+
+.phone-demo .magic-keyboard {
+    min-width: 0;
+    padding: 6px;
+    gap: 3px;
+}
+
+.phone-demo .keyboard-row {
+    height: 28px;
+    gap: 3px;
+}
+
+.phone-demo .key-main-label {
+    font-size: 9px;
+}
+
+.phone-demo :is(.key-shift-label, .key-sub-label, .caps-led, .tactile-bump) {
+    display: none;
+}
+
 @media (pointer: coarse) {
     .keyboard-notice {
         display: block;

@@ -13,6 +13,7 @@ import { storage } from '../js/storage.js';
 import { isDialogBackdrop } from '../js/dialog.js';
 import { resultCard } from '../js/share.js';
 import SessionProgress from './Progress.jsx';
+import PhoneDemo from './PhoneDemo.jsx';
 import {
     currentWord,
     formatElapsedTime,
@@ -800,11 +801,21 @@ export default function App() {
     const [settings, setSettings] = useState(() => ({
         ...storage.data.settings,
     }));
-    const [exercise, setExercise] = useState(() =>
+    const [exercise, setExerciseState] = useState(() =>
         storage.lastSavedRaw === null && !storage.loadFailed
             ? lessonExercise('amateur', 1)
             : practice(settings),
     );
+    const [phoneDemo, setPhoneDemo] = useState(
+        () =>
+            matchMedia('(pointer: coarse)').matches &&
+            storage.lastSavedRaw === null &&
+            !storage.loadFailed,
+    );
+    const setExercise = (next) => {
+        setPhoneDemo(false);
+        setExerciseState(next);
+    };
     const [revision, setRevision] = useState(0);
     const [dialog, setDialog] = useState(null);
     const [lessonTrack, setLessonTrack] = useState('amateur');
@@ -931,7 +942,11 @@ export default function App() {
             if (document.hidden) {
                 engine.pause();
                 keyboardView.current?.clearPressedKeys();
-            } else if (!dialog && document.activeElement === input.current)
+            } else if (
+                !phoneDemo &&
+                !dialog &&
+                document.activeElement === input.current
+            )
                 engine.resume();
         };
         const shortcuts = (event) => {
@@ -951,7 +966,7 @@ export default function App() {
             document.removeEventListener('visibilitychange', visibility);
             window.removeEventListener('keydown', shortcuts);
         };
-    }, [dialog, exercise, settings, engine]);
+    }, [dialog, exercise, settings, engine, phoneDemo]);
 
     const openDialog = (name) => {
         engine.pause();
@@ -1318,8 +1333,9 @@ export default function App() {
                                 role="group"
                                 aria-label="Live statistics"
                                 hidden={
-                                    exercise.track === 'lesson' &&
-                                    !engine.isRunning
+                                    phoneDemo ||
+                                    (exercise.track === 'lesson' &&
+                                        !engine.isRunning)
                                 }
                             >
                                 <strong>
@@ -1356,8 +1372,31 @@ export default function App() {
                             Best with a physical keyboard. Connect one to follow
                             the finger guide. Onscreen keyboards do not teach
                             finger placement.
+                            {!phoneDemo && (
+                                <button
+                                    type="button"
+                                    className="text-button"
+                                    onClick={() => {
+                                        engine.pause();
+                                        setPhoneDemo(true);
+                                    }}
+                                >
+                                    Watch a demo
+                                </button>
+                            )}
                         </p>
-                        {exercise.track === 'lesson' && (
+                        {phoneDemo && (
+                            <PhoneDemo
+                                paused={Boolean(dialog)}
+                                onPractice={() => {
+                                    setExercise(lessonExercise('amateur', 1));
+                                    requestAnimationFrame(() =>
+                                        input.current?.focus(),
+                                    );
+                                }}
+                            />
+                        )}
+                        {!phoneDemo && exercise.track === 'lesson' && (
                             <aside
                                 className="lesson-instructions"
                                 aria-label="Lesson instructions"
@@ -1379,7 +1418,7 @@ export default function App() {
                                 </details>
                             </aside>
                         )}
-                        {exercise.track === 'weak' && (
+                        {!phoneDemo && exercise.track === 'weak' && (
                             <aside
                                 className="lesson-instructions"
                                 aria-label="Adaptive practice instructions"
@@ -1402,22 +1441,24 @@ export default function App() {
                                 </ul>
                             </aside>
                         )}
-                        <Arena
-                            key={exercise.lines.join('\n')}
-                            engine={engine}
-                            revision={revision}
-                            exercise={exercise}
-                            input={input}
-                            restart={restart}
-                            view={keyboardView}
-                            focused={focused}
-                            setFocused={setFocused}
-                            inputFeedback={inputFeedback}
-                            setInputFeedback={setInputFeedback}
-                        />
+                        {!phoneDemo && (
+                            <Arena
+                                key={exercise.lines.join('\n')}
+                                engine={engine}
+                                revision={revision}
+                                exercise={exercise}
+                                input={input}
+                                restart={restart}
+                                view={keyboardView}
+                                focused={focused}
+                                setFocused={setFocused}
+                                inputFeedback={inputFeedback}
+                                setInputFeedback={setInputFeedback}
+                            />
+                        )}
                     </section>
                 )}
-                <div className="restart-row">
+                <div className="restart-row" hidden={phoneDemo}>
                     <button
                         ref={restart}
                         className="icon-button restart-button"
@@ -1432,7 +1473,7 @@ export default function App() {
                         />
                     </button>
                 </div>
-                {!result && (
+                {!result && !phoneDemo && (
                     <Guidance
                         engine={engine}
                         revision={revision}
@@ -1440,7 +1481,7 @@ export default function App() {
                         view={keyboardView}
                     />
                 )}
-                <div className="shortcuts">
+                <div className="shortcuts" hidden={phoneDemo}>
                     <span>
                         <kbd>tab</kbd> + <kbd>enter</kbd>{' '}
                         {restartLabel.toLowerCase()}

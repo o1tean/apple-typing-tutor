@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- First-time phone visitors see a self-playing finger demo, with pause/manual controls, reduced-motion support, and a direct path into the real lesson.
 - Added Mint, Ocean, and Plum palettes for light/dark/system appearance, preserving saved preferences and progress.
 - Session history now shows 14-day WPM/accuracy averages and practice streaks from retained sessions, with visible gaps and separate earlier scoring.
 

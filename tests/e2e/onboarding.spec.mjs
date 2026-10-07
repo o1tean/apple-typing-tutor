@@ -126,9 +126,10 @@ test.describe('touch first visit', () => {
                 .toBeVisible();
             const input = page.getByRole('textbox', { name: 'Typing input' });
             await page.getByRole('button', {
-                name: 'click here to start typing',
+                name: 'Try this lesson',
                 exact: true
             }).tap();
+            await expect(input).toBeFocused();
             const firstKey = (await page.locator('.typing-text .word').first()
                     .textContent())
                 .replace(/\u00a0/g, ' ')[0];
