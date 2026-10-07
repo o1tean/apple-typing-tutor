@@ -27,6 +27,7 @@ npm run dev
 For a static production build, run `npm run build` and serve `dist/`.
 Tests start on the first character and pause when focus leaves the typing input.
 Press Escape for settings; use Tab then Enter to restart.
+Choose the keyboard layout that matches your operating-system input source in Settings.
 Progress stays in this browser and is not synchronized across devices.
 
 After the footer says **Available offline**, lessons also work without a connection.

@@ -9,6 +9,7 @@ import {
     generateLessonDrill,
     generateWeakDrill,
     generateWords,
+    lessonsForLayout,
     normalizeCustomText,
     recordSpeedSample,
     resultFeedback,
@@ -251,6 +252,61 @@ const improved = mergeLearning(weakProfile, {
 assert.deepEqual(focusKeys(improved), ['w'],
     'cleaner and faster recent practice rotates the old focus out toward the next weak key');
 assert.equal(improved.keys.q.errors, 36, 'rotation preserves lifetime errors');
+
+for (const [preset, left, right, inner, upper, lower, rest] of [
+    ['colemak', 'arst', 'neio', 'dh', 'qwfpgjluy;', 'zxcvbkm,.', 't'],
+    ['dvorak', 'aoeu', 'htns', 'id', "',.pyfgcrl", ';qjkxbmwv', 'u']
+]) {
+    const amateur = lessonsForLayout('amateur', preset);
+    const pro = lessonsForLayout('pro', preset);
+    assert.deepEqual(amateur[1].keysIntroduced, Array.from(left + ' '));
+    assert.deepEqual(amateur[2].keysIntroduced, Array.from(right + ' '));
+    assert.deepEqual(amateur[4].keysIntroduced, Array.from(inner));
+    assert.deepEqual(pro[3].keysIntroduced, Array.from(upper));
+    assert.deepEqual(pro[4].keysIntroduced, Array.from(lower));
+    assert.ok(amateur[0].description.includes(Array.from(left).join(' ').toUpperCase()));
+    assert.ok(amateur[0].description.includes(Array.from(right).join(' ').toUpperCase()));
+    assert.ok(amateur[1].description.includes(`${left[3].toUpperCase()} with Left Index`));
+    for (const track of ['amateur', 'pro']) {
+        const originals = JSON.stringify(CURRICULUM[track]);
+        const introduced = new Set([' ']);
+        for (const [index, item] of lessonsForLayout(track, preset).entries()) {
+            const original = CURRICULUM[track][index];
+            for (const key of ['id', 'targetWpm', 'targetAccuracy']) {
+                assert.equal(item[key], original[key],
+                    'layout choices preserve lesson identity and targets');
+            }
+            if (index > (track === 'amateur' ? 9 : 4)) {
+                assert.deepEqual(item, original,
+                    'alphabet, capitals, numbers and punctuation remain actual target characters'
+                );
+            }
+            for (const key of item.keysIntroduced) introduced.add(key);
+            const ownHand = track === 'amateur' ? index <= 2 : index <= 1;
+            const allowed = ownHand ? new Set([' ', ...item.keysIntroduced]) : introduced;
+            const first = generateLessonDrill(track, index, () => 0, preset);
+            const retry = generateLessonDrill(track, index, () => 0.999, preset);
+            for (const lines of [first, retry]) {
+                assert.ok(lines.join('').length > 0);
+                assert.ok(Array.from(lines.join('')).every(key => allowed.has(key)),
+                    `${preset} ${item.id} stays within introduced keys`);
+            }
+            assert.notDeepEqual(first, retry, 'mapped retries remain fresh');
+        }
+        assert.equal(JSON.stringify(CURRICULUM[track]), originals);
+    }
+    const profile = { version: 1, keys: { p: { ...weakProfile.keys.q } }, bigrams: {} };
+    const before = JSON.stringify(profile);
+    const weak = generateWeakDrill(profile, () => 0.999, preset);
+    assert.deepEqual(new Set(weak.lines.join('').replaceAll(' ', '')), new Set([rest, 'p']),
+        `${preset} upper-left index drills return to the mapped home key`);
+    assert.equal(JSON.stringify(profile), before);
+}
+assert.equal(lessonsForLayout('amateur'), CURRICULUM.amateur);
+assert.equal(lessonsForLayout('pro', 'invalid'), CURRICULUM.pro);
+assert.deepEqual(lessonsForLayout('missing'), []);
+assert.equal(sessionLabel({ lessonId: 'amat-4' }), 'Inner Reach');
+assert.equal(sessionLabel({ lessonId: 'amat-9' }), 'Bottom Row Right');
 console.log(
-    'Practice generation, custom Unicode cleanup, exact speed samples, elapsed labels, typing feedback, and result coaching checks passed.'
+    'Practice generation, layout curriculum, custom Unicode cleanup, exact speed samples, elapsed labels, typing feedback, and result coaching checks passed.'
 );

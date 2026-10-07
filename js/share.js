@@ -1,6 +1,6 @@
 /** A native, local PNG of the completed session and its target-key map. */
 
-import { KEYBOARD_LAYOUT, keyMeasurements } from './keyboard.js';
+import { KEYBOARD_PRESETS, keyboardLayout, keyMeasurements } from './keyboard.js';
 import { formatElapsedTime } from './practice.js';
 
 export async function resultCard(result, exercise) {
@@ -39,7 +39,9 @@ export async function resultCard(result, exercise) {
     text('ACCURACY', 450, 326, 18, 'muted', mono);
     text(formatElapsedTime(result.elapsedMilliseconds), 875, 288, 38, 'text', mono, 260);
     text('TIME', 875, 326, 18, 'muted', mono);
-    text('Your session key map', 60, 385, 23);
+    const preset = exercise?.keyboardLayout || 'mac-us';
+    text(`Your session key map · ${KEYBOARD_PRESETS[preset] || KEYBOARD_PRESETS['mac-us']}`,
+        60, 385, 23);
     text('● Clean', 60, 415, 17, 'accent');
     text('● Errors · stronger color means a higher rate', 185, 415, 17, 'error');
     text('○ Not tried', 605, 415, 17, 'muted');
@@ -48,8 +50,8 @@ export async function resultCard(result, exercise) {
     context.roundRect(60, 430, 1080, 270, 18);
     context.fillStyle = palette.surface;
     context.fill();
-    const cells = keyMeasurements(result.learning);
-    Object.values(KEYBOARD_LAYOUT).forEach((row, rowIndex) => {
+    const cells = keyMeasurements(result.learning, preset);
+    Object.values(keyboardLayout(preset).rows).forEach((row, rowIndex) => {
         const unit = (1048 - 8 * (row.length - 1)) / row.reduce((sum, key) => sum + key
             .width, 0);
         let x = 76;

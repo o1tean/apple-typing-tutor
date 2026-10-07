@@ -193,10 +193,62 @@ const CHAR_TO_CODE = {
     ' ': 'Space'
 };
 
-export function keyMeasurements(learning) {
+export const KEYBOARD_PRESETS = {
+    'mac-us': 'Mac US · QWERTY',
+    colemak: 'Colemak · US ANSI',
+    dvorak: 'Dvorak · US ANSI'
+};
+
+// Standard Colemak and US Dvorak character positions; Caps Lock stays unchanged.
+export function keyboardLayout(preset = 'mac-us') {
+    const characters = {
+        colemak: ['`1234567890-=', 'qwfpgjluy;[]\\', "arstdhneio'", 'zxcvbkm,./'],
+        dvorak: ['`1234567890[]', "',.pyfgcrl/=\\", 'aoeuidhtns-', ';qjkxbmwvz']
+    } [preset];
+    const usKeys = Object.values(KEYBOARD_LAYOUT).flat();
+    const shifted = char => usKeys.find(key => key.code === CHAR_TO_CODE[char])
+        ?.shiftLabel || char.toUpperCase();
+    const charToCode = {},
+        fingerMap = {},
+        fromQwerty = {};
+    const rows = Object.fromEntries(Object.entries(KEYBOARD_LAYOUT).map(([name, row], rowIndex) => {
+        let index = 0;
+        return [name, row.map(key => {
+            const original = key.char ?? (key.label.length === 1 ? key.label
+                : null);
+            if (original === null) return { ...key };
+            const char = characters?.[rowIndex]?.[index++] ?? original;
+            const shift = shifted(char);
+            charToCode[char] = key.code;
+            fingerMap[char] = { ...FINGER_MAP[original] };
+            fromQwerty[original] = char;
+            if (shift !== char) {
+                charToCode[shift] = key.code;
+                fingerMap[shift] = { ...fingerMap[char], shift: true };
+                fromQwerty[shifted(original)] = shift;
+            }
+            return {
+                ...key,
+                char,
+                label: char === ' ' ? '' : char.toUpperCase(),
+                shiftLabel: shift === char.toUpperCase() ? undefined : shift
+            };
+        })];
+    }));
+    return {
+        rows,
+        charToCode,
+        fingerMap,
+        fromQwerty,
+        homeKeys: Array.from('asdfjkl;', char => fromQwerty[char]).join('')
+    };
+}
+
+export function keyMeasurements(learning, preset = 'mac-us') {
+    const { charToCode } = keyboardLayout(preset);
     const cells = new Map();
     for (const [char, cell] of Object.entries(learning?.keys || {})) {
-        const code = Object.hasOwn(CHAR_TO_CODE, char) ? CHAR_TO_CODE[char] : null;
+        const code = Object.hasOwn(charToCode, char) ? charToCode[char] : null;
         if (!code) continue;
         const combined = cells.get(code) || {
             attempts: 0,
@@ -211,10 +263,15 @@ export function keyMeasurements(learning) {
 }
 
 export class KeyboardView {
-    constructor(containerEl, handsContainerEl, fingerHintEl) {
+    constructor(containerEl, handsContainerEl, fingerHintEl, preset = 'mac-us') {
         this.container = containerEl;
         this.handsContainer = handsContainerEl;
         this.fingerHint = fingerHintEl;
+        this.preset = preset;
+        this.layout = keyboardLayout(preset);
+        const home = this.layout.homeKeys.toUpperCase();
+        this.restHint =
+            `Rest your fingers on ${Array.from(home.slice(0, 4)).join(' ')} and ${Array.from(home.slice(4)).join(' ')}`;
         this.keyElements = new Map();
         this.keyPositions = new Map();
 
@@ -229,8 +286,7 @@ export class KeyboardView {
         const boardEl = document.createElement('div');
         boardEl.className = 'magic-keyboard';
 
-        Object.keys(KEYBOARD_LAYOUT).forEach((rowKey, rowIndex) => {
-            const row = KEYBOARD_LAYOUT[rowKey];
+        Object.values(this.layout.rows).forEach((row, rowIndex) => {
             const width = row.reduce((total, key) => total + key.width, 0);
             let offset = 0;
             const rowEl = document.createElement('div');
@@ -249,7 +305,7 @@ export class KeyboardView {
 
                 if (key.special) keyEl.classList.add(`key-${key.special}`);
 
-                // Tactile bump on F and J (Apple Magic Keyboard feature)
+                // The bumps stay on the physical index-finger home keys.
                 if (key.bump) {
                     const bumpEl = document.createElement('span');
                     bumpEl.className = 'tactile-bump';
@@ -297,7 +353,7 @@ export class KeyboardView {
     }
 
     showHeatmap(learning) {
-        const cells = keyMeasurements(learning);
+        const cells = keyMeasurements(learning, this.preset);
         for (const [code, element] of this.keyElements) {
             const cell = cells.get(code);
             element.classList.toggle('key-measured', Boolean(cell?.attempts));
@@ -362,10 +418,13 @@ export class KeyboardView {
       <div class="hands-display">
         ${['left', 'right'].map(hand => {
           const left = hand === 'left';
-          const letters = left ? ['A', 'S', 'D', 'F', '␣'] : [';', 'L', 'K', 'J', '␣'];
+          const home = Array.from(this.layout.homeKeys.toUpperCase());
+          const letters = [...(left ? home.slice(0, 4) : home.slice(4).reverse()), '␣'];
+          const description = fingers.slice(0, 4).map((finger, index) =>
+              `${finger.name} ${letters[index] === ';' ? 'semicolon' : letters[index]}`).join(', ');
           return `<div class="hand-wrapper hand-${hand}">
             <svg class="hand-svg" viewBox="0 -18 220 244" role="img"
-              aria-label="${left ? 'Left' : 'Right'} hand: ${left ? 'pinky A, ring S, middle D, index F' : 'index J, middle K, ring L, pinky semicolon'}; thumb Space.">
+              aria-label="${left ? 'Left' : 'Right'} hand: ${description}; thumb Space.">
               <g transform="${left ? '' : 'translate(220 0) scale(-1 1)'}">
                 <path class="hand-outline" d="M57 220C58 199 39 188 30 166C24 153 22 137 19 119L10 80C6 63 27 58 32 75L47 119Q52 124 50 117L36 51C32 33 55 28 60 47L77 109Q82 115 81 107L69 36C66 17 90 14 94 33L108 106Q113 114 116 110L114 53C112 34 135 30 139 49L154 126C158 138 163 140 168 131L181 109C190 94 209 104 201 121L183 158Q172 186 149 200L149 220" />
                 ${fingers.map((finger, index) => `
@@ -381,12 +440,12 @@ export class KeyboardView {
                 <path class="hand-detail" d="M48 139Q79 127 112 137M119 131Q137 149 136 178M62 204Q97 211 134 204" />
               </g>
             </svg>
-            <div class="hand-label">${left ? 'Left' : 'Right'} hand <span>${left ? 'A S D F' : 'J K L ;'}</span></div>
+            <div class="hand-label">${left ? 'Left' : 'Right'} hand <span>${(left ? home.slice(0, 4) : home.slice(4)).join(' ')}</span></div>
           </div>`;
         }).join('')}
         <div class="finger-instructions">
-          <p class="finger-instruction-text" id="finger-hint-text">Rest your fingers on A S D F and J K L ;</p>
-          <p class="hand-rest-note">Reach for the next key, then return home · Feel the bumps on F and J</p>
+          <p class="finger-instruction-text" id="finger-hint-text">${this.restHint}</p>
+          <p class="hand-rest-note">Reach for the next key, then return home · Feel the bumps under your index fingers</p>
         </div>
       </div>
     `;
@@ -396,10 +455,11 @@ export class KeyboardView {
         const finger = this.handsContainer?.querySelector(`#finger-${hand}-${name}`);
         if (!finger) return;
         const target = this.keyPositions.get(code);
-        const home = this.keyPositions.get(CHAR_TO_CODE[finger.dataset.homeKey.toLowerCase()]);
+        const home = this.keyPositions.get(this.layout.charToCode[finger.dataset.homeKey
+            .toLowerCase()]);
         const row = shift ? 'shift' : name === 'thumb' ? 'space' : ['number', 'upper', 'home',
             'lower'][target.row];
-        // ponytail: illustrative US-QWERTY reach; measure layout geometry when other layouts ship.
+        // Illustrative reach follows the target and home key's physical positions.
         const angle = shift ? -28 : name === 'thumb' ? 12 :
             Math.max(-30, Math.min(30, (target.x - home.x) * 160 * (hand === 'left' ? 1 : -1)));
         const scale = shift ? 0.76 : name === 'thumb' ? 0.9 : [1.38, 1.24, 0.94, 0.8][target
@@ -435,14 +495,14 @@ export class KeyboardView {
             });
         }
 
-        if (this.fingerHint) this.fingerHint.textContent = char ? `Type “${char}”` :
-            'Rest your fingers on A S D F and J K L ;';
+        if (this.fingerHint) this.fingerHint.textContent = char ? `Type “${char}”` : this
+            .restHint;
         if (!char) {
             return;
         }
 
-        const code = CHAR_TO_CODE[char];
-        const fingerInfo = FINGER_MAP[char];
+        const code = this.layout.charToCode[char];
+        const fingerInfo = this.layout.fingerMap[char];
 
         if (code && this.keyElements.has(code)) {
             const el = this.keyElements.get(code);
@@ -476,8 +536,9 @@ export class KeyboardView {
                 const charDisplay = char === ' ' ? 'Space' : `"${char}"`;
                 const shiftNote = fingerInfo.shift ?
                     ` (+ ${fingerInfo.hand === 'left' ? 'Right' : 'Left'} Shift)` : '';
-                const reach = rows[0] === 'space' ? 'press Space' : rows[0] === 'home' ? ['g',
-                        'h'].includes(char.toLowerCase()) ? 'reach inward' : 'home row' :
+                const reach = rows[0] === 'space' ? 'press Space' : rows[0] === 'home' ? [
+                        'KeyG',
+                        'KeyH'].includes(code) ? 'reach inward' : 'home row' :
                     `reach ${rows[0]} row`;
                 hintText.textContent =
                     `${fingerInfo.finger === 'thumb' ? 'Either thumb' : fingerInfo.label} · ${charDisplay} · ${reach}${shiftNote}`;

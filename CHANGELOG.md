@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Choose Mac US, Colemak, or Dvorak guidance with matching home-row lessons, physical finger reaches, and session-layout result cards.
 - Install Typeflow and complete lessons offline after the first visit; updates wait until existing tabs close, preserving open attempts and saved progress.
 - First-time phone visitors see a self-playing finger demo, with pause/manual controls, reduced-motion support, and a direct path into the real lesson.
 - Added Mint, Ocean, and Plum palettes for light/dark/system appearance, preserving saved preferences and progress.

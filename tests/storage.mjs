@@ -37,6 +37,7 @@ try {
     assert.equal(storage.getSetting('showHands'), true);
     assert.equal(storage.getSetting('showKeyboard'), true);
     assert.equal(storage.getSetting('colorPalette'), 'mint');
+    assert.equal(storage.getSetting('keyboardLayout'), 'mac-us');
     assert.equal(saved, null, 'first-visit defaults never write during startup');
     reload({});
     const defaults = { ...storage.data.settings };
@@ -47,6 +48,7 @@ try {
     assert.equal(defaults.testDuration, 30);
     assert.equal(defaults.testWordCount, 25);
     assert.equal(defaults.colorPalette, 'mint');
+    assert.equal(defaults.keyboardLayout, 'mac-us');
 
     for (const corrupted of ['{', 'null', 'false', '7', '[]', '"bad"']) {
         reload(corrupted);
@@ -58,6 +60,7 @@ try {
         settings: {
             theme: 'pink',
             colorPalette: 'purple',
+            keyboardLayout: 'unknown',
             volume: '0.2',
             soundMuted: 'false',
             typingMode: null,
@@ -131,6 +134,36 @@ try {
         assert.equal(writes, writesBeforeInvalid);
         assert.equal(storage.getSetting('colorPalette'), 'mint');
     }
+    const beforeLayouts = {
+        futureRoot: { version: 7 },
+        settings: { theme: 'dark', colorPalette: 'plum', futureSetting: { enabled: true } },
+        progress: { 'amat-intro': { ...lesson, futureProgress: ['keep'] } },
+        history: [{ ...previous, futureHistory: true }],
+        stats: { totalSessions: 3, highestWpm: 80, futureStats: 'keep' }
+    };
+    const beforeLayoutWrites = writes;
+    reload(beforeLayouts);
+    assert.equal(storage.getSetting('keyboardLayout'), 'mac-us');
+    assert.equal(writes, beforeLayoutWrites, 'layout defaults migrate without startup writes');
+    assert.equal(saved, JSON.stringify(beforeLayouts));
+    const layoutBaseline = JSON.parse(JSON.stringify(storage.data));
+    for (const keyboardLayout of ['colemak', 'dvorak', 'mac-us']) {
+        assert.equal(await storage.setSetting('keyboardLayout', keyboardLayout), true);
+        assert.deepEqual(JSON.parse(saved), {
+            ...layoutBaseline,
+            settings: { ...layoutBaseline.settings, keyboardLayout }
+        }, 'layout saves preserve appearance, scores, progress and unknown fields');
+        storage.data = storage.load();
+        assert.equal(storage.getSetting('keyboardLayout'), keyboardLayout);
+    }
+    const layoutSaved = saved;
+    const layoutWrites = writes;
+    for (const value of ['qwerty', 'COLEMAK', 'pc-us', 'mac-uk', '', null, true, {}]) {
+        assert.equal(await storage.setSetting('keyboardLayout', value), false);
+    }
+    assert.equal(saved, layoutSaved, 'unsupported layout settings cannot write saved data');
+    assert.equal(writes, layoutWrites);
+
     reload({
         settings: {
             theme: 'light',

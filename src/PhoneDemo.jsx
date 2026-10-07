@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardView } from '../js/keyboard.js';
+import { KeyboardView, keyboardLayout } from '../js/keyboard.js';
 
 const STEPS = Array.from('f r f j u j F J ');
 
-export default function PhoneDemo({ onPractice, paused = false }) {
+export default function PhoneDemo({
+    onPractice,
+    paused = false,
+    preset = 'mac-us',
+}) {
     const keyboard = useRef(null);
     const hands = useRef(null);
     const view = useRef(null);
@@ -15,18 +19,25 @@ export default function PhoneDemo({ onPractice, paused = false }) {
     const [playing, setPlaying] = useState(!media.matches);
     const [hidden, setHidden] = useState(() => document.hidden);
     const [index, setIndex] = useState(0);
-    const target = STEPS[index];
+    const layout = keyboardLayout(preset);
+    const steps = STEPS.map((key) => layout.fromQwerty[key]);
+    const target = steps[index];
 
     useEffect(() => {
-        view.current = new KeyboardView(keyboard.current, hands.current);
+        view.current = new KeyboardView(
+            keyboard.current,
+            hands.current,
+            null,
+            preset,
+        );
         return () => {
             view.current = null;
         };
-    }, []);
+    }, [preset]);
 
     useEffect(() => {
         view.current?.highlightTarget(target);
-    }, [target]);
+    }, [target, preset]);
 
     useEffect(() => {
         const motionChanged = () => {
@@ -61,7 +72,7 @@ export default function PhoneDemo({ onPractice, paused = false }) {
             <h2>Finger demo</h2>
             <p>Reach, then return home.</p>
             <p className="demo-letters" aria-hidden="true">
-                {STEPS.map((letter, position) => (
+                {steps.map((letter, position) => (
                     <span
                         key={position}
                         className={

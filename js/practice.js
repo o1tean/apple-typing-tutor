@@ -1,5 +1,31 @@
-import { CURRICULUM, FINGER_MAP } from './lessons.js';
+import { CURRICULUM } from './lessons.js';
 import { migrateLearning } from './learning.js';
+import { keyboardLayout } from './keyboard.js';
+
+export function lessonsForLayout(track, preset = 'mac-us') {
+    const lessons = ['amateur', 'pro'].includes(track) ? CURRICULUM[track] : [];
+    if (!['colemak', 'dvorak'].includes(preset)) return lessons;
+    const layout = keyboardLayout(preset);
+    const home = Array.from(layout.homeKeys, key => key.toUpperCase());
+    const rest = `Rest your fingers on ${home.slice(0, 4).join(' ')} and `
+        + `${home.slice(4).join(' ')}; feel the bumps on ${home[3]} and ${home[4]}.`;
+    return lessons.map((lesson, index) => {
+        if (index > (track === 'amateur' ? 9 : 4)) return lesson;
+        const keysIntroduced = lesson.keysIntroduced.map(key => layout.fromQwerty[key]);
+        const keys = keysIntroduced.filter(key => key !== ' ');
+        const names = keys.map(key => key.toUpperCase()).join(', ');
+        const instructions = keys.map(key => `${key.toUpperCase()} with ${layout.fingerMap[key]
+            .label}`).join(', ');
+        return {
+            ...lesson,
+            title: lesson.title.replace(/\([^)]*\)/, `(${names})`),
+            subtitle: `Keys: ${keys.map(key => key.toUpperCase()).join(' ')}`,
+            description: (lesson.id === 'amat-intro' ? '' : `Use ${instructions}. `) + rest
+                + (keysIntroduced.includes(' ') ? ' Press Space with either thumb.' : ''),
+            keysIntroduced
+        };
+    });
+}
 
 export function focusKeys(profile, limit = 3) {
     if (profile?.version !== 1) return [];
@@ -17,7 +43,7 @@ export function focusKeys(profile, limit = 3) {
         .slice(0, Math.max(0, limit)).map(item => item.key);
 }
 
-function drillLines(focus, allowed, random) {
+function drillLines(focus, allowed, random, layout) {
     if (!focus.length) return [];
     const columns = Math.max(8, Math.ceil(focus.length / 4));
     const choose = items => items[Math.floor(random() * items.length)];
@@ -28,7 +54,7 @@ function drillLines(focus, allowed, random) {
         return Array.from({ length: 4 }, () => Array.from({ length: columns }, () =>
             choose(letters.length ? letters : context)).join(' '));
     }
-    const home = Array.from('asdfjkl;');
+    const home = Array.from(layout.homeKeys);
     const pools = focus.map(key => CURRICULUM.speedWords.map(word => /[A-Z]/.test(key)
         ? word.toUpperCase() : word).filter(word => word.length <= 8 &&
         Array.from(word).every(char => allowed.has(char)) &&
@@ -39,12 +65,13 @@ function drillLines(focus, allowed, random) {
         const index = (offset + line * columns + column) % focus.length;
         const key = focus[index];
         if (pools[index].length && random() < 0.5) return choose(pools[index]);
-        const finger = FINGER_MAP[key];
+        const finger = layout.fingerMap[key];
         const rest = home.find(char => allowed.has(char) && char !== key &&
-            FINGER_MAP[char]?.hand === finger?.hand && FINGER_MAP[char]?.finger ===
+            layout.fingerMap[char]?.hand === finger?.hand && layout.fingerMap[char]
+            ?.finger ===
             finger?.finger);
         const nearby = home.filter(char => allowed.has(char) && char !== key &&
-            FINGER_MAP[char]?.hand === finger?.hand);
+            layout.fingerMap[char]?.hand === finger?.hand);
         const other = rest || choose(nearby.length ? nearby : context);
         // Two focused characters per four-character reach survive the separating Space.
         return choose([key + other + key + other, key + other + other + key,
@@ -52,24 +79,24 @@ function drillLines(focus, allowed, random) {
     }).join(' '));
 }
 
-export function generateWeakDrill(profile, random = Math.random) {
+export function generateWeakDrill(profile, random = Math.random, preset = 'mac-us') {
     const keys = focusKeys(profile);
     return {
         lines: drillLines(keys, new Set([...Array.from('abcdefghijklmnopqrstuvwxyz'), ...keys]),
-            random),
+            random, keyboardLayout(preset)),
         focusKeys: keys
     };
 }
 
-export function generateLessonDrill(track, index, random = Math.random) {
-    const lessons = ['amateur', 'pro'].includes(track) ? CURRICULUM[track] : null;
+export function generateLessonDrill(track, index, random = Math.random, preset = 'mac-us') {
+    const lessons = lessonsForLayout(track, preset);
     const lesson = lessons?.[index];
     if (!lesson || !Number.isInteger(index)) return [];
     const ownHand = track === 'amateur' ? index <= 2 : index <= 1;
     const taught = ownHand ? [lesson] : lessons.slice(track === 'amateur' ? 1 : 0, index + 1);
     const allowed = new Set([' ', ...taught.flatMap(item => item.keysIntroduced)]);
     const current = lesson.keysIntroduced.filter(key => key !== ' ');
-    return drillLines(current.length ? current : [' '], allowed, random);
+    return drillLines(current.length ? current : [' '], allowed, random, keyboardLayout(preset));
 }
 
 export function generateWords(count, options = {}, random = Math.random) {
@@ -182,7 +209,7 @@ export function sessionLabel(entry) {
     if (entry.lessonId.startsWith('quote-')) return 'Quote · practice';
     const lesson = [...CURRICULUM.amateur, ...CURRICULUM.pro]
         .find(item => item.id === entry.lessonId);
-    if (lesson) return lesson.title.replace(/^Lesson \d+: /, '');
+    if (lesson) return lesson.title.replace(/^Lesson \d+: /, '').replace(/ \([^)]*\)$/, '');
     const legacyTest = /^(time|words|speed)-(\d+)/.exec(entry.lessonId);
     const mode = entry.testMode || (legacyTest?.[1] === 'speed' ? 'time' : legacyTest?.[1]);
     if (!mode) return entry.lessonId.replaceAll('-', ' ');

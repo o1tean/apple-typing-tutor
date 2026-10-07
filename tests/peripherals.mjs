@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { sound } from '../js/audio.js';
-import { KeyboardView } from '../js/keyboard.js';
+import {
+    KEYBOARD_LAYOUT,
+    KEYBOARD_PRESETS,
+    KeyboardView,
+    keyboardLayout,
+    keyMeasurements
+} from '../js/keyboard.js';
 import { CURRICULUM } from '../js/lessons.js';
 import { isDialogBackdrop } from '../js/dialog.js';
 import { generateLessonDrill } from '../js/practice.js';
@@ -112,6 +118,53 @@ assert.deepEqual(sound.ctx.gains.filter(gain => gain.connections.includes(sound.
     [output], 'key and error profiles share the controllable output');
 delete globalThis.window;
 
+const originalKeyboard = JSON.stringify(KEYBOARD_LAYOUT);
+const printable = Array.from({ length: 95 }, (_, index) => String.fromCharCode(index + 32));
+for (const [preset, home] of [['mac-us', 'asdfjkl;'], ['colemak', 'arstneio'],
+    ['dvorak', 'aoeuhtns']]) {
+    const layout = keyboardLayout(preset);
+    assert.equal(layout.homeKeys, home, `${preset}: physical home positions`);
+    assert.deepEqual(Object.keys(layout.charToCode).sort(), [...printable].sort(),
+        `${preset}: every printable ASCII target has guidance`);
+    assert.deepEqual(Object.keys(layout.fromQwerty).sort(), [...printable].sort(),
+        `${preset}: translated drills include shifted punctuation`);
+    assert.equal(new Set(Object.values(layout.fromQwerty)).size, 95,
+        `${preset}: translation has no duplicate or lost characters`);
+    const keys = Object.values(layout.rows).flat();
+    assert.equal(new Set(keys.map(key => key.code)).size, keys.length,
+        `${preset}: each physical key renders exactly once`);
+    assert.deepEqual(keys.filter(key => key.bump).map(key => key.code), ['KeyF', 'KeyJ']);
+    assert.equal(keys.find(key => key.code === 'CapsLock').label, 'caps lock');
+    assert.equal(keys.find(key => key.code === 'MetaLeft').label, 'command');
+    assert.equal(keys.find(key => key.code === 'AltLeft').label, 'option');
+}
+assert.deepEqual(Object.keys(KEYBOARD_PRESETS), ['mac-us', 'colemak', 'dvorak']);
+assert.deepEqual(keyboardLayout('unknown'), keyboardLayout(), 'unknown layouts use Mac US');
+assert.equal(keyboardLayout('colemak').fromQwerty[':'], 'O');
+assert.equal(keyboardLayout('dvorak').fromQwerty.Q, '"');
+assert.equal(keyboardLayout('dvorak').fromQwerty['?'], 'Z');
+keyboardLayout('colemak').rows.row3[4].label = 'changed';
+assert.equal(JSON.stringify(KEYBOARD_LAYOUT), originalKeyboard, 'derived rows preserve the base');
+const observations = {
+    keys: {
+        t: { attempts: 3, errors: 1, latencySamples: 2, latencyTotalMs: 140 },
+        T: { attempts: 2, errors: 0, latencySamples: 1, latencyTotalMs: 90 },
+        'é': { attempts: 1, errors: 0, latencySamples: 0, latencyTotalMs: 0 }
+    }
+};
+const observedBefore = JSON.stringify(observations);
+assert.deepEqual(keyMeasurements(observations, 'colemak').get('KeyF'), {
+        attempts: 5,
+        errors: 1,
+        latencySamples: 3,
+        latencyTotalMs: 230
+    },
+    'session measurements combine case at the selected layout’s physical key');
+assert.equal(keyMeasurements(observations, 'colemak').size, 1);
+assert.equal(keyMeasurements(observations).has('KeyT'), true, 'legacy defaults remain US');
+assert.equal(JSON.stringify(observations), observedBefore,
+    'heatmap aggregation preserves observations');
+
 // Guidance must stay inside its own container, including shifted keys and Space.
 const element = (homeKey = '') => {
     const classes = new Set();
@@ -141,6 +194,8 @@ const leftThumb = element('␣');
 const shiftFinger = element(';');
 const hint = { textContent: '' };
 const view = Object.create(KeyboardView.prototype);
+view.layout = keyboardLayout();
+view.restHint = 'Rest your fingers on A S D F and J K L ;';
 view.container = { querySelectorAll: () => [key, shift] };
 view.handsContainer = {
     querySelectorAll: () => [finger, thumb, leftThumb, shiftFinger],
@@ -189,6 +244,58 @@ view.pressKey('ShiftRight');
 view.clearPressedKeys();
 assert.ok(!key.classes.has('key-pressed') && !shift.classes.has('key-pressed'),
     'focus loss or restart can clear keys whose keyup event was missed');
+
+for (const [preset, char, code, hand, name, row, shifted] of [
+    ['mac-us', 'F', 'KeyF', 'left', 'index', 'home', true],
+    ['colemak', 't', 'KeyF', 'left', 'index', 'home', false],
+    ['colemak', 'N', 'KeyJ', 'right', 'index', 'home', true],
+    ['colemak', 'f', 'KeyE', 'left', 'middle', 'upper', false],
+    ['colemak', 'd', 'KeyG', 'left', 'index', 'home', false],
+    ['colemak', ':', 'KeyP', 'right', 'pinky', 'upper', true],
+    ['dvorak', 'u', 'KeyF', 'left', 'index', 'home', false],
+    ['dvorak', 'i', 'KeyG', 'left', 'index', 'home', false],
+    ['dvorak', 'd', 'KeyH', 'right', 'index', 'home', false],
+    ['dvorak', '"', 'KeyQ', 'left', 'pinky', 'upper', true],
+    ['dvorak', '<', 'KeyW', 'left', 'ring', 'upper', true],
+    ['dvorak', '{', 'Minus', 'right', 'pinky', 'number', true],
+    ['dvorak', ':', 'KeyZ', 'left', 'pinky', 'lower', true],
+    ['dvorak', 'Z', 'Slash', 'right', 'pinky', 'lower', true]
+]) {
+    const layout = keyboardLayout(preset);
+    const fingers = new Map();
+    for (const [side, homes] of [['left', layout.homeKeys.slice(0, 4)],
+        ['right', Array.from(layout.homeKeys.slice(4)).reverse().join('')]]) {
+        ['pinky', 'ring', 'middle', 'index', 'thumb'].forEach((fingerName, index) =>
+            fingers.set(`#finger-${side}-${fingerName}`, element(homes[index]?.toUpperCase() ||
+                '␣')));
+    }
+    const guide = Object.create(KeyboardView.prototype);
+    guide.layout = layout;
+    guide.keyElements = new Map(Object.values(layout.rows).flat().map(key => [key.code,
+element()]));
+    guide.keyPositions = new Map(Object.values(layout.rows).flatMap((keys, index) =>
+        keys.map((key, column) => [key.code, { row: index, x: column / keys.length }])));
+    guide.container = { querySelectorAll: () => [...guide.keyElements.values()] };
+    guide.handsContainer = {
+        querySelectorAll: () => [...fingers.values()],
+        querySelector: selector => fingers.get(selector)
+    };
+    guide.fingerHint = { textContent: '' };
+    guide.highlightTarget(char);
+    const target = fingers.get(`#finger-${hand}-${name}`);
+    assert.ok(guide.keyElements.get(code).classes.has('key-target'), `${preset} ${char}: code`);
+    assert.ok(target.classes.has('active'), `${preset} ${char}: finger`);
+    assert.equal(target.dataset.reachRow, row, `${preset} ${char}: reach row`);
+    const opposite = hand === 'left' ? 'Right' : 'Left';
+    assert.equal(guide.keyElements.get(`Shift${opposite}`).classes.has('key-shift-target'), shifted,
+        `${preset} ${char}: opposite-hand Shift`);
+    assert.equal(guide.fingerHint.textContent.includes('reach inward'), ['KeyG', 'KeyH'].includes(
+            code),
+        `${preset} ${char}: inward cue follows position, not the letters G/H`);
+    guide.renderHands();
+    assert.ok(guide.handsContainer.innerHTML.includes(`index ${layout.homeKeys[3].toUpperCase()}`),
+        `${preset}: hand descriptions name the actual home key`);
+}
 
 for (const track of ['amateur', 'pro']) {
     const introduced = new Set([' ']);

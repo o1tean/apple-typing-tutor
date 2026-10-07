@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { TypingEngine } from '../js/engine.js';
 import { CURRICULUM } from '../js/lessons.js';
-import { KeyboardView } from '../js/keyboard.js';
+import { KeyboardView, KEYBOARD_PRESETS } from '../js/keyboard.js';
 import { sound } from '../js/audio.js';
 import { storage } from '../js/storage.js';
 import { isDialogBackdrop } from '../js/dialog.js';
@@ -21,6 +21,7 @@ import {
     generateWords,
     generateWeakDrill,
     generateLessonDrill,
+    lessonsForLayout,
     focusKeys,
     normalizeCustomText,
     recordSpeedSample,
@@ -72,6 +73,7 @@ function practice(settings) {
     const timed = settings.testMode === 'time';
     return {
         track: 'test',
+        keyboardLayout: settings.keyboardLayout,
         id:
             `${settings.testMode}-${timed ? settings.testDuration : settings.testWordCount}` +
             `${settings.punctuation ? '-punctuation' : ''}${settings.numbers ? '-numbers' : ''}`,
@@ -91,10 +93,11 @@ function practice(settings) {
     };
 }
 
-function lessonExercise(track, index) {
+function lessonExercise(track, index, preset) {
     return {
-        ...CURRICULUM[track][index],
-        lines: generateLessonDrill(track, index),
+        ...lessonsForLayout(track, preset)[index],
+        lines: generateLessonDrill(track, index, undefined, preset),
+        keyboardLayout: preset,
         track: 'lesson',
         lessonTrack: track,
         lessonIndex: index,
@@ -156,15 +159,20 @@ function Dialog({ title, onClose, children }) {
     );
 }
 
-function Guidance({ engine, revision, settings, view }) {
+function Guidance({ engine, revision, settings, view, preset }) {
     const keyboard = useRef(null);
     const hands = useRef(null);
     useEffect(() => {
-        view.current = new KeyboardView(keyboard.current, hands.current);
+        view.current = new KeyboardView(
+            keyboard.current,
+            hands.current,
+            null,
+            preset,
+        );
         return () => {
             view.current = null;
         };
-    }, [view]);
+    }, [view, preset]);
     useEffect(() => {
         view.current?.highlightTarget(
             engine.isComplete
@@ -172,7 +180,7 @@ function Guidance({ engine, revision, settings, view }) {
                 : (engine.getCurrentChar() ??
                       (engine.mode === 'flow' ? ' ' : null)),
         );
-    }, [engine, revision, view]);
+    }, [engine, revision, view, preset]);
     return (
         <section className="guidance" aria-label="Typing guides">
             <div
@@ -444,20 +452,22 @@ const Arena = React.memo(function Arena({
     );
 });
 
-function KeyHeatmap({ learning }) {
+function KeyHeatmap({ learning, preset }) {
     const keyboard = useRef(null);
     useEffect(() => {
         if (keyboard.current)
-            new KeyboardView(keyboard.current).showHeatmap(learning);
-    }, [learning]);
+            new KeyboardView(keyboard.current, null, null, preset).showHeatmap(
+                learning,
+            );
+    }, [learning, preset]);
     if (!learning || !Object.keys(learning.keys).length) return null;
     return (
         <section className="key-map" aria-label="Target-key heatmap">
             <h2>Your key map</h2>
             <p className="field-help">
-                This session’s target keys, including skipped keys. Average
-                reach measures time between strokes; pauses and backspace gaps
-                are excluded.
+                {KEYBOARD_PRESETS[preset]} · This session’s target keys,
+                including skipped keys. Average reach measures time between
+                strokes; pauses and backspace gaps are excluded.
             </p>
             <div
                 ref={keyboard}
@@ -725,7 +735,10 @@ function Results({
                           .join(' · ')}`
                     : 'Every key in its place. No mistakes.'}
             </p>
-            <KeyHeatmap learning={result.learning} />
+            <KeyHeatmap
+                learning={result.learning}
+                preset={exercise.keyboardLayout}
+            />
             {result.recordReason && (
                 <p className="focus-keys">{result.recordReason}</p>
             )}
@@ -804,7 +817,7 @@ export default function App() {
     }));
     const [exercise, setExerciseState] = useState(() =>
         storage.lastSavedRaw === null && !storage.loadFailed
-            ? lessonExercise('amateur', 1)
+            ? lessonExercise('amateur', 1, settings.keyboardLayout)
             : practice(settings),
     );
     const [phoneDemo, setPhoneDemo] = useState(
@@ -813,9 +826,26 @@ export default function App() {
             storage.lastSavedRaw === null &&
             !storage.loadFailed,
     );
-    const setExercise = (next) => {
+    const setExercise = (next, preset = settings.keyboardLayout) => {
         setPhoneDemo(false);
-        setExerciseState(next);
+        if (next.keyboardLayout && next.keyboardLayout !== preset) {
+            if (next.track === 'lesson')
+                next = lessonExercise(
+                    next.lessonTrack,
+                    next.lessonIndex,
+                    preset,
+                );
+            else if (next.track === 'weak')
+                next = {
+                    ...next,
+                    ...generateWeakDrill(
+                        storage.getLearning(),
+                        undefined,
+                        preset,
+                    ),
+                };
+        }
+        setExerciseState({ ...next, keyboardLayout: preset });
     };
     const [revision, setRevision] = useState(0);
     const [dialog, setDialog] = useState(null);
@@ -999,6 +1029,8 @@ export default function App() {
         ) {
             setExercise(practice(next));
         } else if (key === 'typingMode') setExercise({ ...exercise });
+        else if (key === 'keyboardLayout' && !result && !phoneDemo)
+            setExercise({ ...exercise }, value);
     };
     const downloadBackup = () => {
         try {
@@ -1041,7 +1073,7 @@ export default function App() {
         }
     };
     const loadLesson = (track, index) => {
-        setExercise(lessonExercise(track, index));
+        setExercise(lessonExercise(track, index, settings.keyboardLayout));
         setDialog(null);
     };
     const loadQuote = () => {
@@ -1085,7 +1117,11 @@ export default function App() {
         [storage.data.learning],
     );
     const practiceWeak = () => {
-        const drill = generateWeakDrill(storage.getLearning());
+        const drill = generateWeakDrill(
+            storage.getLearning(),
+            undefined,
+            settings.keyboardLayout,
+        );
         if (!drill.focusKeys.length) return;
         setExercise({
             ...drill,
@@ -1388,9 +1424,16 @@ export default function App() {
                         </p>
                         {phoneDemo && (
                             <PhoneDemo
+                                preset={settings.keyboardLayout}
                                 paused={Boolean(dialog)}
                                 onPractice={() => {
-                                    setExercise(lessonExercise('amateur', 1));
+                                    setExercise(
+                                        lessonExercise(
+                                            'amateur',
+                                            1,
+                                            settings.keyboardLayout,
+                                        ),
+                                    );
                                     requestAnimationFrame(() =>
                                         input.current?.focus(),
                                     );
@@ -1480,6 +1523,7 @@ export default function App() {
                         revision={revision}
                         settings={settings}
                         view={keyboardView}
+                        preset={exercise.keyboardLayout}
                     />
                 )}
                 <div className="shortcuts" hidden={phoneDemo}>
@@ -1622,6 +1666,37 @@ export default function App() {
                     )}
                     {dialog === 'settings' && (
                         <div className="settings">
+                            <fieldset>
+                                <legend>Keyboard layout</legend>
+                                <select
+                                    className="layout-select"
+                                    aria-label="Keyboard layout"
+                                    aria-describedby="layout-help"
+                                    value={settings.keyboardLayout}
+                                    onChange={(event) =>
+                                        updateSetting(
+                                            'keyboardLayout',
+                                            event.target.value,
+                                        )
+                                    }
+                                >
+                                    {Object.entries(KEYBOARD_PRESETS).map(
+                                        ([value, label]) => (
+                                            <option key={value} value={value}>
+                                                {label}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                                <p id="layout-help">
+                                    Match your operating system’s input source.
+                                    These ANSI guides use Mac modifier labels
+                                    and keep Caps Lock unchanged. Changing
+                                    layout restarts an unfinished practice.
+                                    Stars and weak-key measurements are shared
+                                    across layouts.
+                                </p>
+                            </fieldset>
                             <fieldset>
                                 <legend>Typing behavior</legend>
                                 <div className="setting-choices">
@@ -1835,59 +1910,53 @@ export default function App() {
                                 </Choice>
                             </div>
                             <p className="field-help">
-                                Earned stars carry forward from earlier
-                                sessions.
+                                Earned stars carry forward across layouts.
                             </p>
                             <div className="lesson-list">
-                                {CURRICULUM[lessonTrack].map(
-                                    (lesson, index) => {
-                                        const stars = Math.max(
-                                            storage.getLessonProgress(lesson.id)
-                                                ?.stars || 0,
-                                            storage.getLessonProgress(
-                                                lesson.id,
-                                                { wpmMetric: 'words-v1' },
-                                            )?.stars || 0,
-                                        );
-                                        return (
-                                            <button
-                                                key={lesson.id}
-                                                onClick={() =>
-                                                    loadLesson(
-                                                        lessonTrack,
-                                                        index,
-                                                    )
-                                                }
-                                            >
-                                                <span className="lesson-number">
-                                                    {String(index + 1).padStart(
-                                                        2,
-                                                        '0',
+                                {lessonsForLayout(
+                                    lessonTrack,
+                                    settings.keyboardLayout,
+                                ).map((lesson, index) => {
+                                    const stars = Math.max(
+                                        storage.getLessonProgress(lesson.id)
+                                            ?.stars || 0,
+                                        storage.getLessonProgress(lesson.id, {
+                                            wpmMetric: 'words-v1',
+                                        })?.stars || 0,
+                                    );
+                                    return (
+                                        <button
+                                            key={lesson.id}
+                                            onClick={() =>
+                                                loadLesson(lessonTrack, index)
+                                            }
+                                        >
+                                            <span className="lesson-number">
+                                                {String(index + 1).padStart(
+                                                    2,
+                                                    '0',
+                                                )}
+                                            </span>
+                                            <span>
+                                                <strong>
+                                                    {lesson.title.replace(
+                                                        /^Lesson \d+: /,
+                                                        '',
                                                     )}
-                                                </span>
-                                                <span>
-                                                    <strong>
-                                                        {lesson.title.replace(
-                                                            /^Lesson \d+: /,
-                                                            '',
-                                                        )}
-                                                    </strong>
-                                                    <small>
-                                                        {lesson.subtitle}
-                                                    </small>
-                                                </span>
-                                                <span
-                                                    className="lesson-stars"
-                                                    role="img"
-                                                    aria-label={`Earned stars: ${stars} of 3`}
-                                                >
-                                                    {'★'.repeat(stars)}
-                                                    {'☆'.repeat(3 - stars)}
-                                                </span>
-                                            </button>
-                                        );
-                                    },
-                                )}
+                                                </strong>
+                                                <small>{lesson.subtitle}</small>
+                                            </span>
+                                            <span
+                                                className="lesson-stars"
+                                                role="img"
+                                                aria-label={`Earned stars: ${stars} of 3`}
+                                            >
+                                                {'★'.repeat(stars)}
+                                                {'☆'.repeat(3 - stars)}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </>
                     )}
