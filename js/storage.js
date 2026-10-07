@@ -7,6 +7,7 @@ const STORAGE_KEY = 'apple_typing_tutor_data_v1';
 const DEFAULT_DATA = {
     settings: {
         theme: 'dark',
+        colorPalette: 'mint',
         soundProfile: 'magic',
         volume: 0.6,
         soundMuted: false,
@@ -30,6 +31,7 @@ const DEFAULT_DATA = {
 
 const SETTING_OPTIONS = {
     theme: ['dark', 'light', 'system'],
+    colorPalette: ['mint', 'ocean', 'plum'],
     soundProfile: ['magic', 'thock', 'bubble', 'clicky'],
     typingMode: ['strict', 'flow'],
     testMode: ['time', 'words'],

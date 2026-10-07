@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added Mint, Ocean, and Plum palettes for light/dark/system appearance, preserving saved preferences and progress.
 - Session history now shows 14-day WPM/accuracy averages and practice streaks from retained sessions, with visible gaps and separate earlier scoring.
 
 ## 1.0.0 — Prepared locally; publication pending

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 let saved = null;
+let writes = 0;
 let blocked = false;
 let readBlocked = false;
 let onRead = null;
@@ -18,6 +19,7 @@ globalThis.localStorage = {
     },
     setItem: (key, value) => {
         if (blocked) throw new Error('Storage quota exceeded');
+        writes++;
         saved = value;
     }
 };
@@ -34,6 +36,7 @@ try {
     assert.equal(storage.getSetting('typingMode'), 'strict');
     assert.equal(storage.getSetting('showHands'), true);
     assert.equal(storage.getSetting('showKeyboard'), true);
+    assert.equal(storage.getSetting('colorPalette'), 'mint');
     assert.equal(saved, null, 'first-visit defaults never write during startup');
     reload({});
     const defaults = { ...storage.data.settings };
@@ -43,6 +46,7 @@ try {
     assert.equal(defaults.testMode, 'time');
     assert.equal(defaults.testDuration, 30);
     assert.equal(defaults.testWordCount, 25);
+    assert.equal(defaults.colorPalette, 'mint');
 
     for (const corrupted of ['{', 'null', 'false', '7', '[]', '"bad"']) {
         reload(corrupted);
@@ -53,6 +57,7 @@ try {
     reload({
         settings: {
             theme: 'pink',
+            colorPalette: 'purple',
             volume: '0.2',
             soundMuted: 'false',
             typingMode: null,
@@ -92,6 +97,40 @@ try {
         stars: 3,
         date: '2026-10-06T00:00:00.000Z'
     };
+    for (const theme of ['light', 'dark', 'system']) {
+        const oldSave = {
+            futureRoot: { version: 5 },
+            settings: { theme, futureSetting: { layout: 'future' } },
+            progress: { 'amat-intro': { ...lesson, futureProgress: [1, 2] } },
+            history: [{ ...previous, futureHistory: 'keep' }],
+            stats: { totalSessions: 3, highestWpm: 80, futureStats: true }
+        };
+        const writesBeforeLoad = writes;
+        reload(oldSave);
+        assert.equal(writes, writesBeforeLoad, 'old-format palette defaults never write at load');
+        assert.equal(saved, JSON.stringify(oldSave), 'loading preserves the stored bytes');
+        assert.equal(storage.getSetting('theme'), theme, 'old appearance choices remain intact');
+        assert.equal(storage.getSetting('colorPalette'), 'mint');
+        const baseline = JSON.parse(JSON.stringify(storage.data));
+        for (const colorPalette of ['ocean', 'plum', 'mint']) {
+            assert.equal(await storage.setSetting('colorPalette', colorPalette), true);
+            assert.deepEqual(JSON.parse(saved), {
+                ...baseline,
+                settings: { ...baseline.settings, colorPalette }
+            }, 'palette saves preserve scores, progress, history and unknown fields');
+            storage.data = storage.load();
+            assert.equal(storage.getSetting('colorPalette'), colorPalette);
+            assert.equal(storage.getSetting('theme'), theme);
+        }
+        const persisted = saved;
+        const writesBeforeInvalid = writes;
+        for (const value of ['purple', 'MINT', null, true, {}]) {
+            assert.equal(await storage.setSetting('colorPalette', value), false);
+        }
+        assert.equal(saved, persisted, 'invalid palette settings cannot change stored data');
+        assert.equal(writes, writesBeforeInvalid);
+        assert.equal(storage.getSetting('colorPalette'), 'mint');
+    }
     reload({
         settings: {
             theme: 'light',

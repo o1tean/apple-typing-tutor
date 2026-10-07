@@ -905,6 +905,7 @@ export default function App() {
     useEffect(() => {
         const media = matchMedia('(prefers-color-scheme: dark)');
         const apply = () => {
+            document.documentElement.dataset.palette = settings.colorPalette;
             document.documentElement.dataset.theme =
                 settings.theme === 'system'
                     ? media.matches
@@ -915,7 +916,7 @@ export default function App() {
         apply();
         media.addEventListener('change', apply);
         return () => media.removeEventListener('change', apply);
-    }, [settings.theme]);
+    }, [settings.theme, settings.colorPalette]);
     useEffect(() => {
         sound.setMuted(settings.soundMuted);
         sound.setVolume(settings.volume);
@@ -1631,6 +1632,33 @@ export default function App() {
                                         ),
                                     )}
                                 </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Color palette</legend>
+                                <div className="setting-choices">
+                                    {['Mint', 'Ocean', 'Plum'].map((label) => (
+                                        <Choice
+                                            key={label}
+                                            value={label.toLowerCase()}
+                                            selected={
+                                                settings.colorPalette ===
+                                                label.toLowerCase()
+                                            }
+                                            onClick={(value) =>
+                                                updateSetting(
+                                                    'colorPalette',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            {label}
+                                        </Choice>
+                                    ))}
+                                </div>
+                                <p>
+                                    Each palette works with light, dark, or
+                                    system appearance.
+                                </p>
                             </fieldset>
                             <fieldset>
                                 <legend>Keyboard sound</legend>

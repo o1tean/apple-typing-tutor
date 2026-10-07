@@ -1,4 +1,4 @@
-/* Typeflow: a quiet canvas, readable type, and one mint accent. */
+/* Typeflow: quiet palettes with shared readable text and teaching roles. */
 :root {
     color-scheme: dark;
     --bg: #181d21;
@@ -43,6 +43,58 @@
     --accent-ink: #fff;
     --error: #aa3341;
     --key-shadow: 0 2px 0 #b8c4b8;
+}
+
+[data-palette='ocean'] {
+    --bg: #151e2a;
+    --surface: #1c2939;
+    --surface-hover: #27364a;
+    --border: #3b4e64;
+    --text: #e4eff9;
+    --muted: #9eb3c8;
+    --pending: #91a6be;
+    --accent: #a9cff8;
+    --accent-ink: #193851;
+    --key-shadow: 0 2px 0 #101822;
+}
+
+[data-palette='ocean'][data-theme='light'] {
+    --bg: #eff5fa;
+    --surface: #e2edf5;
+    --surface-hover: #d5e5f0;
+    --border: #a9bdcf;
+    --text: #223547;
+    --muted: #50677a;
+    --pending: #5b7185;
+    --accent: #285f94;
+    --accent-ink: #fff;
+    --key-shadow: 0 2px 0 #a5b7c8;
+}
+
+[data-palette='plum'] {
+    --bg: #211b28;
+    --surface: #2b2233;
+    --surface-hover: #372c40;
+    --border: #493b55;
+    --text: #f0e7f3;
+    --muted: #b6a5be;
+    --pending: #a897b2;
+    --accent: #d6b5f0;
+    --accent-ink: #392347;
+    --key-shadow: 0 2px 0 #150e1b;
+}
+
+[data-palette='plum'][data-theme='light'] {
+    --bg: #f7f2f7;
+    --surface: #eee6f0;
+    --surface-hover: #e6dbea;
+    --border: #c1b4c8;
+    --text: #302938;
+    --muted: #64596b;
+    --pending: #6a5d72;
+    --accent: #6850a0;
+    --accent-ink: #fff;
+    --key-shadow: 0 2px 0 #c1b4c8;
 }
 
 *,
@@ -1366,7 +1418,7 @@ td {
 }
 
 @media (prefers-contrast: more) {
-    :root {
+    :root[data-theme] {
         --pending: var(--text);
         --muted: var(--text);
     }
