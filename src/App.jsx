@@ -14,6 +14,7 @@ import { isDialogBackdrop } from '../js/dialog.js';
 import { resultCard } from '../js/share.js';
 import SessionProgress from './Progress.jsx';
 import PhoneDemo from './PhoneDemo.jsx';
+import OfflineStatus from './OfflineStatus.jsx';
 import {
     currentWord,
     formatElapsedTime,
@@ -1543,6 +1544,7 @@ export default function App() {
                             Keep my progress
                         </button>
                     )}
+                    <OfflineStatus />
                 </div>
             </footer>
             {dialog && (

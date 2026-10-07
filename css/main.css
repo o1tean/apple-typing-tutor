@@ -776,6 +776,19 @@ kbd {
     height: 16px;
 }
 
+.offline-status {
+    max-width: 340px;
+    line-height: 1.6;
+}
+
+.offline-status summary {
+    cursor: pointer;
+}
+
+.offline-status p {
+    margin: 8px 0 0;
+}
+
 .dialog {
     width: min(540px, calc(100% - 32px));
     max-height: calc(100svh - 48px);

@@ -13,7 +13,7 @@ Learn touch typing with guided lessons and live finger guidance.
 - Follow the moving finger and keyboard guides, with a static pose when reduced motion is preferred.
 - Practice with 1,189 common words, 100 public-domain quotes, timed tests or your own text; retry the words you missed.
 - Use the result keyboard map to find tricky keys, then practice fresh drills that adapt as you improve.
-- Keep progress on your device, with light/dark appearance, keyboard sounds and reduced motion support.
+- Track practice streaks on your device, choose a light/dark palette, and take lessons offline.
 
 ## Quick start
 
@@ -28,6 +28,11 @@ For a static production build, run `npm run build` and serve `dist/`.
 Tests start on the first character and pause when focus leaves the typing input.
 Press Escape for settings; use Tab then Enter to restart.
 Progress stays in this browser and is not synchronized across devices.
+
+After the footer says **Available offline**, lessons also work without a connection.
+Install Typeflow from your browser's install or Add to Home Screen menu where offered.
+When an update is ready, finish and save your session, then close all Typeflow tabs and reopen.
+Clearing this site's data removes saved progress and offline lessons.
 
 [Contribute](https://github.com/o1tean/apple-typing-tutor/blob/main/CONTRIBUTING.md) ·
 [Metric definitions](https://github.com/o1tean/apple-typing-tutor/blob/main/docs/metrics.md) ·
