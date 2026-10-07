@@ -264,7 +264,7 @@ test('pair recommendations distinguish missing, sparse, unsupported and all-spac
             if (learning?.bigrams?.[' q']) {
                 await expect(recommendation).toContainText('Space → q');
                 await expect(recommendation).toContainText(
-                    'Early suggestion — only a few observations so far.');
+                    'few observations');
                 await expect(recommendation).toContainText('no reach timing yet');
                 await expect(recommendation).not.toContainText('0 ms');
                 await page.getByRole('button', { name: /^Practice this pair/ }).click();

@@ -217,7 +217,7 @@ test('missing, sparse and newer observations get honest recommendation states',
             const recommendation = page.locator('[aria-label="Learning recommendation"]');
             if (learning?.version === 1) {
                 await expect(recommendation).toContainText(
-                    'Early suggestion — only a few observations so far.');
+                    'few observations');
                 await expect(recommendation).not.toContainText('0 ms');
             } else {
                 await expect(recommendation).toContainText(learning ?

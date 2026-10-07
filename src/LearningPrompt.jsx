@@ -1,4 +1,9 @@
-import { latestLesson, lessonsForLayout, focusLabel } from '../js/practice.js';
+import {
+    latestLesson,
+    lessonsForLayout,
+    focusLabel,
+    practiceObservation,
+} from '../js/practice.js';
 
 export default function LearningPrompt({
     history,
@@ -57,26 +62,12 @@ export default function LearningPrompt({
                                     </p>
                                     <p>
                                         {targets
-                                            .map((key) => {
-                                                const cell =
-                                                    learning[group][key];
-                                                return `${focusLabel(key)}: ${(cell.recentErrorRate * 100).toFixed(1)}% recent errors${cell.latencySamples ? `, ${Math.round(cell.recentLatencyMs)} ms recent reach` : ', no reach timing yet'}`;
-                                            })
+                                            .map(
+                                                (key) =>
+                                                    `${focusLabel(key)}: ${practiceObservation(learning[group][key], true)}`,
+                                            )
                                             .join(' · ')}
                                     </p>
-                                    {targets.some(
-                                        (key) =>
-                                            learning[group][key].attempts < 5 ||
-                                            (learning[group][key]
-                                                .latencySamples > 0 &&
-                                                learning[group][key]
-                                                    .latencySamples < 5),
-                                    ) && (
-                                        <p>
-                                            Early suggestion — only a few
-                                            observations so far.
-                                        </p>
-                                    )}
                                 </>
                             ) : (
                                 <p>
