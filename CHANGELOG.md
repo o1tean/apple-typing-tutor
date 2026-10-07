@@ -12,7 +12,7 @@
 - Added 1,189 public-domain words and 100 sourced quotations; removed persona prose and kept saved quote identities stable.
 - Native result-card PNG downloads include metrics, heatmap and demo URL; absolute social metadata previews Typeflow teaching.
 - Added a re-shootable teaching GIF, social preview, visitor README and MIT license.
-- Built main deploys through tested Actions artifacts and relative assets; the legacy Pages source setting still awaits user correction.
+- Built main deploys through tested Actions artifacts and relative assets; the approved Pages source correction is confirmed as GitHub Actions.
 - Added push/PR CI, keyboard-only browser coverage and three-run mobile Lighthouse evidence; medians 98 performance, 100 accessibility, 100 best practices.
 - Foundation rounds 1–13 established React/Vite, guided/free-flow tests, custom text, same-text/missed-word retries and lesson instructions/targets.
 - Those rounds corrected editing, skipped/extra characters, pause/composition boundaries and copied layout markers; scoring preserves older records/stars.
