@@ -34,6 +34,21 @@ export function lessonsForLayout(track, preset = 'mac-us') {
     });
 }
 
+export function latestLesson(history, progress = {}) {
+    const previous = Object.entries(progress)
+        .filter(([, lesson]) => lesson.completed === true && Number.isFinite(lesson.lastPlayed)
+            && lesson.lastPlayed > 0)
+        .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed)
+        .map(([lessonId]) => ({ lessonId: lessonId.replace(/^words-v1:/, '') }));
+    for (const entry of [...history, ...previous]) {
+        for (const track of ['amateur', 'pro']) {
+            const index = CURRICULUM[track].findIndex(lesson => lesson.id === entry.lessonId);
+            if (index >= 0) return { track, index };
+        }
+    }
+    return null;
+}
+
 export function focusKeys(profile, limit = 3) {
     if (profile?.version !== 1) return [];
     const cells = Object.entries(migrateLearning(profile).keys).filter(([, cell]) => cell.attempts >
@@ -170,7 +185,7 @@ export function typingErrorMessage(expected, typed, mode) {
         ? 'Try again.' : 'Backspace to correct it.'}`;
 }
 
-export function resultFeedback(result, exercise) {
+export function resultFeedback(result, exercise, nextLabel = 'Next lesson') {
     const repeat = ['test', 'quote'].includes(exercise.track) ? 'Repeat this text' : 'Try again';
     const retry = result.missedWords.length
         ? `Choose Practice missed words or ${repeat}.` : `Choose ${repeat}.`;
@@ -199,7 +214,8 @@ export function resultFeedback(result, exercise) {
         advice: `Aim for ${exercise.targetWpm} WPM for 3 stars. Choose Try again.`
     } : {
         heading: 'Lesson target reached.',
-        advice: 'Choose Try again to reinforce these keys.'
+        advice: `Select “${nextLabel}” to keep learning.`,
+        advance: true
     };
     return {
         heading: 'Test complete.',

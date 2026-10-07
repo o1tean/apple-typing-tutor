@@ -10,6 +10,7 @@ import {
     generateWeakDrill,
     generateWords,
     lessonsForLayout,
+    latestLesson,
     normalizeCustomText,
     recordSpeedSample,
     resultFeedback,
@@ -133,12 +134,45 @@ for (const [stats, exercise, heading, advice] of [
         'Choose Repeat this text.'],
     [{ wpm: 59 }, lesson, 'Accuracy target met.',
         'Aim for 60 WPM for 3 stars. Choose Try again.'],
-    [{}, lesson, 'Lesson target reached.', 'Choose Try again to reinforce these keys.'],
     [{ elapsedMilliseconds: 4, elapsedSeconds: 0, wpm: 15000 }, { track: 'test' },
         'Test complete.', 'Choose Repeat this text. You can also start a fresh passage.'],
     [{ missedWords: ['cat'] }, { track: 'quote' }, 'Test complete.',
         'Choose Practice missed words or Repeat this text. You can also start a fresh passage.']
 ]) assert.deepEqual(resultFeedback({ ...result, ...stats }, exercise), { heading, advice });
+for (const nextLabel of ['Next lesson', 'Choose a lesson']) {
+    assert.deepEqual(resultFeedback(result, lesson, nextLabel), {
+        heading: 'Lesson target reached.',
+        advice: `Select “${nextLabel}” to keep learning.`,
+        advance: true
+    });
+}
+const history = ['words-10', 'unknown-lesson', 'pro-3', 'amat-2']
+    .map(lessonId => ({ lessonId, futureField: true }));
+const originalHistory = JSON.stringify(history);
+assert.deepEqual(latestLesson(history), { track: 'pro', index: 2 });
+assert.equal(JSON.stringify(history), originalHistory, 'continuation never rewrites history');
+assert.equal(latestLesson([]), null);
+assert.equal(latestLesson([{ lessonId: 'words-10' }]), null);
+assert.deepEqual(latestLesson([{ lessonId: 'amat-intro' }]), { track: 'amateur', index: 0 });
+assert.deepEqual(latestLesson([{ lessonId: 'amat-11' }]), { track: 'amateur', index: 11 });
+const oldProgress = {
+    'amat-1': { completed: true, lastPlayed: 100, future: 'keep' },
+    'words-v1:pro-2': { completed: true, lastPlayed: 200 },
+    'words-v1:pro-3': { completed: false, lastPlayed: 300 },
+    'unknown': { completed: true, lastPlayed: 400 },
+    'amat-2': { completed: true, lastPlayed: Infinity },
+    'amat-3': { completed: true }
+};
+const progressBefore = structuredClone(oldProgress);
+assert.deepEqual(latestLesson([{ lessonId: 'words-10' }], oldProgress), { track: 'pro', index: 1 },
+    'dated completed progress survives history eviction');
+assert.deepEqual(latestLesson([{ lessonId: 'amat-intro' }], oldProgress), {
+    track: 'amateur',
+    index: 0
+}, 'retained attempts take priority, including unfinished targets');
+assert.equal(latestLesson([], { 'amat-1': { completed: true } }), null,
+    'undated progress cannot invent which lesson was latest');
+assert.deepEqual(oldProgress, progressBefore, 'continuation preserves both progress formats');
 assert.equal(sessionLabel({ lessonId: 'custom' }), 'Custom text');
 for (const lessonId of ['quote-0', 'quote-3', 'quote-99', 'quote-999']) {
     const entry = { lessonId, wpm: 80, accuracy: 99 };

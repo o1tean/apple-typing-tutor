@@ -15,6 +15,7 @@ import { resultCard } from '../js/share.js';
 import SessionProgress from './Progress.jsx';
 import PhoneDemo from './PhoneDemo.jsx';
 import OfflineStatus from './OfflineStatus.jsx';
+import LearningPrompt from './LearningPrompt.jsx';
 import {
     currentWord,
     formatElapsedTime,
@@ -540,6 +541,8 @@ function Results({
     onPracticeMissed,
     onPracticeWeak,
     onNext,
+    onChooseLesson,
+    actionRef,
 }) {
     const [downloading, setDownloading] = useState(false);
     const [downloadMessage, setDownloadMessage] = useState('');
@@ -572,7 +575,8 @@ function Results({
     const errors = Object.entries(result.errorsByChar)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
-    const feedback = resultFeedback(result, exercise);
+    const nextLabel = onNext ? 'Next lesson' : 'Choose a lesson';
+    const feedback = resultFeedback(result, exercise, nextLabel);
     return (
         <section className="results" aria-label="Test results">
             <div className="result-heading">
@@ -581,6 +585,19 @@ function Results({
                     <h1>{feedback.heading}</h1>
                     <p className="focus-keys">{feedback.advice}</p>
                 </div>
+                {exercise.track === 'lesson' && (
+                    <button
+                        ref={actionRef}
+                        className="primary-button"
+                        onClick={
+                            feedback.advance
+                                ? onNext || onChooseLesson
+                                : onRestart
+                        }
+                    >
+                        {feedback.advance ? nextLabel : 'Try again'}
+                    </button>
+                )}
                 {result.isNewBestWpm && (
                     <span className="record">personal best ↗</span>
                 )}
@@ -760,20 +777,31 @@ function Results({
                 )}
             </p>
             <div className="result-actions">
-                <button className="primary-button" onClick={onRestart}>
-                    {exercise.track === 'test'
-                        ? 'New test'
-                        : exercise.track === 'quote'
-                          ? 'Next quote'
-                          : 'Try again'}{' '}
-                    {exercise.track !== 'test' && (
-                        <Icon
-                            name={
-                                exercise.track === 'quote' ? 'next' : 'restart'
-                            }
-                        />
-                    )}
-                </button>
+                {(exercise.track !== 'lesson' || feedback.advance) && (
+                    <button
+                        className={
+                            exercise.track === 'lesson'
+                                ? 'text-button'
+                                : 'primary-button'
+                        }
+                        onClick={onRestart}
+                    >
+                        {exercise.track === 'test'
+                            ? 'New test'
+                            : exercise.track === 'quote'
+                              ? 'Next quote'
+                              : 'Try again'}{' '}
+                        {exercise.track !== 'test' && (
+                            <Icon
+                                name={
+                                    exercise.track === 'quote'
+                                        ? 'next'
+                                        : 'restart'
+                                }
+                            />
+                        )}
+                    </button>
+                )}
                 {['test', 'quote'].includes(exercise.track) && (
                     <button className="text-button" onClick={onRepeat}>
                         Repeat this text
@@ -789,7 +817,7 @@ function Results({
                         Practice weak keys
                     </button>
                 )}
-                {onNext && (
+                {onNext && !feedback.advance && (
                     <button className="text-button" onClick={onNext}>
                         Next lesson <Icon name="next" />
                     </button>
@@ -868,6 +896,7 @@ export default function App() {
     const [stats, setStats] = useState(() => engine.getStats());
     const input = useRef(null);
     const restart = useRef(null);
+    const resultAction = useRef(null);
     const backupButton = useRef(null);
     const keyboardView = useRef(null);
     const samples = useRef([]);
@@ -966,7 +995,9 @@ export default function App() {
     }, [settings.soundMuted, settings.volume, settings.soundProfile]);
     useEffect(() => {
         if (hasResult && !dialog)
-            restart.current?.focus({ preventScroll: true });
+            (resultAction.current || restart.current)?.focus({
+                preventScroll: true,
+            });
     }, [hasResult, dialog]);
     useEffect(() => {
         const visibility = () => {
@@ -1007,7 +1038,10 @@ export default function App() {
     const closeDialog = () => {
         setDialog(null);
         requestAnimationFrame(() =>
-            (result ? restart.current : input.current)?.focus({
+            (result
+                ? resultAction.current || restart.current
+                : input.current
+            )?.focus({
                 preventScroll: true,
             }),
         );
@@ -1329,12 +1363,28 @@ export default function App() {
                             )}
                         </>
                     )}
-                    {!result && weakFocus.length > 0 && (
-                        <button className="text-button" onClick={practiceWeak}>
-                            Practice weak keys
-                        </button>
-                    )}
+                    {!result &&
+                        exercise.track !== 'test' &&
+                        weakFocus.length > 0 && (
+                            <button
+                                className="text-button"
+                                onClick={practiceWeak}
+                            >
+                                Practice weak keys
+                            </button>
+                        )}
                 </div>
+                {!result && !phoneDemo && exercise.track === 'test' && (
+                    <LearningPrompt
+                        history={storage.data.history}
+                        progress={storage.data.progress}
+                        learning={storage.getLearning()}
+                        focus={weakFocus}
+                        preset={settings.keyboardLayout}
+                        onLesson={loadLesson}
+                        onPractice={practiceWeak}
+                    />
+                )}
                 {result ? (
                     <Results
                         result={result}
@@ -1345,6 +1395,8 @@ export default function App() {
                         onPracticeMissed={practiceMissed}
                         onPracticeWeak={weakFocus.length ? practiceWeak : null}
                         onNext={nextLesson}
+                        onChooseLesson={() => openDialog('lessons')}
+                        actionRef={resultAction}
                     />
                 ) : (
                     <section className="test" aria-label={exercise.title}>

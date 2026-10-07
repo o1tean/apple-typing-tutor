@@ -658,6 +658,25 @@ h1 {
     font-weight: 500;
 }
 
+.learning-prompt {
+    max-width: none;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.learning-return {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+.learning-prompt section {
+    margin-top: 8px;
+}
+
 .lesson-goal {
     display: block;
     color: var(--accent);
