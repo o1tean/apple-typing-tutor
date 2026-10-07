@@ -1,6 +1,6 @@
 /** A native, local PNG of the completed session and its target-key map. */
 
-import { KEYBOARD_PRESETS, keyboardLayout, keyMeasurements } from './keyboard.js';
+import { KEYBOARD_PRESETS, keyboardLayout, keyMeasurements, isoEnterOutline } from './keyboard.js';
 import { formatElapsedTime } from './practice.js';
 
 export async function resultCard(result, exercise) {
@@ -58,12 +58,21 @@ export async function resultCard(result, exercise) {
         const y = 446 + rowIndex * 50;
         row.forEach(key => {
             const width = unit * key.width;
+            if (!key.code) {
+                x += width + 8;
+                return;
+            }
             const cell = cells.get(key.code);
             const measured = cell?.attempts > 0;
             const rate = measured ? cell.errors / cell.attempts : 0;
             const heat = rate ? palette.error : palette.accent;
             context.beginPath();
-            context.roundRect(x, y, width, 42, 7);
+            if (key.isoStem) {
+                isoEnterOutline(key.isoStem).forEach(([left, top], index) =>
+                    context[index ? 'lineTo' : 'moveTo'](x + left * width, y
+                        + top * 92));
+                context.closePath();
+            } else context.roundRect(x, y, width, 42, 7);
             context.fillStyle = palette.bg;
             context.fill();
             if (measured) {

@@ -5,9 +5,12 @@ import {
     KEYBOARD_PRESETS,
     KeyboardView,
     keyboardLayout,
-    keyMeasurements
+    keyMeasurements,
+    isoEnterOutline
 } from '../js/keyboard.js';
 import { CURRICULUM } from '../js/lessons.js';
+import { TypingEngine } from '../js/engine.js';
+import { readSessionLearning } from '../js/learning.js';
 import { isDialogBackdrop } from '../js/dialog.js';
 import { generateLessonDrill } from '../js/practice.js';
 
@@ -121,28 +124,71 @@ delete globalThis.window;
 const originalKeyboard = JSON.stringify(KEYBOARD_LAYOUT);
 const printable = Array.from({ length: 95 }, (_, index) => String.fromCharCode(index + 32));
 for (const [preset, home] of [['mac-us', 'asdfjkl;'], ['colemak', 'arstneio'],
-    ['dvorak', 'aoeuhtns']]) {
+    ['dvorak', 'aoeuhtns'], ['uk-iso', 'asdfjkl;']]) {
     const layout = keyboardLayout(preset);
     assert.equal(layout.homeKeys, home, `${preset}: physical home positions`);
-    assert.deepEqual(Object.keys(layout.charToCode).sort(), [...printable].sort(),
+    assert.deepEqual(Object.keys(layout.charToCode).sort(),
+        [...printable, ...(preset === 'uk-iso' ? ['£', '¬'] : [])].sort(),
         `${preset}: every printable ASCII target has guidance`);
     assert.deepEqual(Object.keys(layout.fromQwerty).sort(), [...printable].sort(),
         `${preset}: translated drills include shifted punctuation`);
     assert.equal(new Set(Object.values(layout.fromQwerty)).size, 95,
         `${preset}: translation has no duplicate or lost characters`);
-    const keys = Object.values(layout.rows).flat();
+    const keys = Object.values(layout.rows).flat().filter(key => key.code);
     assert.equal(new Set(keys.map(key => key.code)).size, keys.length,
         `${preset}: each physical key renders exactly once`);
     assert.deepEqual(keys.filter(key => key.bump).map(key => key.code), ['KeyF', 'KeyJ']);
     assert.equal(keys.find(key => key.code === 'CapsLock').label, 'caps lock');
-    assert.equal(keys.find(key => key.code === 'MetaLeft').label, 'command');
-    assert.equal(keys.find(key => key.code === 'AltLeft').label, 'option');
+    assert.equal(keys.find(key => key.code === 'MetaLeft').label,
+        preset === 'uk-iso' ? 'win' : 'command');
+    assert.equal(keys.find(key => key.code === 'AltLeft').label,
+        preset === 'uk-iso' ? 'alt' : 'option');
 }
-assert.deepEqual(Object.keys(KEYBOARD_PRESETS), ['mac-us', 'colemak', 'dvorak']);
+assert.deepEqual(Object.keys(KEYBOARD_PRESETS), ['mac-us', 'colemak', 'dvorak', 'uk-iso']);
 assert.deepEqual(keyboardLayout('unknown'), keyboardLayout(), 'unknown layouts use Mac US');
 assert.equal(keyboardLayout('colemak').fromQwerty[':'], 'O');
 assert.equal(keyboardLayout('dvorak').fromQwerty.Q, '"');
 assert.equal(keyboardLayout('dvorak').fromQwerty['?'], 'Z');
+const iso = keyboardLayout('uk-iso');
+assert.deepEqual(iso.rows.row5.map(key => key.code), ['ControlLeft', 'MetaLeft', 'AltLeft',
+    'Space', 'AltRight', 'MetaRight', 'ContextMenu', 'ControlRight']);
+assert.equal(iso.rows.row5.find(key => key.code === 'AltRight').label, 'alt gr');
+assert.equal(iso.rows.row2.at(-1).code, 'Enter');
+assert.equal(iso.rows.row2.at(-1).width, 1);
+assert.equal(iso.rows.row2.at(-1).isoStem, 0.75);
+assert.equal(iso.rows.row3.at(-2).code, 'Backslash');
+assert.deepEqual(iso.rows.row3.at(-1), { width: 0.75 }, 'the Enter foot reserves a non-key space');
+assert.equal(iso.rows.row4[0].width, 1.25);
+assert.equal(iso.rows.row4[1].code, 'IntlBackslash');
+assert.deepEqual(Object.values(iso.rows).map(row => row.reduce((sum, key) => sum + key.width, 0)),
+    [14.5, 14.5, 14.5, 14.5, 14.5], 'ISO rows retain physical alignment');
+assert.deepEqual(isoEnterOutline(iso.rows.row2.at(-1).isoStem),
+    [[0, 0], [1, 0], [1, 1], [0.25, 1], [0.25, 0.5], [0, 0.5]],
+    'HTML and PNG share one L outline with a lower-left cutout');
+for (const [code, label, shiftLabel] of [['Digit2', '2', '"'], ['Digit3', '3', '£'],
+    ['Backquote', '`', '¬'], ['Quote', "'", '@'], ['Backslash', '#', '~'],
+    ['IntlBackslash', '\\', '|']]) {
+    const key = Object.values(iso.rows).flat().find(key => key.code === code);
+    assert.equal(key.label, label, `${code}: UK unshifted output`);
+    assert.equal(key.shiftLabel, shiftLabel, `${code}: UK shifted output`);
+}
+const ukEngine = new TypingEngine();
+ukEngine.loadExercise(['£¬#']);
+for (const key of '£¬#') ukEngine.handleKey({ key, code: iso.charToCode[key] });
+assert.equal(ukEngine.isComplete, true, 'UK non-ASCII symbols can be typed and scored');
+const ukLearning = ukEngine.getStats().learning;
+assert.deepEqual(Object.keys(ukLearning.keys), ['#'], 'learning remains limited to ASCII targets');
+assert.deepEqual(Object.keys(readSessionLearning({
+        ...ukLearning,
+        keys: {
+            ...ukLearning.keys,
+            '£': ukLearning.keys['#'],
+            '¬': ukLearning.keys[
+                '#']
+        }
+    }).keys), ['#'],
+    'the existing persisted learning format still excludes non-ASCII observations');
+ukEngine.reset();
 keyboardLayout('colemak').rows.row3[4].label = 'changed';
 assert.equal(JSON.stringify(KEYBOARD_LAYOUT), originalKeyboard, 'derived rows preserve the base');
 const observations = {
@@ -259,7 +305,15 @@ for (const [preset, char, code, hand, name, row, shifted] of [
     ['dvorak', '<', 'KeyW', 'left', 'ring', 'upper', true],
     ['dvorak', '{', 'Minus', 'right', 'pinky', 'number', true],
     ['dvorak', ':', 'KeyZ', 'left', 'pinky', 'lower', true],
-    ['dvorak', 'Z', 'Slash', 'right', 'pinky', 'lower', true]
+    ['dvorak', 'Z', 'Slash', 'right', 'pinky', 'lower', true],
+    ['uk-iso', '\\', 'IntlBackslash', 'left', 'pinky', 'lower', false],
+    ['uk-iso', '|', 'IntlBackslash', 'left', 'pinky', 'lower', true],
+    ['uk-iso', '#', 'Backslash', 'right', 'pinky', 'home', false],
+    ['uk-iso', '~', 'Backslash', 'right', 'pinky', 'home', true],
+    ['uk-iso', '@', 'Quote', 'right', 'pinky', 'home', true],
+    ['uk-iso', '"', 'Digit2', 'left', 'ring', 'number', true],
+    ['uk-iso', '£', 'Digit3', 'left', 'middle', 'number', true],
+    ['uk-iso', '¬', 'Backquote', 'left', 'pinky', 'number', true]
 ]) {
     const layout = keyboardLayout(preset);
     const fingers = new Map();
@@ -271,7 +325,8 @@ for (const [preset, char, code, hand, name, row, shifted] of [
     }
     const guide = Object.create(KeyboardView.prototype);
     guide.layout = layout;
-    guide.keyElements = new Map(Object.values(layout.rows).flat().map(key => [key.code,
+    guide.keyElements = new Map(Object.values(layout.rows).flat().filter(key => key.code).map(
+        key => [key.code,
 element()]));
     guide.keyPositions = new Map(Object.values(layout.rows).flatMap((keys, index) =>
         keys.map((key, column) => [key.code, { row: index, x: column / keys.length }])));

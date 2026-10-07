@@ -147,7 +147,7 @@ try {
     assert.equal(writes, beforeLayoutWrites, 'layout defaults migrate without startup writes');
     assert.equal(saved, JSON.stringify(beforeLayouts));
     const layoutBaseline = JSON.parse(JSON.stringify(storage.data));
-    for (const keyboardLayout of ['colemak', 'dvorak', 'mac-us']) {
+    for (const keyboardLayout of ['colemak', 'dvorak', 'uk-iso', 'mac-us']) {
         assert.equal(await storage.setSetting('keyboardLayout', keyboardLayout), true);
         assert.deepEqual(JSON.parse(saved), {
             ...layoutBaseline,

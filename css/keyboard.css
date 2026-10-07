@@ -1,11 +1,12 @@
 /* Sculpted keycaps, a brushed chassis, and a single clear target. */
 .magic-keyboard {
+    --keyboard-gap: 6px;
     width: 100%;
     max-width: 860px;
     min-width: 620px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--keyboard-gap);
     background: var(--kb-chassis);
     border: 1px solid var(--kb-chassis-border);
     border-radius: 19px;
@@ -15,7 +16,7 @@
 
 .keyboard-row {
     display: flex;
-    gap: 6px;
+    gap: var(--keyboard-gap);
     height: 41px;
 }
 
@@ -40,16 +41,42 @@
     border-color: var(--key-heat);
 }
 
+.magic-key.key-iso-enter {
+    height: calc(200% + var(--keyboard-gap));
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    z-index: 1;
+}
+
+.iso-enter-outline {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: var(--key-bg);
+    stroke: var(--key-border);
+    stroke-width: 1px;
+    stroke-linejoin: round;
+}
+
+.key-iso-enter .key-labels {
+    position: absolute;
+    top: calc((100% - var(--keyboard-gap)) / 4);
+    transform: translateY(-50%);
+}
+
 @media (max-width: 600px) {
     .key-map .magic-keyboard {
+        --keyboard-gap: 3px;
         min-width: 0;
-        gap: 3px;
         padding: 6px;
         border-radius: 12px;
     }
 
     .key-map .keyboard-row {
-        gap: 3px;
         height: 28px;
     }
 
@@ -164,4 +191,8 @@
 .magic-key.key-pressed {
     transform: translateY(2px);
     box-shadow: inset 0 1px 3px #0003;
+}
+
+.magic-key.key-iso-enter.key-pressed {
+    box-shadow: none;
 }

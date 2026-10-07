@@ -305,6 +305,32 @@ for (const [preset, left, right, inner, upper, lower, rest] of [
 assert.equal(lessonsForLayout('amateur'), CURRICULUM.amateur);
 assert.equal(lessonsForLayout('pro', 'invalid'), CURRICULUM.pro);
 assert.deepEqual(lessonsForLayout('missing'), []);
+for (const track of ['amateur', 'pro']) {
+    const originals = JSON.stringify(CURRICULUM[track]);
+    for (const [index, item] of lessonsForLayout(track, 'uk-iso').entries()) {
+        const original = CURRICULUM[track][index];
+        if (item.id !== 'pro-9') assert.equal(item, original);
+        else {
+            assert.deepEqual(item, {
+                ...original,
+                description: item.description,
+                keysIntroduced: [...original.keysIntroduced, '#', '@', '|', '~']
+            }, 'UK symbols preserve lesson identity, targets and existing keys');
+            assert.match(item.description, /right pinky on the home row for #/);
+            assert.match(item.description, /~ or @ with your right pinky and Left Shift/);
+            assert.match(item.description, /left pinky for \\; add Right Shift for \|/);
+            const first = generateLessonDrill(track, index, () => 0, 'uk-iso');
+            const retry = generateLessonDrill(track, index, () => 0.999, 'uk-iso');
+            assert.notDeepEqual(first, retry);
+            for (const lines of [first, retry]) {
+                const text = lines.join(' ');
+                for (const key of '#@|~') assert.ok(text.includes(key));
+                assert.match(text, /^[\x20-\x7e]+$/, 'UK lessons keep ASCII learning metrics');
+            }
+        }
+    }
+    assert.equal(JSON.stringify(CURRICULUM[track]), originals);
+}
 assert.equal(sessionLabel({ lessonId: 'amat-4' }), 'Inner Reach');
 assert.equal(sessionLabel({ lessonId: 'amat-9' }), 'Bottom Row Right');
 console.log(

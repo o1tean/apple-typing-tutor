@@ -1689,12 +1689,13 @@ export default function App() {
                                     )}
                                 </select>
                                 <p id="layout-help">
-                                    Match your operating system’s input source.
-                                    These ANSI guides use Mac modifier labels
-                                    and keep Caps Lock unchanged. Changing
-                                    layout restarts an unfinished practice.
-                                    Stars and weak-key measurements are shared
-                                    across layouts.
+                                    Match your operating system’s input source.{' '}
+                                    {settings.keyboardLayout === 'uk-iso'
+                                        ? 'UK ISO uses Windows UK characters and PC modifier labels.'
+                                        : 'These ANSI guides use Mac modifier labels and keep Caps Lock unchanged.'}{' '}
+                                    Changing layout restarts an unfinished
+                                    practice. Stars and weak-key measurements
+                                    are shared across layouts.
                                 </p>
                             </fieldset>
                             <fieldset>

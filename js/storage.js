@@ -33,7 +33,7 @@ const DEFAULT_DATA = {
 const SETTING_OPTIONS = {
     theme: ['dark', 'light', 'system'],
     colorPalette: ['mint', 'ocean', 'plum'],
-    keyboardLayout: ['mac-us', 'colemak', 'dvorak'],
+    keyboardLayout: ['mac-us', 'colemak', 'dvorak', 'uk-iso'],
     soundProfile: ['magic', 'thock', 'bubble', 'clicky'],
     typingMode: ['strict', 'flow'],
     testMode: ['time', 'words'],

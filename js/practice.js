@@ -4,6 +4,13 @@ import { keyboardLayout } from './keyboard.js';
 
 export function lessonsForLayout(track, preset = 'mac-us') {
     const lessons = ['amateur', 'pro'].includes(track) ? CURRICULUM[track] : [];
+    if (preset === 'uk-iso') return lessons.map(lesson => lesson.id !== 'pro-9' ? lesson : {
+        ...lesson,
+        description: 'UK ISO: use your right pinky on the home row for #. '
+            + 'Type ~ or @ with your right pinky and Left Shift. '
+            + 'Reach down with your left pinky for \\; add Right Shift for |.',
+        keysIntroduced: [...lesson.keysIntroduced, '#', '@', '|', '~']
+    });
     if (!['colemak', 'dvorak'].includes(preset)) return lessons;
     const layout = keyboardLayout(preset);
     const home = Array.from(layout.homeKeys, key => key.toUpperCase());

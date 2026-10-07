@@ -108,7 +108,7 @@ test('old saves keep QWERTY and preserve unknown progress through every layout c
         const select = page.getByRole('combobox', { name: 'Keyboard layout', exact: true });
         await expect(select).toHaveValue('mac-us');
         await expect(select.getByRole('option')).toHaveText([
-            'Mac US · QWERTY', 'Colemak · US ANSI', 'Dvorak · US ANSI'
+            'Mac US · QWERTY', 'Colemak · US ANSI', 'Dvorak · US ANSI', 'UK QWERTY · ISO'
         ]);
         expect(await savedBytes(page)).toBe(JSON.stringify(saved));
         await page.keyboard.press('Escape');

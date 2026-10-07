@@ -389,14 +389,13 @@ button svg {
 }
 
 .phone-demo .magic-keyboard {
+    --keyboard-gap: 3px;
     min-width: 0;
     padding: 6px;
-    gap: 3px;
 }
 
 .phone-demo .keyboard-row {
     height: 28px;
-    gap: 3px;
 }
 
 .phone-demo .key-main-label {

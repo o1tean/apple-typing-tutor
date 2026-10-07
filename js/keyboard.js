@@ -196,7 +196,8 @@ const CHAR_TO_CODE = {
 export const KEYBOARD_PRESETS = {
     'mac-us': 'Mac US · QWERTY',
     colemak: 'Colemak · US ANSI',
-    dvorak: 'Dvorak · US ANSI'
+    dvorak: 'Dvorak · US ANSI',
+    'uk-iso': 'UK QWERTY · ISO'
 };
 
 // Standard Colemak and US Dvorak character positions; Caps Lock stays unchanged.
@@ -217,8 +218,16 @@ export function keyboardLayout(preset = 'mac-us') {
             const original = key.char ?? (key.label.length === 1 ? key.label
                 : null);
             if (original === null) return { ...key };
-            const char = characters?.[rowIndex]?.[index++] ?? original;
-            const shift = shifted(char);
+            const pair = preset === 'uk-iso' ? {
+                '`': '`¬',
+                '2': '2"',
+                '3': '3£',
+                "'": "'@",
+                '\\': '#~'
+            } [original] : null;
+            const char = pair?.[0] ?? characters?.[rowIndex]?.[index++] ??
+                original;
+            const shift = pair?.[1] ?? shifted(char);
             charToCode[char] = key.code;
             fingerMap[char] = { ...FINGER_MAP[original] };
             fromQwerty[original] = char;
@@ -235,6 +244,35 @@ export function keyboardLayout(preset = 'mac-us') {
             };
         })];
     }));
+    if (preset === 'uk-iso') {
+        const backslash = rows.row2.pop();
+        const enter = rows.row3.pop();
+        rows.row2.push({ ...enter, label: '↵', width: 1, isoStem: 0.75 });
+        rows.row3.push(backslash, { width: 0.75 });
+        rows.row4[0].width = 1.25;
+        rows.row4.splice(1, 0, {
+            code: 'IntlBackslash',
+            label: '\\',
+            char: '\\',
+            shiftLabel: '|',
+            width: 1
+        });
+        for (const char of ['\\', '|']) {
+            charToCode[char] = 'IntlBackslash';
+            fingerMap[char] = { ...FINGER_MAP.z, shift: char === '|' };
+        }
+        rows.row1.at(-1).label = 'backspace';
+        rows.row5 = [
+            ['ControlLeft', 'ctrl'], ['MetaLeft', 'win'], ['AltLeft', 'alt'], ['Space', ''],
+            ['AltRight', 'alt gr'], ['MetaRight', 'win'], ['ContextMenu', 'menu'],
+            ['ControlRight', 'ctrl']
+        ].map(([code, label]) => ({
+            code,
+            label,
+            width: code === 'Space' ? 5.75 : 1.25,
+            special: code === 'Space' ? 'space' : 'control'
+        }));
+    }
     return {
         rows,
         charToCode,
@@ -242,6 +280,10 @@ export function keyboardLayout(preset = 'mac-us') {
         fromQwerty,
         homeKeys: Array.from('asdfjkl;', char => fromQwerty[char]).join('')
     };
+}
+
+export function isoEnterOutline(stem) {
+    return [[0, 0], [1, 0], [1, 1], [1 - stem, 1], [1 - stem, 0.5], [0, 0.5]];
 }
 
 export function keyMeasurements(learning, preset = 'mac-us') {
@@ -293,6 +335,14 @@ export class KeyboardView {
             rowEl.className = 'keyboard-row';
 
             row.forEach(key => {
+                if (!key.code) {
+                    const spacer = document.createElement('div');
+                    spacer.className = 'keyboard-spacer';
+                    spacer.style.flex = `${key.width} 0 0`;
+                    rowEl.appendChild(spacer);
+                    offset += key.width;
+                    return;
+                }
                 this.keyPositions.set(key.code, {
                     row: rowIndex,
                     x: (offset + key.width / 2) / width
@@ -304,6 +354,23 @@ export class KeyboardView {
                 keyEl.style.flex = `${key.width} 0 0`;
 
                 if (key.special) keyEl.classList.add(`key-${key.special}`);
+                if (key.isoStem) {
+                    keyEl.classList.add('key-iso-enter');
+                    const outline = document.createElementNS(
+                        'http://www.w3.org/2000/svg', 'svg');
+                    outline.setAttribute('class', 'iso-enter-outline');
+                    outline.setAttribute('viewBox', '0 0 1 1');
+                    outline.setAttribute('preserveAspectRatio', 'none');
+                    outline.setAttribute('aria-hidden', 'true');
+                    const shape = document.createElementNS(outline.namespaceURI,
+                        'polygon');
+                    shape.setAttribute('points', isoEnterOutline(key.isoStem)
+                        .map(point => point.join(','))
+                        .join(' '));
+                    shape.setAttribute('vector-effect', 'non-scaling-stroke');
+                    outline.appendChild(shape);
+                    keyEl.appendChild(outline);
+                }
 
                 // The bumps stay on the physical index-finger home keys.
                 if (key.bump) {
