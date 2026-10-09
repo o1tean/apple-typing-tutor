@@ -2,56 +2,59 @@
 
 [Open version 3](https://o1tean.github.io/apple-typing-tutor/brainfuck.html).
 
-The typing kernel is written in [Brainfuck](../brainfuck/typing.bf) and compiled
-directly to WebAssembly during `npm run build`. Run `npm run dev` and open
-`brainfuck.html` to use it locally. `npm run build:brainfuck` also writes the
-standalone module to `.local/typeflow-brainfuck.wasm`.
+Version 3 runs the complete Typeflow application in WebAssembly compiled from
+Brainfuck. It includes lessons, four keyboard layouts, guided and free-flow input,
+adaptive key and pair practice, quotes, custom text, finger guidance, the mobile
+demo, results, history, sound, backups and local progress. It shares the original
+`apple_typing_tutor_data_v1` storage key and preserves unknown saved fields.
 
-To build only the original and Brainfuck sites without the Swift toolchain, run
+Run `npm run dev` and open `brainfuck.html`. `npm run build:brainfuck` writes
+`.local/typeflow-brainfuck.wasm` and its content/transport metadata. The normal
+production build includes the application and offline assets. To build the
+original and Brainfuck sites without the Swift toolchain, run
 `npx vite build && node scripts/build-offline.mjs`.
 
-Brainfuck controls strict/flow input decisions, cursor movement, keystroke
-counters, skipped targets, deletion permissions and correct-word credit.
-The shared React interface and JavaScript browser host handle rendering,
-keyboard events, character records, timers, fractional speed statistics,
-learning observations and persistence. This is a Brainfuck typing kernel with
-a browser host, rather than a claim that React or browser APIs are Brainfuck.
-Lessons, guides, layouts, adaptive practice, results and offline behavior use
-the same interface as the original. Both versions share existing local progress.
+## Source and browser boundary
+
+[Application macros](../brainfuck/app.mjs) generate ordinary Brainfuck for product
+state, navigation, rendering, input validation, scoring, practice selection,
+learning, storage validation and merges. These JavaScript generators run during
+the build; they are not loaded by the browser. Content comes from the original
+permissively licensed catalog at build time.
+
+The [browser bridge](../brainfuck/browser.js) forwards native events and exposes
+generic DOM, clock, random, audio, downloads, storage, Web Locks, service worker
+and platform text/date/number-formatting operations. Its [JSON codec](../brainfuck/codec.js)
+only carries structures, strings and exact numeric representations. It imports no
+React or original product JavaScript. Brainfuck chooses every product action and
+every retained JSON root; disabling the Wasm dispatcher disables navigation and
+scoring.
 
 ## Dialect and compiler
 
-The eight Brainfuck operators are unchanged. Cells are wrapping unsigned
-32-bit integers, so Unicode code points and counters above 255 remain distinct.
-The tape contains 16,384 cells; invalid memory accesses trap. `run()` resets the
-pointer to cell zero. `,` reads an integer from the host and `.` writes one;
-they are not limited to UTF-8 bytes. Labels contain no Brainfuck operators.
+The eight operators are `><+-.,[]`. Cells are wrapping unsigned 32-bit integers;
+`,` and `.` exchange integers, allowing Unicode code points and wide-number
+arithmetic. The tape is bounded, and invalid access traps. Each transaction starts
+at pointer zero and keeps application state on the tape. JSON token IDs stay
+stable across generic garbage collection.
 
-The dependency-free [compiler](../scripts/compile-brainfuck.mjs) emits a real
-WebAssembly binary exporting `memory` and `run`, with imports `env.read` and
-`env.write`. It rejects unmatched brackets, combines adjacent arithmetic and
-pointer moves, and optimizes clear/transfer loops. Other loops run as WebAssembly
-control flow. Only the bundled program runs in the website; there is no arbitrary
-program execution interface.
+The dependency-free [generator/compiler](../brainfuck/compiler.mjs) emits real
+Wasm exporting `memory` and `run`, with only `env.read` and `env.write` imports.
+It lowers repeated Brainfuck operations and reusable procedures to equivalent
+Wasm helpers. Numeric operations have genuine Brainfuck implementations, checked
+against native lowering, including unsigned 64-bit arithmetic and IEEE-754
+addition, subtraction, multiplication, division, comparison and square root.
 
-## Kernel protocol
+`application().program.sourceChunks()` yields the fully expanded eight-operator
+source as a stream. Large absolute tape offsets and numeric fallbacks make this expansion
+extremely large, so the checked-in build-time macros are the practical source and the
+build emits Wasm directly. `brainfuck/typing.bf` remains a small compiler regression
+fixture; it is not the version 3 application.
 
-Each transaction clears the first 64 tape cells, then supplies 18 integers:
+## Verification
 
-| Cell | Input |
-| --- | --- |
-| 0 | Command: type 1, delete 2, scan credit 3, skip 4, separator 5 |
-| 1–8 | Cursor, total, correct, net correct, correct non-space, net typed, errors, skipped |
-| 9–13 | Flow flag, target code point or −1, input code point, status, typed-present flag |
-| 14–17 | Extra/separator flag, following-line flag, virtual separator flag, record count |
-
-For command 3, each record follows as target code point, status, extra flag and
-skipped flag. Status is pending 0, correct 1 or incorrect 2. Output is the eight
-updated state values followed by action, word credit and deletion-blocked flag.
-Type actions are correct 1, incorrect 2, extra 3 and submit-space 4.
-
-`npm test` checks compiler behavior and compares engine state, statistics and
-callback ordering against the original through deterministic input histories.
-Browser checks cover the actual module download, typing, corrections, preserved
-progress, offline reload and loading failure. A failed module load presents an
-accessible link to the original version.
+`npm test` checks the compiler, literal Brainfuck/native equivalence, numeric
+boundaries, typing transitions, storage preservation, practice, history, sound,
+demo controls and structural transport. `npm run e2e` checks actual browser input,
+Wasm ownership, both lesson tracks and all layouts, recommendations, result PNGs,
+backups and offline behavior. Browser checks use isolated profiles.

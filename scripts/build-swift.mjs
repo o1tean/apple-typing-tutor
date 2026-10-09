@@ -27,6 +27,7 @@ function run(command, args) {
     if (result.error) throw result.error;
     if (result.status !== 0) process.exit(result.status || 1);
 }
+run(process.execPath, ['scripts/swift-catalog.mjs']);
 
 if (process.argv.includes('--test')) {
     const executable = join(cache, 'typing-session-checks');
@@ -40,6 +41,21 @@ if (process.argv.includes('--test')) {
         'swift/Sources/TypingSession.swift', 'swift/Tests/TypingSessionChecks.swift',
         '-o', executable, ...(process.platform === 'linux' ? ['-lm'] : [])]);
     run(executable, []);
+    for (const suite of ['Storage', 'Practice', 'AppHistory']) {
+        let sources = ['swift/Sources/JSON.swift', 'swift/Sources/Storage.swift'];
+        if (suite === 'Practice') sources.push('swift/Sources/TypingSession.swift',
+            'swift/Sources/Catalog.generated.swift', 'swift/Sources/Practice.swift',
+            'swift/Sources/Guides.swift');
+        if (suite === 'AppHistory') sources = readdirSync(join(root, 'swift/Sources'))
+            .filter(name => name.endsWith('.swift')).sort()
+            .map(name => join('swift/Sources', name));
+        const checks = join(cache, `${suite.toLowerCase()}-checks`);
+        run(compiler, [...(nativeSDK ? ['-sdk', nativeSDK] : []),
+            '-module-cache-path', join(cache, 'native-module-cache'), ...sources,
+            `swift/Tests/${suite}Checks.swift`, '-o', checks,
+            ...(process.platform === 'linux' ? ['-lm'] : [])]);
+        run(checks, []);
+    }
 } else {
     const sdk = process.env.TYPEFLOW_SWIFT_SDK || join(root, '.local/swift-sdk',
         `${release}_wasm.artifactbundle`, `${release}_wasm`, 'wasm32-unknown-wasip1');
@@ -56,7 +72,7 @@ if (process.argv.includes('--test')) {
     const object = join(cache, 'typeflow.o');
     const output = join(root, 'swift/typeflow.wasm');
     const exportedFunctions = ['input', 'output', 'length', 'capacity', 'load', 'key',
-        'delete', 'pause', 'resume', 'tick', 'snapshot', 'render'];
+        'delete', 'pause', 'resume', 'tick', 'snapshot', 'render', 'event', 'reserve'];
     run(compiler, ['-enable-experimental-feature', 'Embedded',
         '-enable-experimental-feature', 'Extern', '-wmo', '-Osize', '-parse-as-library',
         '-target', 'wasm32-unknown-none-wasm', '-resource-dir', resources,

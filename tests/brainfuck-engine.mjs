@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { createBrainfuckEngine } from '../js/brainfuck-engine.js';
+import { createBrainfuckEngine } from './helpers/brainfuck-kernel.js';
 import { TypingEngine } from '../js/engine.js';
 
 const BrainfuckEngine = createBrainfuckEngine(TypingEngine);
 const module = new WebAssembly.Module(await readFile(new URL(
-    '../.local/typeflow-brainfuck.wasm', import.meta.url)));
+    '../.local/typeflow-brainfuck-kernel.wasm', import.meta.url)));
 const originalNow = performance.now;
 const originalSetInterval = globalThis.setInterval;
 const originalClearInterval = globalThis.clearInterval;

@@ -12,6 +12,8 @@ await copyFile(join(root, 'docs/media/social-preview.png'), join(output, 'og-ima
 async function filesIn(directory, prefix = '') {
     const files = [];
     for (const entry of await readdir(directory, { withFileTypes: true })) {
+        // CI artifacts omit hidden build metadata; it is not a browser asset.
+        if (entry.name.startsWith('.')) continue;
         const name = prefix + entry.name;
         if (entry.isDirectory()) {
             files.push(...await filesIn(join(directory, entry.name), name + '/'));

@@ -63,7 +63,7 @@ test('the Brainfuck WebAssembly version guides mistakes through a complete lesso
         await page.reload();
         await page.getByRole('button', { name: 'Session history', exact: true }).click();
         await expect(page.getByRole('dialog', { name: 'Your recent sessions' })
-            .getByRole('row')).toHaveCount(2);
+            .locator('.history-table tbody tr')).toHaveCount(1);
         expect(errors).toEqual([]);
     });
 
@@ -172,7 +172,7 @@ test('Brainfuck lessons reload offline while retaining original progress and unk
         await page.goto('./');
         await page.getByRole('button', { name: 'Session history', exact: true }).click();
         await expect(page.getByRole('dialog', { name: 'Your recent sessions' })
-            .getByRole('row')).toHaveCount(3);
+            .locator('.history-table tbody tr')).toHaveCount(2);
         expect(await savedBytes(page)).toBe(raw);
         expect(errors).toEqual([]);
     });

@@ -1,0 +1,23 @@
+{
+    "name": "Typeflow \u2014 Learn touch typing",
+    "short_name": "Typeflow",
+    "description": "Guided lessons, live finger guidance and daily touch-typing practice.",
+    "start_url": "./brainfuck.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#181d21",
+    "theme_color": "#181d21",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "id": "./brainfuck.html"
+}

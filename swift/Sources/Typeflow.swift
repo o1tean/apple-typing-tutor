@@ -1,6 +1,6 @@
 let session = TypingSession()
-let bufferCapacity = 1_048_576
-let inputBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferCapacity)
+var bufferCapacity = 1_048_576
+var inputBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferCapacity)
 var outputCapacity = 65_536
 var outputBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: outputCapacity)
 var outputLength: Int32 = 0
@@ -58,6 +58,14 @@ func observations(_ cells: [String: LearningObservation]) -> String {
 }
 
 @_cdecl("typeflow_input") func browserInput() -> UnsafeMutablePointer<UInt8> { inputBuffer }
+@_cdecl("typeflow_reserve") func browserReserve(_ count: Int32) -> UnsafeMutablePointer<UInt8> {
+    if count >= bufferCapacity {
+        bufferCapacity = max(Int(count) + 1, bufferCapacity * 2)
+        inputBuffer.deallocate()
+        inputBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferCapacity)
+    }
+    return inputBuffer
+}
 @_cdecl("typeflow_output") func browserOutput() -> UnsafeMutablePointer<UInt8> { outputBuffer }
 @_cdecl("typeflow_length") func browserLength() -> Int32 { outputLength }
 @_cdecl("typeflow_capacity") func browserCapacity() -> Int32 { Int32(bufferCapacity) }
@@ -115,13 +123,4 @@ func observations(_ cells: [String: LearningObservation]) -> String {
     output(html)
 }
 
-let shell = """
-<div class="app lesson-mode"><header class="header"><a class="brand" href="../"><strong>typeflow<span class="brand-period">.</span></strong><small>Swift · WebAssembly</small></a><nav class="navigation" aria-label="Practice"><button class="choice" data-action="lessons">Lessons</button><button class="choice" data-action="test">Test</button><button class="choice" data-action="quote">Quotes</button><button class="choice" data-action="custom">Custom text</button></nav><div class="header-actions"><button class="text-button" data-action="history">History</button><button class="text-button" data-action="settings">Settings</button></div></header>
-<main class="main"><section id="exercise"><div class="test-toolbar"><button class="text-button" data-action="lessons">Change lesson</button><button class="text-button" data-action="test">Skip to test</button></div><div class="test-heading"><p class="eyebrow" id="exercise-kind">Guided lesson</p><h1 id="exercise-title"></h1></div><p class="lesson-instructions" id="instructions"></p><p class="lesson-goal" id="lesson-goal"></p><p class="arena-help" id="quote-source"></p><div class="live-stats" aria-hidden="true"><span><strong id="live-wpm">0</strong><small>wpm</small></span><span><strong id="live-accuracy">100%</strong><small>accuracy</small></span><span><strong id="live-time">0s</strong><small>time</small></span></div>
-<div class="arena-meta"><span id="mode-label">english · guided</span><span id="position">line 1</span></div><div class="arena focused" id="arena"><p class="sr-only" id="exercise-prompt"></p><div class="text-viewport" aria-hidden="true"><div class="typing-text" id="passage"></div></div><textarea class="typing-input" aria-label="Typing input" aria-describedby="exercise-prompt typing-help typing-feedback" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea><button class="focus-prompt" id="focus-prompt" hidden>Click here to start typing</button></div><p class="arena-help" id="typing-help">Take your time. Each correct key moves you forward.</p><p class="sr-only" id="typing-feedback" role="status"></p><div class="restart-row"><button class="text-button" data-action="restart">Restart</button></div>
-<section class="guidance" aria-label="Typing guides"><div class="hands-container" id="hands"></div><div class="keyboard-container" id="keyboard" aria-hidden="true"></div></section><section class="learning-prompt" aria-label="Adaptive practice"><p id="recommendation"></p><button class="text-button" data-action="weak">Practice weak keys</button><button class="text-button" data-action="pairs">Practice pairs</button></section><p class="arena-help" id="keyboard-notice" hidden>A physical keyboard works best. The guides show which finger to use.</p></section><section class="results" id="results" aria-label="Typing results" hidden></section>
-<p class="arena-help" id="recovery" role="status" hidden>Progress could not be saved. Keep this tab open or export a backup. <button class="text-button" data-action="retry-save">Retry save</button> <button class="text-button" data-action="backup">Export backup</button></p></main><footer class="footer"><span>Learn at your pace. Accuracy comes first.</span><div><span id="offline-status" role="status">Preparing offline lessons…</span><a href="../">React version</a></div></footer></div>
-<dialog class="dialog" id="lessons-dialog" aria-labelledby="lessons-title"><div class="dialog-heading"><h2 id="lessons-title">Choose a lesson</h2><button class="text-button" data-action="close">Close</button></div><div class="setting-choices lesson-tracks"><button class="choice" data-track="amateur">Foundation</button><button class="choice" data-track="pro">Advanced</button></div><p class="lesson-path" id="lesson-path"></p><div class="lesson-list" id="lesson-list"></div></dialog>
-<dialog class="dialog settings" id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Settings</h2><button class="text-button" data-action="close">Close</button></div><label class="setting-row">Keyboard layout<select name="keyboardLayout"></select></label><label class="setting-row">Typing mode<select name="typingMode"><option value="strict">Guided</option><option value="flow">Free flow</option></select></label><label class="setting-row">Appearance<select name="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label><label class="setting-row">Palette<select name="colorPalette"><option value="mint">Mint</option><option value="ocean">Ocean</option><option value="plum">Plum</option></select></label><label class="setting-row">Test mode<select name="testMode"><option value="time">Time</option><option value="words">Words</option></select></label><label class="setting-row">Duration<select name="testDuration"><option>15</option><option>30</option><option>60</option><option>120</option></select></label><label class="setting-row">Word count<select name="testWordCount"><option>10</option><option>25</option><option>50</option><option>100</option></select></label><label class="setting-row">Punctuation<input type="checkbox" name="punctuation"></label><label class="setting-row">Numbers<input type="checkbox" name="numbers"></label><label class="setting-row">Show keyboard<input type="checkbox" name="showKeyboard"></label><label class="setting-row">Show hands<input type="checkbox" name="showHands"></label><label class="setting-row">Mute sound<input type="checkbox" name="soundMuted"></label></dialog>
-<dialog class="dialog" id="custom-dialog" aria-labelledby="custom-title"><div class="dialog-heading"><h2 id="custom-title">Practice your text</h2><button class="text-button" data-action="close">Close</button></div><label>Text to practice<textarea id="custom-text" maxlength="12000" rows="5"></textarea></label><button class="primary-button" data-action="custom-start">Start custom text</button></dialog><dialog class="dialog" id="history-dialog" aria-labelledby="history-title"><div class="dialog-heading"><h2 id="history-title">Practice history</h2><button class="text-button" data-action="close">Close</button></div><div id="history-content"></div></dialog>
-"""
+let shell = appShell

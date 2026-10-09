@@ -6,6 +6,7 @@ export default defineConfig({
     base: './',
     plugins: [react(), brainfuckPlugin()],
     build: {
+        manifest: true,
         modulePreload: false,
         rollupOptions: { input: ['index.html', 'brainfuck.html'] }
     },

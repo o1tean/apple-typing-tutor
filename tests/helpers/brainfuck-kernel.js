@@ -1,13 +1,5 @@
 const STATUS = { pending: 0, correct: 1, incorrect: 2 };
 
-export async function loadBrainfuck(TypingEngine) {
-    const response = await fetch(new URL('typeflow-brainfuck.wasm', document.baseURI));
-    if (!response.ok) throw new Error('WebAssembly download failed');
-    const module = await WebAssembly.compile(await response.arrayBuffer());
-    const Engine = createBrainfuckEngine(TypingEngine);
-    return new Engine({}, module);
-}
-
 export function createBrainfuckEngine(TypingEngine) {
     return class BrainfuckEngine extends TypingEngine {
         constructor(options = {}, module) {

@@ -18,3 +18,4 @@ docs/releases/
 playwright-report/
 test-results/
 swift/typeflow.wasm
+swift/Sources/Catalog.generated.swift

@@ -34,6 +34,15 @@ test.beforeAll(async () => {
         'swift/vite.config.js'], { cwd: alternate });
     await promisify(execFile)(process.execPath, [
     'scripts/build-offline.mjs'], { cwd: alternate });
+    for (const build of [join(root, 'dist'), join(alternate, 'dist')]) {
+        const worker = await readFile(join(build, 'sw.js'), 'utf8');
+        const entries = JSON.parse(worker.split('const PRECACHE = ')[1].split(';\n\n')[
+            0]);
+        expect(entries.some(({ url }) => url.split('/').some(part => part.startsWith(
+                '.'))))
+            .toBe(false);
+        expect(entries.some(({ url }) => url.endsWith('.wasm'))).toBe(true);
+    }
 });
 
 test.afterAll(async () => {
@@ -75,6 +84,8 @@ async function serveBuilds() {
                 '.html': 'text/html',
                 '.js': 'text/javascript',
                 '.css': 'text/css',
+                '.wasm': 'application/wasm',
+                '.json': 'application/json',
                 '.png': 'image/png',
                 '.svg': 'image/svg+xml',
                 '.webmanifest': 'application/manifest+json'

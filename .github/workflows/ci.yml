@@ -47,10 +47,19 @@ jobs:
       - name: Check initial JavaScript budget
         run: |
           node --input-type=module <<'JS'
-          import { readdirSync, readFileSync } from 'node:fs';
+          import { readFileSync } from 'node:fs';
           import { gzipSync } from 'node:zlib';
-          const bytes = readdirSync('dist/assets').filter(name => name.endsWith('.js'))
-            .reduce((total, name) => total + gzipSync(readFileSync(`dist/assets/${name}`)).length, 0);
+          const manifest = JSON.parse(readFileSync('dist/.vite/manifest.json', 'utf8'));
+          const visited = new Set();
+          function initialBytes(key) {
+            if (visited.has(key)) return 0;
+            visited.add(key);
+            const entry = manifest[key];
+            if (!entry) throw new Error(`Missing bundle entry: ${key}`);
+            return gzipSync(readFileSync(`dist/${entry.file}`)).length +
+              (entry.imports || []).reduce((sum, imported) => sum + initialBytes(imported), 0);
+          }
+          const bytes = initialBytes('index.html');
           console.log(`Initial JavaScript: ${bytes} bytes gzip (limit: 110000)`);
           if (bytes >= 110000) process.exit(1);
           JS

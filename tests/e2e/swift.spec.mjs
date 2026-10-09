@@ -59,6 +59,7 @@ async function visit(page, saved) {
     }, { key: storageKey, data: saved });
     await page.goto('./swift/');
     await expect(input(page)).toBeVisible();
+    if (saved) await expect(page.locator('#exercise-title')).toHaveText('10 word test');
 }
 
 async function setting(page, name, value) {
@@ -174,6 +175,137 @@ test('Swift WebAssembly runs a fresh guided lesson, pauses and records native in
             .toBeVisible();
     });
 
+test.describe('Swift phone demo keyboard access', () => {
+    test.use({ hasTouch: true, viewport: { width: 375, height: 812 } });
+
+    test('Swift demo keeps keyboard focus through manual steps, autoplay and pause',
+        async ({ page }) => {
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+            await page.clock.install({ time: new Date('2026-10-07T09:00:00Z') });
+            await page.clock.pauseAt(new Date('2026-10-07T09:01:00Z'));
+            await page.goto('./swift/');
+            const demo = page.getByRole('region', {
+                name: 'Finger demo',
+                exact: true
+            });
+            const target = demo.getByLabel('Demo target', { exact: true });
+            const next = demo.getByRole('button', {
+                name: 'Next key',
+                exact: true
+            });
+            await expect(target).toHaveText('f');
+            await next.focus();
+            const nextControl = await next.elementHandle();
+            for (const expected of ['Space', 'r']) {
+                await page.keyboard.press('Enter');
+                await expect(target).toHaveText(expected);
+                await expect(next).toBeFocused();
+                expect(await nextControl.evaluate(element => element.isConnected
+                    && element === document.activeElement)).toBe(true);
+            }
+            await page.emulateMedia({ reducedMotion: 'no-preference' });
+            const play = demo.getByRole('button', {
+                name: 'Play demo',
+                exact: true
+            });
+            await play.focus();
+            const playControl = await play.elementHandle();
+            await page.keyboard.press('Enter');
+            const pause = demo.getByRole('button', {
+                name: 'Pause demo',
+                exact: true
+            });
+            await expect(pause).toBeFocused();
+            await page.clock.runFor(1100);
+            await expect(target).toHaveText('Space');
+            await expect(pause).toBeFocused();
+            expect(await playControl.evaluate(element => element.isConnected
+                && element === document.activeElement)).toBe(true);
+            await page.keyboard.press('Enter');
+            await expect(play).toBeFocused();
+            await page.clock.runFor(2200);
+            await expect(target).toHaveText('Space');
+            expect(await playControl.evaluate(element => element.isConnected
+                && element === document.activeElement)).toBe(true);
+            expect(await nextControl.evaluate(element => element.isConnected)).toBe(
+                true);
+            expect(await savedBytes(page)).toBeNull();
+        });
+});
+
+test('Swift custom text rejects empty input and starts the editable quote example',
+    async ({ page }) => {
+        await visit(page);
+        await page.getByRole('button', { name: 'Custom text', exact: true }).click();
+        const dialog = page.getByRole('dialog', {
+            name: 'Practice your text',
+            exact: true
+        });
+        const text = dialog.getByRole('textbox', { name: 'Text to practice', exact: true });
+        const start = dialog.getByRole('button', {
+            name: 'Start custom text',
+            exact: true
+        });
+        await expect(start).toBeDisabled();
+        for (const empty of ['', ' \t\n ', '\u200B', '\u00AD', ' \u200B\u00AD\n']) {
+            await text.fill('a');
+            await expect(start).toBeEnabled();
+            await text.fill(empty);
+            await expect(start).toBeDisabled();
+        }
+        await dialog.getByRole('button', { name: 'Try a quote', exact: true }).click();
+        const example = await text.inputValue();
+        expect(example.length).toBeGreaterThan(20);
+        await expect(start).toBeEnabled();
+        await start.click();
+        await expect(dialog).toBeHidden();
+        await expect(input(page)).toBeFocused();
+        expect(await passage(page)).toBe(example);
+        expect(await savedBytes(page)).toBeNull();
+    });
+
+test('Swift reports a failed offline installation after registration has resolved',
+    async ({ page }) => {
+        await page.addInitScript(() => {
+            const worker = Object.assign(
+                new EventTarget(), { state: 'installing' });
+            const registration = Object.assign(new EventTarget(), {
+                installing: worker,
+                waiting: null,
+                active: null
+            });
+            window.swiftWorkerFixture = {
+                registered: false,
+                fail() {
+                    registration.installing = null;
+                    worker.state = 'redundant';
+                    worker.dispatchEvent(new Event('statechange'));
+                }
+            };
+            Object.defineProperty(navigator.serviceWorker, 'register', {
+                configurable: true,
+                value: async () => {
+                    window.swiftWorkerFixture.registered = true;
+                    return registration;
+                }
+            });
+        });
+        await visit(page);
+        await expect.poll(() => page.evaluate(() => window.swiftWorkerFixture.registered))
+            .toBe(true);
+        await expect(page.getByText('Preparing offline lessons…', { exact: true }))
+            .toBeVisible();
+        await page.evaluate(() => window.swiftWorkerFixture.fail());
+        await expect(page.getByText('Offline setup unavailable', { exact: true }))
+            .toBeVisible();
+        await page.locator('.offline-status summary').click();
+        await expect(page.locator('.offline-status')).toContainText(
+            'Setup retries on your next visit.');
+        await expect(page.getByText('Available offline', { exact: true })).toHaveCount(0);
+        await expect(input(page)).toBeVisible();
+        expect(await savedBytes(page)).toBeNull();
+    });
+
 test('Swift free flow corrects a native typo and history survives reload', async ({ page }) => {
     const saved = savedPractice();
     saved.settings.typingMode = 'flow';
@@ -195,7 +327,7 @@ test('Swift free flow corrects a native typo and history survives reload', async
         name: 'Practice missed words',
         exact: true
     }).click();
-    await expect(page.getByRole('heading', { name: 'Missed words', exact: true }))
+    await expect(page.getByRole('heading', { name: 'missed words · 1', exact: true }))
         .toBeVisible();
     expect(await passage(page)).toBe('ab');
     await finish(page, 1);
@@ -213,15 +345,21 @@ test('Swift free flow corrects a native typo and history survives reload', async
     expect(await savedBytes(page)).toBe(raw);
 });
 
-test('Swift test preferences apply on the next start and repeats preserve the personal best',
+test('Swift test preferences restart immediately and repeats preserve the personal best',
     async ({ page }) => {
         await visit(page, savedPractice());
         const original = await passage(page);
+        expect(original.trim().split(/\s+/)).toHaveLength(10);
+        await input(page).pressSequentially(original.slice(0, 2), { delay: 5 });
+        await expect(page.locator('.typing-text .char.correct')).toHaveCount(2);
         await setting(page, 'Word count', '25');
-        expect(await passage(page)).toBe(original);
-        await page.getByRole('button', { name: 'Test', exact: true }).click();
+        await expect(page.locator('#exercise-title')).toHaveText('25 word test');
+        await expect(page.locator('.typing-text .char.correct')).toHaveCount(0);
         const text = await passage(page);
         expect(text.trim().split(/\s+/)).toHaveLength(25);
+        await expect.poll(async () => JSON.parse(await savedBytes(page)).settings
+                .testWordCount)
+            .toBe(25);
         await finish(page, 1);
         const first = JSON.parse(await savedBytes(page));
         expect(first.history[0]).toMatchObject({
@@ -229,7 +367,8 @@ test('Swift test preferences apply on the next start and repeats preserve the pe
             recordEligible: true
         });
         expect(first.stats.wordHighestWpm).toBeGreaterThan(0);
-        await results(page).getByRole('button', { name: 'Try again', exact: true }).click();
+        await results(page).getByRole('button', { name: 'Repeat this text', exact: true })
+            .click();
         expect(await passage(page)).toBe(text);
         await finish(page, 1);
         const repeated = JSON.parse(await savedBytes(page));
@@ -266,7 +405,7 @@ for (const [layout, home] of [
     test(`Swift lesson choice and physical guide follow ${layout}`, async ({ page }) => {
         await visit(page, savedPractice());
         await setting(page, 'Keyboard layout', layout);
-        await page.getByRole('button', { name: 'Change lesson', exact: true }).click();
+        await page.getByRole('button', { name: 'Lessons', exact: true }).click();
         const dialog = page.getByRole('dialog', { name: 'Choose a lesson' });
         await expect(dialog).not.toContainText('undefined');
         await dialog.getByRole('button', { name: /Lesson 2: Right Hand Home/ }).click();
@@ -301,7 +440,7 @@ test('Swift key and pair practice retain learning observations and unknown saved
         await expect(page.locator('html')).toHaveAttribute('data-palette', 'plum');
         for (const [button, target, lines, id] of [
                 ['Practice weak keys', 'q', 4, 'weak-keys'],
-                ['Practice pairs', 'q → z', 2, 'weak-pairs']
+                ['Practice this pair: q → z', 'q → z', 2, 'weak-pairs']
         ]) {
             await page.getByRole('button', { name: button, exact: true }).click();
             await finish(page, lines);
@@ -344,7 +483,7 @@ test('Swift quota failure exports the in-memory session and retries without losi
         await expect(page.getByRole('button', { name: 'Retry save', exact: true }))
             .toBeVisible();
         await expect(results(page).getByRole('status')).toContainText(
-            'Progress is pending');
+            'Progress is in memory. Export a backup or retry saving.');
         expect(await savedBytes(page)).toBe(before);
         const downloading = page.waitForEvent('download');
         await page.getByRole('button', { name: 'Export backup', exact: true }).click();
@@ -364,17 +503,121 @@ test('Swift quota failure exports the in-memory session and retries without losi
         expectPreserved(stored, saved);
     });
 
+test('Swift malformed and excessively nested saves remain untouched while new sessions can be backed up',
+    async ({ page }) => {
+        const rawSaves = [
+            '{"settings":{"theme":"light"},"unfinished":',
+            `{"futureDepth":${'['.repeat(129)}null${']'.repeat(129)}}`
+        ];
+        await visit(page);
+        for (const raw of rawSaves) {
+            await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
+                key: storageKey,
+                value: raw
+            });
+            await page.reload();
+            await expect(input(page)).toBeVisible();
+            expect(await savedBytes(page)).toBe(raw);
+            await custom(page, 'ab ba');
+            await finish(page, 1, 0, false);
+            await expect(results(page).getByRole('status')).toContainText('memory');
+            await expect(page.getByRole('button', { name: 'Export backup', exact: true }))
+                .toBeVisible();
+            expect(await savedBytes(page)).toBe(raw);
+            const downloading = page.waitForEvent('download');
+            await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+            const download = await downloading;
+            expect(await download.failure()).toBeNull();
+            const backup = JSON.parse(await readFile(await download.path(), 'utf8'));
+            expect(backup.savedRaw).toBe(raw);
+            expect(backup.session.history).toHaveLength(1);
+            expect(backup.session.history[0]).toMatchObject({
+                lessonId: 'custom',
+                wpmMetric: 'words-v1',
+                errorKeystrokes: 0
+            });
+            expect(backup.session.history[0].elapsedMilliseconds).toBeGreaterThan(0);
+            expect(await savedBytes(page)).toBe(raw);
+        }
+    });
+
+test('Swift grows its WASM buffers for large unknown saved data without interpreting unknown setting names',
+    async ({ page }) => {
+        test.setTimeout(60000);
+        const saved = savedPractice();
+        const unknownSetting = 'future"\\setting';
+        saved.settings[unknownSetting] = {
+            value: 'quotes " and slashes \\',
+            nested: ['<safe>', 'café']
+        };
+        saved.futureLarge = { text: 'x'.repeat(1126400), tail: 'keep " \\ café' };
+        const original = JSON.stringify(saved);
+        expect(Buffer.byteLength(original)).toBeGreaterThan(1024 * 1024);
+        await visit(page, saved);
+        expect(await savedBytes(page)).toBe(original);
+        await custom(page, 'ab ba');
+        await finish(page, 1);
+        const stored = JSON.parse(await savedBytes(page));
+        expectPreserved(stored, saved);
+        expect(stored.settings[unknownSetting]).toEqual(saved.settings[unknownSetting]);
+        expect(stored.futureLarge).toEqual(saved.futureLarge);
+        expect(stored.history).toHaveLength(2);
+        expect(stored.history[0]).toMatchObject({
+            lessonId: 'custom',
+            accuracy: 100,
+            errorKeystrokes: 0,
+            wpmMetric: 'words-v1'
+        });
+        expect(stored.history[0].elapsedMilliseconds).toBeGreaterThan(0);
+        const recorded = await savedBytes(page);
+        await page.reload();
+        await expect(input(page)).toBeVisible();
+        await expect(page.locator('#exercise-title')).toHaveText('10 word test');
+        expect(await savedBytes(page)).toBe(recorded);
+    });
+
 test('Swift WebAssembly reloads offline and completes a saved learner’s lesson',
     async ({ page, context }) => {
         const saved = savedPractice();
         await visit(page, saved);
+        const manifestURL = new URL(await page.locator('link[rel="manifest"]')
+            .getAttribute('href'), page.url());
+        const manifestResponse = await page.request.get(manifestURL.href);
+        expect(manifestResponse.ok()).toBe(true);
+        const manifest = await manifestResponse.json();
+        expect(manifest.short_name).toBe('Typeflow');
+        expect(manifest.display).toBe('standalone');
+        const launchURL = new URL(manifest.start_url, manifestURL);
+        expect(launchURL.href).toBe(new URL('./', page.url()).href);
+        expect(new URL(manifest.scope, manifestURL).href).toBe(launchURL.href);
+        expect(manifest.icons.map(icon => icon.sizes)).toEqual(['192x192', '512x512']);
+        for (const icon of manifest.icons) {
+            const size = Number(icon.sizes.split('x')[0]);
+            const iconURL = new URL(icon.src, manifestURL);
+            expect(iconURL.href).toBe(new URL(`../icon-${size}.png`, page.url()).href);
+            expect(icon.type).toBe('image/png');
+            const response = await page.request.get(iconURL.href);
+            expect(response.ok()).toBe(true);
+            const png = await response.body();
+            expect(Array.from(png.subarray(0, 8)))
+                .toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+            expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([size, size]);
+        }
         await expect(page.getByText('Available offline', { exact: true })).toBeVisible();
+        const workerScope = await page.evaluate(async () =>
+            (await navigator.serviceWorker.getRegistration())?.scope);
+        expect(typeof workerScope).toBe('string');
+        expect(launchURL.href.startsWith(workerScope)).toBe(true);
         await page.reload();
         await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller
                 ?.state))
             .toBe('activated');
         await context.setOffline(true);
         await page.reload();
+        await expect(page.locator('#exercise-title')).toHaveText('10 word test');
+        await page.getByRole('button', { name: 'Lessons', exact: true }).click();
+        await page.getByRole('dialog', { name: 'Choose a lesson' })
+            .getByRole('button', { name: /Lesson 1: Left Hand Home/ }).click();
         await expect(input(page)).toBeFocused();
         await finish(page);
         const stored = JSON.parse(await savedBytes(page));

@@ -853,7 +853,7 @@ function Results({
     );
 }
 
-export default function App({ engine: suppliedEngine } = {}) {
+export default function App() {
     const [settings, setSettings] = useState(() => ({
         ...storage.data.settings,
     }));
@@ -907,10 +907,7 @@ export default function App({ engine: suppliedEngine } = {}) {
     useLayoutEffect(() => {
         activeExercise.current = exercise;
     }, [exercise]);
-    const engine = useMemo(
-        () => suppliedEngine || new TypingEngine(),
-        [suppliedEngine],
-    );
+    const engine = useMemo(() => new TypingEngine(), []);
     const [stats, setStats] = useState(() => engine.getStats());
     const input = useRef(null);
     const restart = useRef(null);

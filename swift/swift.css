@@ -78,21 +78,41 @@
     display: block;
 }
 
-.result-main {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.result-primary {
-    display: flex;
-}
-
-.result-primary>small {
-    font: 13px/1.6 var(--font-sans);
-    color: var(--muted);
-}
-
 #practice-comparison th {
     padding: 8px 4px;
     text-align: left;
+}
+
+.result-primary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+    .guidance .magic-keyboard {
+        --keyboard-gap: 3px;
+        min-width: 0;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .guidance .keyboard-row {
+        height: 28px;
+    }
+
+    .guidance .key-main-label {
+        font-size: 9px;
+    }
+
+    .guidance :is(.key-shift-label, .key-sub-label, .caps-led, .tactile-bump) {
+        display: none;
+    }
+
+    .guidance :is(.key-delete, .key-tab, .key-caps, .key-return, .key-shift, .key-control, .key-option, .key-command) .key-labels .key-main-label {
+        font-size: 6px;
+        overflow: hidden;
+    }
 }

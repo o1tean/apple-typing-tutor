@@ -1,16 +1,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { compileBrainfuck } from './compile-brainfuck.mjs';
+import { application } from '../brainfuck/app.mjs';
 
-export async function buildBrainfuck() {
-    const source = await readFile(new URL('../brainfuck/typing.bf', import.meta.url), 'utf8');
-    return compileBrainfuck(source);
-}
-
-async function browserHost() {
-    const source = await readFile(new URL('../js/brainfuck-engine.js', import.meta.url),
-        'utf8');
-    return source + '\nglobalThis.typeflowBrainfuck = loadBrainfuck;\n';
+export function buildBrainfuck() {
+    const { program, metadata } = application();
+    return { bytes: program.compile(), metadata, program };
 }
 
 export function brainfuckPlugin() {
@@ -22,28 +17,32 @@ export function brainfuckPlugin() {
         },
         async buildStart() {
             if (!building) return;
+            const { bytes, metadata } = buildBrainfuck();
             this.emitFile({
                 type: 'asset',
                 fileName: 'typeflow-brainfuck.wasm',
-                source: await buildBrainfuck()
+                source: bytes
             });
             this.emitFile({
                 type: 'asset',
-                fileName: 'typeflow-brainfuck.js',
-                source: await browserHost()
+                fileName: 'typeflow-brainfuck.json',
+                source: JSON.stringify(metadata)
             });
         },
         configureServer(server) {
+            let compiled;
             server.middlewares.use(async (request, response, next) => {
                 const pathname = request.url?.split('?')[0];
-                if (!['/typeflow-brainfuck.wasm', '/typeflow-brainfuck.js'].includes(
+                if (!['/typeflow-brainfuck.wasm', '/typeflow-brainfuck.json'].includes(
                         pathname))
                     return next();
                 try {
                     const wasm = pathname.endsWith('.wasm');
-                    const bytes = wasm ? await buildBrainfuck() : await browserHost();
+                    compiled ||= buildBrainfuck();
+                    const bytes = wasm ? compiled.bytes : JSON.stringify(compiled
+                        .metadata);
                     response.setHeader('Content-Type', wasm ? 'application/wasm' :
-                        'text/javascript');
+                        'application/json');
                     response.end(bytes);
                 } catch (error) {
                     next(error);
@@ -55,7 +54,10 @@ export function brainfuckPlugin() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     await mkdir('.local', { recursive: true });
-    const bytes = await buildBrainfuck();
+    const { bytes, metadata } = buildBrainfuck();
     await writeFile('.local/typeflow-brainfuck.wasm', bytes);
-    console.log(`Brainfuck compiled to WebAssembly (${bytes.length} bytes)`);
+    await writeFile('.local/typeflow-brainfuck.json', JSON.stringify(metadata));
+    const source = await readFile(new URL('../brainfuck/typing.bf', import.meta.url), 'utf8');
+    await writeFile('.local/typeflow-brainfuck-kernel.wasm', compileBrainfuck(source));
+    console.log(`Brainfuck application compiled to WebAssembly (${bytes.length} bytes)`);
 }

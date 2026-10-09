@@ -48,10 +48,13 @@ Clearing this site's data removes saved progress and offline lessons.
 
 ## Swift version
 
-The second site at `/swift/` uses Embedded Swift for its typing engine, timing,
-word scoring, learning observations, and generated interface. Its browser bridge
-reuses Typeflow’s content, keyboard/finger guides, sound, and safe local storage.
-Both versions share progress without changing the storage format.
+The second site at `/swift/` runs the application in Embedded Swift WebAssembly:
+typing, lessons, adaptive practice, interface rendering, guides, settings, history,
+results, sharing decisions, and progress validation/merging. A small JavaScript host
+provides browser APIs: DOM commands, events, clocks, raw storage and locks, audio,
+image export, and offline registration. It imports no React or product JavaScript.
+Licensed content and static geometry are converted into Swift data during the build.
+All three versions share the existing progress key and format.
 
 Install the official **Swift.org 6.4.0 toolchain** and its matching
 [WebAssembly SDK](https://www.swift.org/documentation/articles/wasm-getting-started.html).
