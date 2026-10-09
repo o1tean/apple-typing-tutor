@@ -38,7 +38,7 @@ if (process.argv.includes('--test')) {
     run(compiler, [...(nativeSDK ? ['-sdk', nativeSDK] : []),
         '-module-cache-path', join(cache, 'native-module-cache'),
         'swift/Sources/TypingSession.swift', 'swift/Tests/TypingSessionChecks.swift',
-        '-o', executable]);
+        '-o', executable, ...(process.platform === 'linux' ? ['-lm'] : [])]);
     run(executable, []);
 } else {
     const sdk = process.env.TYPEFLOW_SWIFT_SDK || join(root, '.local/swift-sdk',
