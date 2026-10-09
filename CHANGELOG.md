@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a second site at `swift/`, with Swift interface generation and a typing engine compiled to WebAssembly; lessons, adaptive practice, saved progress and offline use share the original content and storage.
+- Added a Brainfuck typing kernel compiled directly to WebAssembly at `brainfuck.html`, using the existing interface, lessons, guides, saved progress and offline support.
+
 - Compare earlier recent key/pair observations with this drill’s measurements, see why the next focus stays or changes, and choose a next drill or repeat the same one while saves finish.
 - See saved track completion and three-star counts, with a suggested unfinished lesson or review; all lessons remain available and Basic Position stays optional.
 - Practice a suggested key pair in a short fresh drill, with recent error/reach evidence, visible Space transitions, and focus that changes as you improve.

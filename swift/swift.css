@@ -1,0 +1,98 @@
+.brand {
+    text-decoration: none;
+}
+
+.brand small {
+    margin: 0;
+}
+
+.restart-row {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+}
+
+.lesson-item {
+    text-align: left;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.setting-row select {
+    max-width: 55%;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+#custom-text {
+    width: 100%;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px;
+    margin: 12px 0;
+}
+
+#history-content {
+    overflow: auto;
+    max-height: 60vh;
+}
+
+#practice-comparison table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+#practice-comparison td {
+    padding: 8px 4px;
+    text-align: left;
+}
+
+#practice-comparison p {
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+    .brand {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+
+.brand {
+    color: var(--text);
+}
+
+.footer a {
+    color: var(--accent);
+}
+
+.test-heading,
+.result-heading {
+    display: block;
+}
+
+.result-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.result-primary {
+    display: flex;
+}
+
+.result-primary>small {
+    font: 13px/1.6 var(--font-sans);
+    color: var(--muted);
+}
+
+#practice-comparison th {
+    padding: 8px 4px;
+    text-align: left;
+}

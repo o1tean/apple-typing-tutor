@@ -17,3 +17,4 @@ docs/design-notes.md
 docs/releases/
 playwright-report/
 test-results/
+swift/typeflow.wasm

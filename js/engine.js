@@ -209,6 +209,11 @@ export class TypingEngine {
         }
         this.lastKeystrokeTime = now;
 
+        this.typeCharacter(typedChar, latency);
+    }
+
+    typeCharacter(typedChar, latency) {
+        const targetChar = this.getCurrentChar();
         this.totalKeystrokes++;
 
         if (this.mode === 'strict') {

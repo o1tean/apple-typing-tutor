@@ -6,12 +6,17 @@
   "scripts": {
     "start": "vite --host 127.0.0.1",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build && node scripts/build-offline.mjs",
+    "build": "vite build && npm run build:swift && node scripts/build-offline.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs && node tests/content.mjs && node tests/learning.mjs && node tests/progress.mjs",
+    "test": "node tests/regression.mjs && node tests/storage.mjs && node tests/practice.mjs && node tests/peripherals.mjs && node tests/content.mjs && node tests/learning.mjs && node tests/progress.mjs && node scripts/build-brainfuck.mjs && node tests/brainfuck-compiler.mjs && node tests/brainfuck-engine.mjs",
     "e2e": "playwright test",
     "format:check": "prettier --check \"**/*.jsx\" \"**/*.svg\"",
-    "audit": "node docs/quality/run-lighthouse.mjs"
+    "audit": "node docs/quality/run-lighthouse.mjs",
+    "build:brainfuck": "node scripts/build-brainfuck.mjs",
+    "build:swift": "node scripts/build-swift.mjs && vite build --config swift/vite.config.js",
+    "test:swift": "node scripts/build-swift.mjs --test",
+    "test:swift:wasm": "node tests/swift-wasm.mjs",
+    "dev:swift": "node scripts/build-swift.mjs && vite --config swift/vite.config.js --host 127.0.0.1"
   },
   "keywords": [
     "touch-typing",

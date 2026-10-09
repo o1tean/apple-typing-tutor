@@ -15,8 +15,9 @@ let alternate;
 test.beforeAll(async () => {
     if (process.env.PLAYWRIGHT_BASE_URL) return;
     alternate = await mkdtemp(join(tmpdir(), 'typeflow-offline-'));
-    for (const name of ['src', 'js', 'css', 'public', 'scripts', 'index.html',
-        'vite.config.js', 'package.json']) {
+    for (const name of ['src', 'js', 'css', 'public', 'scripts', 'brainfuck', 'swift',
+            'index.html',
+        'brainfuck.html', 'vite.config.js', 'package.json']) {
         await cp(join(root, name), join(alternate, name), { recursive: true });
     }
     await cp(join(root, 'docs/media/social-preview.png'),
@@ -26,7 +27,13 @@ test.beforeAll(async () => {
     expect(source).toContain('Just you and the keys.');
     await writeFile(join(alternate, 'src/App.jsx'),
         source.replace('Just you and the keys.', nextHeadline));
-    await promisify(execFile)('npm', ['run', 'build'], { cwd: alternate });
+    // Swift source is unchanged; reuse the verified Wasm for the cache-update fixture.
+    const vite = join(root, 'node_modules/vite/bin/vite.js');
+    await promisify(execFile)(process.execPath, [vite, 'build'], { cwd: alternate });
+    await promisify(execFile)(process.execPath, [vite, 'build', '--config',
+        'swift/vite.config.js'], { cwd: alternate });
+    await promisify(execFile)(process.execPath, [
+    'scripts/build-offline.mjs'], { cwd: alternate });
 });
 
 test.afterAll(async () => {

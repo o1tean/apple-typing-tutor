@@ -2,7 +2,6 @@
 const scope = new URL(self.registration.scope);
 const prefix = `typeflow-offline:${scope.href}:`;
 const cacheName = prefix + VERSION;
-const indexURL = new URL('index.html', scope).href;
 const requests = PRECACHE.map(({ url, integrity }) => new Request(new URL(url, scope), {
     cache: 'reload',
     integrity
@@ -25,9 +24,8 @@ self.addEventListener('fetch', event => {
     const url = new URL(request.url);
     if (request.method !== 'GET' || url.origin !== scope.origin) return;
 
-    const appNavigation = request.mode === 'navigate' &&
-        (url.pathname === scope.pathname || url.pathname === new URL(indexURL).pathname);
-    const cachedURL = appNavigation ? indexURL : url.href;
+    const cachedURL = request.mode === 'navigate' ? new URL(url.pathname.endsWith('/')
+        ? url.pathname + 'index.html' : url.pathname, url).href : url.href;
     if (!assetURLs.has(cachedURL)) return;
 
     event.respondWith(caches.open(cacheName)
